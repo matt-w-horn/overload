@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: lake build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Builds the library with the pinned toolchain; restores the Mathlib
+      # olean cache automatically. Overload/AxiomAudit.lean is part of the
+      # default target, so a `sorry` or stray axiom in any NAMED declaration
+      # fails this job.
+      - uses: leanprover/lean-action@v1
+      # The test driver (OverloadTest/Main.lean). Building it elaborates the
+      # compile-time gates (axiom audit, coverage report); running it checks
+      # the statement lock, the import roots, the negative fixtures, the
+      # scanner corpus, and the prose-sync suite.
+      - name: test
+        run: lake test
+      # Batteries' environment linters (simp normal form, unused arguments,
+      # missing docstrings, ...) over every declaration in the library.
+      - name: lint
+        run: lake lint

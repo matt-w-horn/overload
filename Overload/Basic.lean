@@ -1,0 +1,23 @@
+/-!
+# Overload — shared conventions
+
+Lean 4 + Mathlib formalization of the equilibrium/order-theoretic core of
+overload dynamics: demand, amplification, and collapse over fixed capacity.
+Docstrings locate each module in the library's model hierarchy
+(levels 0–4, waste accounting, verification suite, universality groups).
+
+Conventions used throughout the library:
+
+* All rates, probabilities, and capacities live in plain `ℝ`, with explicit
+  hypotheses (`0 ≤ p`, `p ≤ 1`, `0 < C`, …) on the theorems that need them.
+* Definitions are total; partiality lives in hypotheses, never in the
+  definitions themselves (e.g. expected attempts is *defined* as a geometric
+  sum, and the `(1 - p^n)/(1 - p)` closed form is a lemma requiring `p ≠ 1`).
+* Zero `sorry`, zero custom axioms. Results that would need unformalized
+  analysis (fluid limits, bifurcation geometry, exit times) are omitted, not
+  axiomatized; `Overload/AxiomAudit.lean` enforces the axiom budget.
+-/
+
+namespace Overload
+
+end Overload

@@ -1,0 +1,8 @@
+.DS_Store
+.lake/
+.env
+*.pyc
+
+# verify ritual artifacts (stamp, logs, reports) — the ritual itself
+# (scripts/) is tracked.
+.verify/

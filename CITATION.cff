@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: If you use this work, please cite it as below.
+title: "Overload: machine-checked mathematics of retry amplification and congestion collapse over fixed capacity"
+authors:
+  - family-names: Horn
+    given-names: Matthew
+    orcid: "https://orcid.org/0009-0003-5884-2075"
+license: Apache-2.0
+version: 1.0.0
+date-released: "2026-07-28"

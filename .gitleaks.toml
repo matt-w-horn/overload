@@ -1,0 +1,14 @@
+# gitleaks config — keeps every built-in secret rule. This repo holds proofs
+# and documentation only; no credentials should ever appear here, so this is a
+# backstop against an accidental paste.
+# https://github.com/gitleaks/gitleaks#configuration
+title = "math"
+
+[extend]
+useDefault = true # built-in rules: API keys, generic high-entropy, etc.
+
+[allowlist]
+description = "Generated files (dependency pin hashes look high-entropy)"
+paths = [
+  '''lake-manifest\.json''',
+]

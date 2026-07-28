@@ -1,0 +1,3136 @@
+-- Statement lock: elaborated types (and definition value hashes) of
+-- every hand-written declaration under `Overload`, printed by
+-- `lake exe overloadTest --update-lock`. Proof bodies of theorems are
+-- deliberately not frozen. A diff in this file is a deliberate
+-- statement-level change, never a routine one.
+
+#### Overload.Accounting : structure
+  Type
+
+#### Overload.Accounting.goodput_le : theorem
+  ∀ (A : Overload.Accounting) {G sbar lam : ℝ},
+    0 < sbar → G * A.time * sbar ≤ A.useful → G ≤ lam → G ≤ min lam (A.capacity / sbar)
+
+#### Overload.Accounting.goodput_le_of_waste : theorem
+  ∀ (A : Overload.Accounting) {G sbar w : ℝ},
+    G * A.time * sbar ≤ A.useful →
+      A.wasted = w * (A.capacity * A.time) → G * sbar ≤ (1 - w) * A.capacity - A.idle / A.time
+
+#### Overload.Accounting.mk.inj : theorem
+  ∀ {capacity time useful wasted idle : ℝ} {capacity_pos : 0 < capacity} {time_pos : 0 < time}
+    {useful_nonneg : 0 ≤ useful} {wasted_nonneg : 0 ≤ wasted} {idle_nonneg : 0 ≤ idle}
+    {conserve : useful + wasted + idle = capacity * time}
+    {capacity_1 time_1 useful_1 wasted_1 idle_1 : ℝ} {capacity_pos_1 : 0 < capacity_1}
+    {time_pos_1 : 0 < time_1} {useful_nonneg_1 : 0 ≤ useful_1} {wasted_nonneg_1 : 0 ≤ wasted_1}
+    {idle_nonneg_1 : 0 ≤ idle_1} {conserve_1 : useful_1 + wasted_1 + idle_1 = capacity_1 * time_1},
+    { capacity := capacity, time := time, useful := useful, wasted := wasted, idle := idle,
+          capacity_pos := capacity_pos, time_pos := time_pos, useful_nonneg := useful_nonneg,
+          wasted_nonneg := wasted_nonneg, idle_nonneg := idle_nonneg, conserve := conserve } =
+        { capacity := capacity_1, time := time_1, useful := useful_1, wasted := wasted_1,
+          idle := idle_1, capacity_pos := capacity_pos_1, time_pos := time_pos_1,
+          useful_nonneg := useful_nonneg_1, wasted_nonneg := wasted_nonneg_1,
+          idle_nonneg := idle_nonneg_1, conserve := conserve_1 } →
+      capacity = capacity_1 ∧ time = time_1 ∧ useful = useful_1 ∧ wasted = wasted_1 ∧ idle = idle_1
+
+#### Overload.Accounting.useful_le : theorem
+  ∀ (A : Overload.Accounting), A.useful ≤ A.capacity * A.time
+
+#### Overload.BistableBand : def
+  ℝ → ℝ → ℝ → Prop
+  value-hash 846983cbda76cd0a
+
+#### Overload.BistableOn : def
+  (ℝ → ℝ) → ℝ → ℝ → Prop
+  value-hash 68e914acd73b4ab
+
+#### Overload.BoundedLoop : structure
+  Type
+
+#### Overload.BoundedLoop.CongestedEq : def
+  Overload.BoundedLoop → ℝ → Prop
+  value-hash 50359cb46b43fde1
+
+#### Overload.BoundedLoop.CongestedEq.mono : theorem
+  ∀ {L : Overload.BoundedLoop} {Θ Θ' : ℝ}, L.CongestedEq Θ' → Θ ≤ Θ' → L.CongestedEq Θ
+
+#### Overload.BoundedLoop.F : def
+  Overload.BoundedLoop → ℝ → ℝ
+  value-hash 7be6d0b1a3c69bf2
+
+#### Overload.BoundedLoop.F_le : theorem
+  ∀ (L : Overload.BoundedLoop) {x : ℝ}, 0 ≤ x → L.F x ≤ L.lam * L.Amax
+
+#### Overload.BoundedLoop.attempt_admission_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {Q Θ : ℝ},
+    0 < L.lam → Q < Θ → ¬(L.breakerLoop (Q / L.lam)).CongestedEq Θ
+
+#### Overload.BoundedLoop.breakerLoop : def
+  Overload.BoundedLoop → ℝ → Overload.BoundedLoop
+  value-hash 56295e78edb84414
+
+#### Overload.BoundedLoop.breaker_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {K Θ : ℝ}, L.lam * K < Θ → ¬(L.breakerLoop K).CongestedEq Θ
+
+#### Overload.BoundedLoop.budget_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {β Θ : ℝ},
+    (∀ p ∈ Set.Icc 0 1, L.h p ≤ 1 + β) → L.lam * (1 + β) < Θ → ¬L.CongestedEq Θ
+
+#### Overload.BoundedLoop.cap_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {n : ℕ} {Θ : ℝ},
+    (∀ p ∈ Set.Icc 0 1, L.h p = Overload.expAttempts p n) → L.lam * ↑n < Θ → ¬L.CongestedEq Θ
+
+#### Overload.BoundedLoop.clamp_fluid_strictAnti : theorem
+  ∀ (L : Overload.BoundedLoop) {K Θ t₀ t₁ : ℝ} {x : ℝ → ℝ},
+    (∀ p ∈ Set.Icc 0 1, L.h p ≤ K) →
+      L.lam * K < Θ →
+        0 ≤ Θ →
+          (∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (L.F (x t) - x t) t) →
+            (∀ t ∈ Set.Icc t₀ t₁, Θ ≤ x t) → StrictAntiOn x (Set.Icc t₀ t₁)
+
+#### Overload.BoundedLoop.clamp_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {K Θ : ℝ},
+    (∀ p ∈ Set.Icc 0 1, L.h p ≤ K) → L.lam * K < Θ → ¬L.CongestedEq Θ
+
+#### Overload.BoundedLoop.constLoop : def
+  Overload.BoundedLoop → (p₀ : ℝ) → p₀ ∈ Set.Icc 0 1 → Overload.BoundedLoop
+  value-hash 2b707b5104cf3c74
+
+#### Overload.BoundedLoop.constLoop_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {p₀ Θ : ℝ} (hp₀ : p₀ ∈ Set.Icc 0 1),
+    0 ≤ Θ → Θ ≤ L.lam * L.h p₀ → (L.constLoop p₀ hp₀).CongestedEq Θ
+
+#### Overload.BoundedLoop.forall_kernel_no_congestedEq_iff : theorem
+  ∀ (L : Overload.BoundedLoop) {Θ : ℝ},
+    0 ≤ Θ →
+      ((∀ (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+          ¬(L.withKernel g hg).CongestedEq Θ) ↔
+        ∀ p ∈ Set.Icc 0 1, L.lam * L.h p < Θ)
+
+#### Overload.BoundedLoop.forall_kernel_no_congestedEq_iff_pin : theorem
+  (∀ (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+      ¬((Overload.stepLoop 1 5 4 ⋯ ⋯).withKernel g hg).CongestedEq 5) ∧
+    ¬∀ (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+        ¬((Overload.stepLoop 1 5 4 ⋯ ⋯).withKernel g hg).CongestedEq 4
+
+#### Overload.BoundedLoop.hasDerivAt_F : theorem
+  ∀ (L : Overload.BoundedLoop) {Λ g' h' : ℝ},
+    HasDerivAt L.g g' Λ → HasDerivAt L.h h' (L.g Λ) → HasDerivAt L.F (L.lam * (h' * g')) Λ
+
+#### Overload.BoundedLoop.mk.inj : theorem
+  ∀ {lam : ℝ} {g h : ℝ → ℝ} {Amax : ℝ} {lam_nonneg : 0 ≤ lam}
+    {g_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1} {h_le_Amax : ∀ p ∈ Set.Icc 0 1, h p ≤ Amax}
+    {lam_1 : ℝ} {g_1 h_1 : ℝ → ℝ} {Amax_1 : ℝ} {lam_nonneg_1 : 0 ≤ lam_1}
+    {g_mem_1 : ∀ (x : ℝ), 0 ≤ x → g_1 x ∈ Set.Icc 0 1}
+    {h_le_Amax_1 : ∀ p ∈ Set.Icc 0 1, h_1 p ≤ Amax_1},
+    { lam := lam, g := g, h := h, Amax := Amax, lam_nonneg := lam_nonneg, g_mem := g_mem,
+          h_le_Amax := h_le_Amax } =
+        { lam := lam_1, g := g_1, h := h_1, Amax := Amax_1, lam_nonneg := lam_nonneg_1,
+          g_mem := g_mem_1, h_le_Amax := h_le_Amax_1 } →
+      lam = lam_1 ∧ g = g_1 ∧ h = h_1 ∧ Amax = Amax_1
+
+#### Overload.BoundedLoop.no_congestedEq_of_light : theorem
+  ∀ (L : Overload.BoundedLoop) {Θ : ℝ}, Overload.HealthyOnly L.lam L.Amax Θ → ¬L.CongestedEq Θ
+
+#### Overload.BoundedLoop.no_congestedEq_of_light_pin : theorem
+  ¬(Overload.stepLoop 1 5 2 ⋯ ⋯).CongestedEq 3
+
+#### Overload.BoundedLoop.pointwise_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {Θ : ℝ}, (∀ p ∈ Set.Icc 0 1, L.lam * L.h p < Θ) → ¬L.CongestedEq Θ
+
+#### Overload.BoundedLoop.signature : def
+  Overload.BoundedLoop → ℝ
+  value-hash 8a514e3fb5496ffe
+
+#### Overload.BoundedLoop.signature_lt_no_congestedEq : theorem
+  ∀ (L : Overload.BoundedLoop) {Θ : ℝ}, L.signature < Θ → ¬L.CongestedEq Θ
+
+#### Overload.BoundedLoop.signature_lt_no_congestedEq_pin : theorem
+  ¬(Overload.stepLoop 1 6 5 ⋯ ⋯).CongestedEq 6
+
+#### Overload.BoundedLoop.withKernel : def
+  Overload.BoundedLoop → (g : ℝ → ℝ) → (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → Overload.BoundedLoop
+  value-hash 5a710c97ed43a9e
+
+#### Overload.BoundedLoop.withKernel_Amax : theorem
+  ∀ (L : Overload.BoundedLoop) (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+    (L.withKernel g hg).Amax = L.Amax
+
+#### Overload.BoundedLoop.withKernel_F : theorem
+  ∀ (L : Overload.BoundedLoop) (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (Λ : ℝ),
+    (L.withKernel g hg).F Λ = L.lam * L.h (g Λ)
+
+#### Overload.BoundedLoop.withKernel_h : theorem
+  ∀ (L : Overload.BoundedLoop) (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+    (L.withKernel g hg).h = L.h
+
+#### Overload.BoundedLoop.withKernel_lam : theorem
+  ∀ (L : Overload.BoundedLoop) (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+    (L.withKernel g hg).lam = L.lam
+
+#### Overload.Certificate : def
+  {k : ℕ} → Matrix (Fin k) (Fin k) ℝ → Prop
+  value-hash 7bbf16cd4e0a1808
+
+#### Overload.ClosedLoop : structure
+  Type
+
+#### Overload.ClosedLoop.F_eq_lam_of_noSustaining : theorem
+  ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {Λ : ℝ}, 0 ≤ Λ → L.F Λ = L.lam
+
+#### Overload.ClosedLoop.F_le_withLam_F : theorem
+  ∀ (L : Overload.ClosedLoop) {lam' : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' → ∀ {x : ℝ}, 0 ≤ x → L.F x ≤ (L.withLam lam' hlam').F x
+
+#### Overload.ClosedLoop.F_mapsTo : theorem
+  ∀ (L : Overload.ClosedLoop),
+    Set.MapsTo L.F (Set.Icc 0 (L.lam * L.Amax)) (Set.Icc 0 (L.lam * L.Amax))
+
+#### Overload.ClosedLoop.F_mapsTo_of_le : theorem
+  ∀ (L : Overload.ClosedLoop) {b : ℝ}, L.lam * L.Amax ≤ b → Set.MapsTo L.F (Set.Icc 0 b) (Set.Icc 0 b)
+
+#### Overload.ClosedLoop.F_monotoneOn : theorem
+  ∀ (L : Overload.ClosedLoop), MonotoneOn L.F (Set.Ici 0)
+
+#### Overload.ClosedLoop.F_monotoneOn_Icc : theorem
+  ∀ (L : Overload.ClosedLoop), MonotoneOn L.F (Set.Icc 0 (L.lam * L.Amax))
+
+#### Overload.ClosedLoop.F_nonneg : theorem
+  ∀ (L : Overload.ClosedLoop) {x : ℝ}, 0 ≤ x → 0 ≤ L.F x
+
+#### Overload.ClosedLoop.NoSustaining : def
+  Overload.ClosedLoop → Prop
+  value-hash ef6c1b23bed6844
+
+#### Overload.ClosedLoop.bistableOn_of_two_points : theorem
+  ∀ (L : Overload.ClosedLoop) {x y b : ℝ},
+    0 ≤ x → L.F x ≤ x → y ≤ L.F y → x < y → L.lam * L.Amax ≤ b → Overload.BistableOn L.F 0 b
+
+#### Overload.ClosedLoop.blip_unique_eq : theorem
+  ∀ (L : Overload.ClosedLoop) {p₀ : ℝ},
+    (∀ (x : ℝ), 0 ≤ x → L.g x = p₀) → ∀ {Λ : ℝ}, 0 ≤ Λ → (L.F Λ = Λ ↔ Λ = L.lam * L.h p₀)
+
+#### Overload.ClosedLoop.burst_crosses : theorem
+  ∀ (L : Overload.ClosedLoop) {Λ₀ B w Θ : ℝ},
+    0 ≤ Λ₀ → 0 < w → 0 ≤ B → Θ - Λ₀ ≤ B / w → Λ₀ + B / w ≤ L.F (Λ₀ + B / w) → L.CongestedEq Θ
+
+#### Overload.ClosedLoop.burst_safe : theorem
+  ∀ (L : Overload.ClosedLoop) {z Λ₀ B w : ℝ},
+    z ∈ Set.Icc 0 (L.lam * L.Amax) →
+      Function.IsFixedPt L.F z →
+        0 ≤ Λ₀ → 0 ≤ B → 0 < w → Λ₀ + B / w ≤ z → ∀ (n : ℕ), L.F^[n] (Λ₀ + B / w) ≤ z
+
+#### Overload.ClosedLoop.burst_tips : theorem
+  ∀ (L : Overload.ClosedLoop) {Λ₀ B w : ℝ},
+    0 ≤ Λ₀ + B / w →
+      Λ₀ + B / w ≤ L.F (Λ₀ + B / w) → ∀ (n : ℕ), L.F^[n] (Λ₀ + B / w) ≤ L.F^[n + 1] (Λ₀ + B / w)
+
+#### Overload.ClosedLoop.congestedEq_mono_kernel : theorem
+  ∀ (L : Overload.ClosedLoop) {g' : ℝ → ℝ} (hg'_mem : ∀ (x : ℝ), 0 ≤ x → g' x ∈ Set.Icc 0 1)
+    (hg'_mono : MonotoneOn g' (Set.Ici 0)),
+    (∀ (x : ℝ), 0 ≤ x → g' x ≤ L.g x) →
+      ∀ {Θ : ℝ}, (L.withKernel g' hg'_mem hg'_mono).CongestedEq Θ → L.CongestedEq Θ
+
+#### Overload.ClosedLoop.congestedEq_mono_lam : theorem
+  ∀ (L : Overload.ClosedLoop) {lam' Θ : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' → L.CongestedEq Θ → (L.withLam lam' hlam').CongestedEq Θ
+
+#### Overload.ClosedLoop.congestedEq_mono_response : theorem
+  ∀ (L : Overload.ClosedLoop) {M : Overload.BoundedLoop},
+    M.lam = L.lam →
+      (∀ (x : ℝ), 0 ≤ x → M.g x = L.g x) →
+        (∀ p ∈ Set.Icc 0 1, M.h p ≤ L.h p) → ∀ {Θ : ℝ}, M.CongestedEq Θ → L.CongestedEq Θ
+
+#### Overload.ClosedLoop.congestedEq_of_inflow : theorem
+  ∀ (L : Overload.ClosedLoop) {Θ : ℝ}, 0 ≤ Θ → Θ ≤ L.F Θ → L.CongestedEq Θ
+
+#### Overload.ClosedLoop.congestedEq_of_nonpos_threshold : theorem
+  ∀ (L : Overload.ClosedLoop) {Θ : ℝ}, Θ ≤ 0 → L.CongestedEq Θ
+
+#### Overload.ClosedLoop.congestedEq_of_nonpos_threshold_pin : theorem
+  (Overload.stepLoop 1 5 2 ⋯ ⋯).CongestedEq 0
+
+#### Overload.ClosedLoop.congestedEq_of_over : theorem
+  ∀ (L : Overload.ClosedLoop) {Θ : ℝ}, Overload.CongestedOnly L.lam Θ → L.CongestedEq Θ
+
+#### Overload.ClosedLoop.congestionEdge : def
+  Overload.ClosedLoop → ℝ → ℝ
+  value-hash a0fe75b0747bf8a7
+
+#### Overload.ClosedLoop.congestionEdge_le : theorem
+  ∀ (L : Overload.ClosedLoop) {lam' Θ : ℝ} (hlam' : 0 ≤ lam'),
+    (L.withLam lam' hlam').CongestedEq Θ → L.congestionEdge Θ ≤ lam'
+
+#### Overload.ClosedLoop.constLoop : def
+  Overload.ClosedLoop → (p₀ : ℝ) → p₀ ∈ Set.Icc 0 1 → Overload.ClosedLoop
+  value-hash 4869f0d22f04052b
+
+#### Overload.ClosedLoop.eq_ge_of_over : theorem
+  ∀ (L : Overload.ClosedLoop) {Θ Λ : ℝ}, Overload.CongestedOnly L.lam Θ → 0 ≤ Λ → L.F Λ = Λ → Θ ≤ Λ
+
+#### Overload.ClosedLoop.eq_ge_of_over_pin : theorem
+  10 ≤ 100
+
+#### Overload.ClosedLoop.floor_certifies : theorem
+  ∀ (L : Overload.ClosedLoop) {g' : ℝ → ℝ} (hg'_mem : ∀ (x : ℝ), 0 ≤ x → g' x ∈ Set.Icc 0 1)
+    (hg'_mono : MonotoneOn g' (Set.Ici 0)),
+    (∀ (x : ℝ), 0 ≤ x → g' x ≤ L.g x) →
+      ∀ {Θ Θ' : ℝ}, Θ ≤ Θ' → ¬L.CongestedEq Θ → ¬(L.withKernel g' hg'_mem hg'_mono).CongestedEq Θ'
+
+#### Overload.ClosedLoop.forall_kernel_no_congestedEq_iff : theorem
+  ∀ (L : Overload.ClosedLoop) {Θ : ℝ},
+    0 ≤ Θ →
+      ((∀ (g : ℝ → ℝ) (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1)
+          (hg_mono : MonotoneOn g (Set.Ici 0)), ¬(L.withKernel g hg_mem hg_mono).CongestedEq Θ) ↔
+        ∀ p ∈ Set.Icc 0 1, L.lam * L.h p < Θ)
+
+#### Overload.ClosedLoop.forall_kernel_no_congestedEq_iff_pin : theorem
+  (∀ (g : ℝ → ℝ) (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)),
+      ¬((Overload.stepLoop 1 5 4 ⋯ ⋯).withKernel g hg_mem hg_mono).CongestedEq 5) ∧
+    ¬∀ (g : ℝ → ℝ) (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1)
+        (hg_mono : MonotoneOn g (Set.Ici 0)),
+        ¬((Overload.stepLoop 1 5 4 ⋯ ⋯).withKernel g hg_mem hg_mono).CongestedEq 4
+
+#### Overload.ClosedLoop.gfpIcc_mono_lam : theorem
+  ∀ (L : Overload.ClosedLoop) {lam' b : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' →
+      lam' * L.Amax ≤ b → Overload.gfpIcc L.F 0 b ≤ Overload.gfpIcc (L.withLam lam' hlam').F 0 b
+
+#### Overload.ClosedLoop.lam_le_F : theorem
+  ∀ (L : Overload.ClosedLoop) {x : ℝ}, 0 ≤ x → L.lam ≤ L.F x
+
+#### Overload.ClosedLoop.le_congestionEdge : theorem
+  ∀ (L : Overload.ClosedLoop) {Θ : ℝ}, Θ / L.Amax ≤ L.congestionEdge Θ
+
+#### Overload.ClosedLoop.lfpIcc_mono_lam : theorem
+  ∀ (L : Overload.ClosedLoop) {lam' b : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' →
+      lam' * L.Amax ≤ b → Overload.lfpIcc L.F 0 b ≤ Overload.lfpIcc (L.withLam lam' hlam').F 0 b
+
+#### Overload.ClosedLoop.mk.inj : theorem
+  ∀ {toBoundedLoop : Overload.BoundedLoop} {g_mono : MonotoneOn toBoundedLoop.g (Set.Ici 0)}
+    {h_mono : MonotoneOn toBoundedLoop.h (Set.Icc 0 1)}
+    {h_one_le : ∀ p ∈ Set.Icc 0 1, 1 ≤ toBoundedLoop.h p} {toBoundedLoop_1 : Overload.BoundedLoop}
+    {g_mono_1 : MonotoneOn toBoundedLoop_1.g (Set.Ici 0)}
+    {h_mono_1 : MonotoneOn toBoundedLoop_1.h (Set.Icc 0 1)}
+    {h_one_le_1 : ∀ p ∈ Set.Icc 0 1, 1 ≤ toBoundedLoop_1.h p},
+    { toBoundedLoop := toBoundedLoop, g_mono := g_mono, h_mono := h_mono, h_one_le := h_one_le } =
+        { toBoundedLoop := toBoundedLoop_1, g_mono := g_mono_1, h_mono := h_mono_1,
+          h_one_le := h_one_le_1 } →
+      toBoundedLoop = toBoundedLoop_1
+
+#### Overload.ClosedLoop.noSustaining_no_congestedEq : theorem
+  ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {C : ℝ}, L.lam < C → ¬L.CongestedEq C
+
+#### Overload.ClosedLoop.noSustaining_unique_eq : theorem
+  ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {Λ : ℝ}, 0 ≤ Λ → (L.F Λ = Λ ↔ Λ = L.lam)
+
+#### Overload.ClosedLoop.not_bistableOn_of_const : theorem
+  ∀ (L : Overload.ClosedLoop) {p₀ : ℝ},
+    (∀ (x : ℝ), 0 ≤ x → L.g x = p₀) → ¬Overload.BistableOn L.F 0 (L.lam * L.Amax)
+
+#### Overload.ClosedLoop.not_bistableOn_of_gain_lt_one : theorem
+  ∀ (L : Overload.ClosedLoop),
+    ContinuousOn L.F (Set.Icc 0 (L.lam * L.Amax)) →
+      (∀ x ∈ Set.Ioo 0 (L.lam * L.Amax), DifferentiableAt ℝ L.F x) →
+        (∀ x ∈ Set.Ioo 0 (L.lam * L.Amax), deriv L.F x < 1) →
+          ¬Overload.BistableOn L.F 0 (L.lam * L.Amax)
+
+#### Overload.ClosedLoop.not_congestedEq_of_le : theorem
+  ∀ (L : Overload.ClosedLoop) {lam' Θ : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' → ¬(L.withLam lam' hlam').CongestedEq Θ → ¬L.CongestedEq Θ
+
+#### Overload.ClosedLoop.one_le_Amax : theorem
+  ∀ (L : Overload.ClosedLoop), 1 ≤ L.Amax
+
+#### Overload.ClosedLoop.toStar : def
+  Overload.ClosedLoop → Overload.Star 1
+  value-hash 416d5ae377e4d0e9
+
+#### Overload.ClosedLoop.toStar_congestedEq_iff : theorem
+  ∀ (L : Overload.ClosedLoop) (Θ : ℝ), L.toStar.CongestedEq Θ ↔ L.CongestedEq Θ
+
+#### Overload.ClosedLoop.toStar_signature : theorem
+  ∀ (L : Overload.ClosedLoop), ∑ i, L.toStar.signature ![L.Amax] i = L.signature
+
+#### Overload.ClosedLoop.two_fixedPts_of_two_points : theorem
+  ∀ (L : Overload.ClosedLoop) {x y : ℝ},
+    0 ≤ x →
+      L.F x ≤ x →
+        y ≤ L.F y →
+          x < y →
+            ∃ z₁ z₂, Function.IsFixedPt L.F z₁ ∧ Function.IsFixedPt L.F z₂ ∧ z₁ ≤ x ∧ y ≤ z₂ ∧ z₁ < z₂
+
+#### Overload.ClosedLoop.withKernel : def
+  Overload.ClosedLoop →
+    (g : ℝ → ℝ) →
+      (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → MonotoneOn g (Set.Ici 0) → Overload.ClosedLoop
+  value-hash 62ad6bfae161fa5e
+
+#### Overload.ClosedLoop.withLam : def
+  Overload.ClosedLoop → (lam' : ℝ) → 0 ≤ lam' → Overload.ClosedLoop
+  value-hash e6b6e57e763207d6
+
+#### Overload.ClosedLoop.withLam_Amax : theorem
+  ∀ (L : Overload.ClosedLoop) (lam' : ℝ) (hlam' : 0 ≤ lam'), (L.withLam lam' hlam').Amax = L.Amax
+
+#### Overload.ClosedLoop.withLam_F : theorem
+  ∀ (L : Overload.ClosedLoop) (lam' : ℝ) (hlam' : 0 ≤ lam') (Λ : ℝ),
+    (L.withLam lam' hlam').F Λ = lam' * L.h (L.g Λ)
+
+#### Overload.ClosedLoop.withLam_g : theorem
+  ∀ (L : Overload.ClosedLoop) (lam' : ℝ) (hlam' : 0 ≤ lam'), (L.withLam lam' hlam').g = L.g
+
+#### Overload.ClosedLoop.withLam_h : theorem
+  ∀ (L : Overload.ClosedLoop) (lam' : ℝ) (hlam' : 0 ≤ lam'), (L.withLam lam' hlam').h = L.h
+
+#### Overload.ClosedLoop.withLam_lam : theorem
+  ∀ (L : Overload.ClosedLoop) (lam' : ℝ) (hlam' : 0 ≤ lam'), (L.withLam lam' hlam').lam = lam'
+
+#### Overload.CongestedOnly : def
+  ℝ → ℝ → Prop
+  value-hash a9955c991b0ac99f
+
+#### Overload.Discipline : structure
+  ℕ → Type
+
+#### Overload.Discipline.class_clamp_no_congestedEq : theorem
+  ∀ {k : ℕ} (D : Overload.Discipline k) (L : Overload.BoundedLoop) {Kc : ℝ},
+    (∀ p ∈ Set.Icc 0 1, L.h p ≤ Kc) →
+      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k),
+        L.lam * Kc < D.alloc d C i → ¬L.CongestedEq (D.alloc d C i)
+
+#### Overload.Discipline.mk.inj : theorem
+  ∀ {k : ℕ} {alloc : (Fin k → ℝ) → ℝ → Fin k → ℝ}
+    {alloc_nonneg :
+      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → 0 ≤ alloc d C i}
+    {alloc_le_demand :
+      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → alloc d C i ≤ d i}
+    {sum_alloc :
+      ∀ (d : Fin k → ℝ) (C : ℝ),
+        (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → ∑ i, alloc d C i = min (∑ i, d i) C}
+    {alloc_1 : (Fin k → ℝ) → ℝ → Fin k → ℝ}
+    {alloc_nonneg_1 :
+      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → 0 ≤ alloc_1 d C i}
+    {alloc_le_demand_1 :
+      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → alloc_1 d C i ≤ d i}
+    {sum_alloc_1 :
+      ∀ (d : Fin k → ℝ) (C : ℝ),
+        (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → ∑ i, alloc_1 d C i = min (∑ i, d i) C},
+    { alloc := alloc, alloc_nonneg := alloc_nonneg, alloc_le_demand := alloc_le_demand,
+          sum_alloc := sum_alloc } =
+        { alloc := alloc_1, alloc_nonneg := alloc_nonneg_1, alloc_le_demand := alloc_le_demand_1,
+          sum_alloc := sum_alloc_1 } →
+      alloc = alloc_1
+
+#### Overload.Discipline.sum_alloc_le : theorem
+  ∀ {k : ℕ} (D : Overload.Discipline k) (d : Fin k → ℝ) (C : ℝ),
+    (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → ∑ i, D.alloc d C i ≤ C
+
+#### Overload.FactorsThrough : def
+  {State : Type u_1} →
+    {Wire : Type u_2} → {Reading : Type u_3} → (State → Reading) → (State → Wire) → Prop
+  value-hash 5afc4a755f6cbe37
+
+#### Overload.FactorsThroughSignature : def
+  (Overload.ClosedLoop → Prop) → Prop
+  value-hash 9ac6ff2baad5f554
+
+#### Overload.FactorsThroughStarSignature : def
+  (Overload.Star 1 → (Fin 1 → ℝ) → Prop) → Prop
+  value-hash 5f0bc42d23dd15c
+
+#### Overload.HealthyOnly : def
+  ℝ → ℝ → ℝ → Prop
+  value-hash 4f8a996810802624
+
+#### Overload.Layer : structure
+  Type
+
+#### Overload.Layer.amp : def
+  Overload.Layer → ℝ
+  value-hash 84ebd236019177f1
+
+#### Overload.Layer.amp_le_cap : theorem
+  ∀ (ℓ : Overload.Layer), ℓ.amp ≤ ↑ℓ.cap
+
+#### Overload.Layer.amp_pos : theorem
+  ∀ (ℓ : Overload.Layer), 0 < ℓ.amp
+
+#### Overload.Layer.mk.inj : theorem
+  ∀ {p : ℝ} {cap : ℕ} {p_mem : p ∈ Set.Icc 0 1} {cap_pos : 1 ≤ cap} {p_1 : ℝ} {cap_1 : ℕ}
+    {p_mem_1 : p_1 ∈ Set.Icc 0 1} {cap_pos_1 : 1 ≤ cap_1},
+    { p := p, cap := cap, p_mem := p_mem, cap_pos := cap_pos } =
+        { p := p_1, cap := cap_1, p_mem := p_mem_1, cap_pos := cap_pos_1 } →
+      p = p_1 ∧ cap = cap_1
+
+#### Overload.Layer.one_le_amp : theorem
+  ∀ (ℓ : Overload.Layer), 1 ≤ ℓ.amp
+
+#### Overload.SamplePath : structure
+  Type
+
+#### Overload.SamplePath.W : def
+  Overload.SamplePath → ℕ → ℝ
+  value-hash 4b729cbdc81fae74
+
+#### Overload.SamplePath.W_nonneg : theorem
+  ∀ (P : Overload.SamplePath) (n : ℕ), 0 ≤ P.W n
+
+#### Overload.SamplePath.a_lt_of_lt_arrivals : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ} {k : ℕ}, k < P.arrivals t → P.a k < t
+
+#### Overload.SamplePath.area : def
+  Overload.SamplePath → ℝ → ℝ
+  value-hash 44038abf6f966bef
+
+#### Overload.SamplePath.area_le_sojournSum : theorem
+  ∀ (P : Overload.SamplePath) (t : ℝ), P.area t ≤ P.sojournSum (P.arrivals t)
+
+#### Overload.SamplePath.arrivals : def
+  Overload.SamplePath → ℝ → ℕ
+  value-hash cf7f244215f5c620
+
+#### Overload.SamplePath.brumelle : theorem
+  ∀ (P : Overload.SamplePath) {g : ℕ → ℝ} {τ Wbar Gbar : ℝ},
+    0 < τ →
+      (∀ (n : ℕ), 0 ≤ g n) →
+        Filter.Tendsto (fun n => P.a n / ↑n) Filter.atTop (nhds τ) →
+          Filter.Tendsto (fun n => P.sojournSum n / ↑n) Filter.atTop (nhds Wbar) →
+            Filter.Tendsto (fun n => P.valueSum g n / ↑n) Filter.atTop (nhds Gbar) →
+              Filter.Tendsto (fun t => P.valueArea g t / t) Filter.atTop (nhds (Gbar / τ))
+
+#### Overload.SamplePath.count_asymptotics : theorem
+  ∀ (P : Overload.SamplePath) {τ Wbar : ℝ},
+    0 < τ →
+      Filter.Tendsto (fun n => P.a n / ↑n) Filter.atTop (nhds τ) →
+        Filter.Tendsto (fun n => P.sojournSum n / ↑n) Filter.atTop (nhds Wbar) →
+          (∀ (t : ℝ), {n | t ≤ P.a n}.Nonempty) ∧
+            Filter.Tendsto (fun t => ↑(P.arrivals t) / t) Filter.atTop (nhds τ⁻¹) ∧
+              Filter.Tendsto (fun t => ↑(P.departedPrefix t) / t) Filter.atTop (nhds τ⁻¹) ∧
+                Filter.Tendsto P.arrivals Filter.atTop Filter.atTop ∧
+                  Filter.Tendsto P.departedPrefix Filter.atTop Filter.atTop
+
+#### Overload.SamplePath.d_le_of_lt_departedPrefix : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ} {k : ℕ}, k < P.departedPrefix t → P.d k ≤ t
+
+#### Overload.SamplePath.departedPrefix : def
+  Overload.SamplePath → ℝ → ℕ
+  value-hash c9a742011a7d228c
+
+#### Overload.SamplePath.le_a_of_arrivals_le : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ},
+    {n | t ≤ P.a n}.Nonempty → ∀ {k : ℕ}, P.arrivals t ≤ k → t ≤ P.a k
+
+#### Overload.SamplePath.little : theorem
+  ∀ (P : Overload.SamplePath) {τ Wbar : ℝ},
+    0 < τ →
+      Filter.Tendsto (fun n => P.a n / ↑n) Filter.atTop (nhds τ) →
+        Filter.Tendsto (fun n => P.sojournSum n / ↑n) Filter.atTop (nhds Wbar) →
+          Filter.Tendsto (fun t => P.area t / t) Filter.atTop (nhds (Wbar / τ))
+
+#### Overload.SamplePath.little_of_brumelle : theorem
+  ∀ (P : Overload.SamplePath) {τ Wbar : ℝ},
+    0 < τ →
+      Filter.Tendsto (fun n => P.a n / ↑n) Filter.atTop (nhds τ) →
+        Filter.Tendsto (fun n => P.sojournSum n / ↑n) Filter.atTop (nhds Wbar) →
+          Filter.Tendsto (fun t => P.area t / t) Filter.atTop (nhds (Wbar / τ))
+
+#### Overload.SamplePath.lt_d_departedPrefix : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ}, {n | t < P.d n}.Nonempty → t < P.d (P.departedPrefix t)
+
+#### Overload.SamplePath.mk.inj : theorem
+  ∀ {a d : ℕ → ℝ} {a_nonneg : ∀ (n : ℕ), 0 ≤ a n} {a_le_d : ∀ (n : ℕ), a n ≤ d n}
+    {a_mono : Monotone a} {a_1 d_1 : ℕ → ℝ} {a_nonneg_1 : ∀ (n : ℕ), 0 ≤ a_1 n}
+    {a_le_d_1 : ∀ (n : ℕ), a_1 n ≤ d_1 n} {a_mono_1 : Monotone a_1},
+    { a := a, d := d, a_nonneg := a_nonneg, a_le_d := a_le_d, a_mono := a_mono } =
+        { a := a_1, d := d_1, a_nonneg := a_nonneg_1, a_le_d := a_le_d_1, a_mono := a_mono_1 } →
+      a = a_1 ∧ d = d_1
+
+#### Overload.SamplePath.sojournSum : def
+  Overload.SamplePath → ℕ → ℝ
+  value-hash 17d95aa6c9785b8b
+
+#### Overload.SamplePath.sojournSum_departedPrefix_le : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ},
+    {n | t ≤ P.a n}.Nonempty → P.sojournSum (P.departedPrefix t) ≤ P.area t
+
+#### Overload.SamplePath.sojournSum_succ_sub : theorem
+  ∀ (P : Overload.SamplePath) (n : ℕ), P.sojournSum (n + 1) - P.sojournSum n = P.W n
+
+#### Overload.SamplePath.tendsto_W_div : theorem
+  ∀ (P : Overload.SamplePath) {Wbar : ℝ},
+    Filter.Tendsto (fun n => P.sojournSum n / ↑n) Filter.atTop (nhds Wbar) →
+      Filter.Tendsto (fun n => P.W n / ↑n) Filter.atTop (nhds 0)
+
+#### Overload.SamplePath.tendsto_a_atTop : theorem
+  ∀ (P : Overload.SamplePath) {τ : ℝ},
+    0 < τ →
+      Filter.Tendsto (fun n => P.a n / ↑n) Filter.atTop (nhds τ) →
+        Filter.Tendsto P.a Filter.atTop Filter.atTop
+
+#### Overload.SamplePath.tendsto_d_div : theorem
+  ∀ (P : Overload.SamplePath) {τ Wbar : ℝ},
+    Filter.Tendsto (fun n => P.a n / ↑n) Filter.atTop (nhds τ) →
+      Filter.Tendsto (fun n => P.sojournSum n / ↑n) Filter.atTop (nhds Wbar) →
+        Filter.Tendsto (fun n => P.d n / ↑n) Filter.atTop (nhds τ)
+
+#### Overload.SamplePath.timeIn : def
+  Overload.SamplePath → ℝ → ℕ → ℝ
+  value-hash c38af59ae7e38136
+
+#### Overload.SamplePath.timeIn_eq_W_of_d_le : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ} {n : ℕ}, P.d n ≤ t → P.timeIn t n = P.W n
+
+#### Overload.SamplePath.timeIn_eq_zero_of_le_a : theorem
+  ∀ (P : Overload.SamplePath) {t : ℝ} {n : ℕ}, t ≤ P.a n → P.timeIn t n = 0
+
+#### Overload.SamplePath.timeIn_le_W : theorem
+  ∀ (P : Overload.SamplePath) (t : ℝ) (n : ℕ), P.timeIn t n ≤ P.W n
+
+#### Overload.SamplePath.timeIn_nonneg : theorem
+  ∀ (P : Overload.SamplePath) (t : ℝ) (n : ℕ), 0 ≤ P.timeIn t n
+
+#### Overload.SamplePath.valueArea : def
+  Overload.SamplePath → (ℕ → ℝ) → ℝ → ℝ
+  value-hash 4995ff7cb28d48b
+
+#### Overload.SamplePath.valueArea_le_valueSum : theorem
+  ∀ (P : Overload.SamplePath) {g : ℕ → ℝ},
+    (∀ (n : ℕ), 0 ≤ g n) → ∀ (t : ℝ), P.valueArea g t ≤ P.valueSum g (P.arrivals t)
+
+#### Overload.SamplePath.valueArea_one : theorem
+  ∀ (P : Overload.SamplePath) (t : ℝ), P.valueArea (fun x => 1) t = P.area t
+
+#### Overload.SamplePath.valueSum : def
+  Overload.SamplePath → (ℕ → ℝ) → ℕ → ℝ
+  value-hash 24d7f04d42261e02
+
+#### Overload.SamplePath.valueSum_departedPrefix_le : theorem
+  ∀ (P : Overload.SamplePath) {g : ℕ → ℝ},
+    (∀ (n : ℕ), 0 ≤ g n) →
+      ∀ {t : ℝ}, {n | t ≤ P.a n}.Nonempty → P.valueSum g (P.departedPrefix t) ≤ P.valueArea g t
+
+#### Overload.SamplePath.valueSum_one : theorem
+  ∀ (P : Overload.SamplePath) (n : ℕ), P.valueSum (fun x => 1) n = P.sojournSum n
+
+#### Overload.SamplePath.valueSum_unitPath_weight_two : theorem
+  { a := fun n => ↑n, d := fun n => ↑n + 1, a_nonneg := ⋯, a_le_d := ⋯, a_mono := ⋯ }.valueSum
+      (fun x => 2) 3 =
+    6
+
+#### Overload.Star : structure
+  ℕ → Type
+
+#### Overload.Star.CongestedEq : def
+  {k : ℕ} → Overload.Star k → ℝ → Prop
+  value-hash db1e96f033d54a07
+
+#### Overload.Star.Contract : def
+  {k : ℕ} → Overload.Star k → (Fin k → ℝ) → Prop
+  value-hash eb79f1624394281
+
+#### Overload.Star.F : def
+  {k : ℕ} → Overload.Star k → ℝ → ℝ
+  value-hash 9dc9f4267010fd4d
+
+#### Overload.Star.aggResponse : def
+  {k : ℕ} → Overload.Star k → ℝ → ℝ
+  value-hash f85c52801c596918
+
+#### Overload.Star.aggResponse_le : theorem
+  ∀ {k : ℕ} (S : Overload.Star k) {K : Fin k → ℝ},
+    S.Contract K → ∀ p ∈ Set.Icc 0 1, S.aggResponse p ≤ ∑ i, S.signature K i
+
+#### Overload.Star.congestedEq_iff : theorem
+  ∀ {k : ℕ} (S : Overload.Star k) {A Θ : ℝ} (hA : ∀ p ∈ Set.Icc 0 1, S.aggResponse p ≤ A),
+    (S.toLoop A hA).CongestedEq Θ ↔ S.CongestedEq Θ
+
+#### Overload.Star.gain : def
+  {k : ℕ} → Overload.Star k → (Fin k → ℝ) → ℝ → ℝ
+  value-hash 3ca63d8a63cfef05
+
+#### Overload.Star.gainMatrix : def
+  {k : ℕ} → Overload.Star k → (Fin k → ℝ) → ℝ → Matrix (Fin k) (Fin k) ℝ
+  value-hash 5a151f6f43d68129
+
+#### Overload.Star.gainMatrix_certificate_iff : theorem
+  ∀ {k : ℕ} (S : Overload.Star k) {L : Fin k → ℝ} {ℓD : ℝ},
+    (∀ (i : Fin k), 0 ≤ L i) → 0 ≤ ℓD → (Overload.Certificate (S.gainMatrix L ℓD) ↔ S.gain L ℓD < 1)
+
+#### Overload.Star.gain_unique_eq : theorem
+  ∀ {k : ℕ} (S : Overload.Star k) [NeZero k] {L : Fin k → ℝ} {ℓD : ℝ},
+    (∀ (i : Fin k), 0 ≤ L i) →
+      0 ≤ ℓD →
+        S.gain L ℓD < 1 →
+          ∀ {c x y : Fin k → ℝ},
+            Overload.affine (S.gainMatrix L ℓD) c x = x →
+              Overload.affine (S.gainMatrix L ℓD) c y = y → x = y
+
+#### Overload.Star.isVectorEq : theorem
+  ∀ {k : ℕ} (S : Overload.Star k) {y : ℝ},
+    S.F y = y →
+      ∃ Λ, ∑ j, S.r j * Λ j = y ∧ ∀ (i : Fin k), Λ i = S.lam i * S.h i (S.gD (∑ j, S.r j * Λ j))
+
+#### Overload.Star.mk.inj : theorem
+  ∀ {k : ℕ} {lam r : Fin k → ℝ} {h : Fin k → ℝ → ℝ} {gD : ℝ → ℝ}
+    {lam_nonneg : ∀ (i : Fin k), 0 ≤ lam i} {r_nonneg : ∀ (i : Fin k), 0 ≤ r i}
+    {gD_mem : ∀ (x : ℝ), 0 ≤ x → gD x ∈ Set.Icc 0 1} {lam_1 r_1 : Fin k → ℝ} {h_1 : Fin k → ℝ → ℝ}
+    {gD_1 : ℝ → ℝ} {lam_nonneg_1 : ∀ (i : Fin k), 0 ≤ lam_1 i} {r_nonneg_1 : ∀ (i : Fin k), 0 ≤ r_1 i}
+    {gD_mem_1 : ∀ (x : ℝ), 0 ≤ x → gD_1 x ∈ Set.Icc 0 1},
+    { lam := lam, r := r, h := h, gD := gD, lam_nonneg := lam_nonneg, r_nonneg := r_nonneg,
+          gD_mem := gD_mem } =
+        { lam := lam_1, r := r_1, h := h_1, gD := gD_1, lam_nonneg := lam_nonneg_1,
+          r_nonneg := r_nonneg_1, gD_mem := gD_mem_1 } →
+      lam = lam_1 ∧ r = r_1 ∧ h = h_1 ∧ gD = gD_1
+
+#### Overload.Star.no_congestedEq_of_signatures : theorem
+  ∀ {k : ℕ} (S : Overload.Star k) {K : Fin k → ℝ} {Θ : ℝ},
+    S.Contract K → ∑ i, S.signature K i < Θ → ¬S.CongestedEq Θ
+
+#### Overload.Star.signature : def
+  {k : ℕ} → Overload.Star k → (Fin k → ℝ) → Fin k → ℝ
+  value-hash 5671fc15cb14334
+
+#### Overload.Star.toLoop : def
+  {k : ℕ} →
+    (S : Overload.Star k) → (A : ℝ) → (∀ p ∈ Set.Icc 0 1, S.aggResponse p ≤ A) → Overload.BoundedLoop
+  value-hash 3ec63a9e4d30e580
+
+#### Overload.SystemFacts : structure
+  Type u_1 → Type u_2 → Type u_3 → Type u_4 → Type (max (max (max u_1 u_2) u_3) u_4)
+
+#### Overload.SystemFacts.mk.inj : theorem
+  ∀ {station : Type u_1} {req : Type u_2} {origin : Type u_3} {wire : Type u_4}
+    {stations : Finset station} {requests : Finset req}
+    {sent received inflight rate sojourn : station → ℝ} {acct : Overload.Accounting}
+    {goodput offered sbar : ℝ} {attempts : req → station → ℕ} {cap : station → ℕ} {spent : req → ℝ}
+    {deadline issued consumed outstanding expired : ℝ} {joint : origin → wire → ℝ}
+    {originCount : origin → ℝ} {wireCount : wire → ℝ} {stations_1 : Finset station}
+    {requests_1 : Finset req} {sent_1 received_1 inflight_1 rate_1 sojourn_1 : station → ℝ}
+    {acct_1 : Overload.Accounting} {goodput_1 offered_1 sbar_1 : ℝ} {attempts_1 : req → station → ℕ}
+    {cap_1 : station → ℕ} {spent_1 : req → ℝ}
+    {deadline_1 issued_1 consumed_1 outstanding_1 expired_1 : ℝ} {joint_1 : origin → wire → ℝ}
+    {originCount_1 : origin → ℝ} {wireCount_1 : wire → ℝ},
+    { stations := stations, requests := requests, sent := sent, received := received,
+          inflight := inflight, rate := rate, sojourn := sojourn, acct := acct, goodput := goodput,
+          offered := offered, sbar := sbar, attempts := attempts, cap := cap, spent := spent,
+          deadline := deadline, issued := issued, consumed := consumed, outstanding := outstanding,
+          expired := expired, joint := joint, originCount := originCount, wireCount := wireCount } =
+        { stations := stations_1, requests := requests_1, sent := sent_1, received := received_1,
+          inflight := inflight_1, rate := rate_1, sojourn := sojourn_1, acct := acct_1,
+          goodput := goodput_1, offered := offered_1, sbar := sbar_1, attempts := attempts_1,
+          cap := cap_1, spent := spent_1, deadline := deadline_1, issued := issued_1,
+          consumed := consumed_1, outstanding := outstanding_1, expired := expired_1,
+          joint := joint_1, originCount := originCount_1, wireCount := wireCount_1 } →
+      stations = stations_1 ∧
+        requests = requests_1 ∧
+          sent = sent_1 ∧
+            received = received_1 ∧
+              inflight = inflight_1 ∧
+                rate = rate_1 ∧
+                  sojourn = sojourn_1 ∧
+                    acct = acct_1 ∧
+                      goodput = goodput_1 ∧
+                        offered = offered_1 ∧
+                          sbar = sbar_1 ∧
+                            attempts = attempts_1 ∧
+                              cap = cap_1 ∧
+                                spent = spent_1 ∧
+                                  deadline = deadline_1 ∧
+                                    issued = issued_1 ∧
+                                      consumed = consumed_1 ∧
+                                        outstanding = outstanding_1 ∧
+                                          expired = expired_1 ∧
+                                            joint = joint_1 ∧
+                                              originCount = originCount_1 ∧ wireCount = wireCount_1
+
+#### Overload.UniformLossEq : def
+  {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℕ) → ℝ → ℝ → Prop
+  value-hash fa4b24cdf634d742
+
+#### Overload.VerificationSuite : structure
+  {station : Type u_1} →
+    {req : Type u_2} →
+      {origin : Type u_3} →
+        {wire : Type u_4} →
+          [Fintype origin] →
+            [Fintype wire] → Prop → Overload.SystemFacts station req origin wire → Prop
+
+#### Overload.VerificationSuite.dual_total : theorem
+  ∀ {station : Type u_1} {req : Type u_2} {origin : Type u_3} {wire : Type u_4}
+    [inst : Fintype origin] [inst_1 : Fintype wire] {pastaFact : Prop}
+    {F : Overload.SystemFacts station req origin wire},
+    Overload.VerificationSuite pastaFact F → ∑ o, F.originCount o = ∑ w, F.wireCount w
+
+#### Overload.VerificationSuite.goodput_bound : theorem
+  ∀ {station : Type u_1} {req : Type u_2} {origin : Type u_3} {wire : Type u_4}
+    [inst : Fintype origin] [inst_1 : Fintype wire] {pastaFact : Prop}
+    {F : Overload.SystemFacts station req origin wire},
+    Overload.VerificationSuite pastaFact F →
+      0 < F.sbar → F.goodput ≤ min F.offered (F.acct.capacity / F.sbar)
+
+#### Overload.abs_mulVec_le : theorem
+  ∀ {k : ℕ} {J : Matrix (Fin k) (Fin k) ℝ},
+    (∀ (i j : Fin k), 0 ≤ J i j) →
+      ∀ {w : Fin k → ℝ} {ρ M : ℝ},
+        0 ≤ M →
+          (∀ (i : Fin k), J.mulVec w i ≤ ρ * w i) →
+            ∀ {x : Fin k → ℝ},
+              (∀ (i : Fin k), |x i| ≤ M * w i) → ∀ (i : Fin k), |J.mulVec x i| ≤ ρ * M * w i
+
+#### Overload.admission_bound : theorem
+  ∀ {Q A K : ℝ}, 0 ≤ Q → A ≤ K → Q * A ≤ Q * K
+
+#### Overload.admission_needs_clamp : theorem
+  ∀ {Q : ℝ}, 0 < Q → ∀ (M : ℝ), ∃ A, 0 < A ∧ M < Q * A
+
+#### Overload.affine : def
+  {k : ℕ} → Matrix (Fin k) (Fin k) ℝ → (Fin k → ℝ) → (Fin k → ℝ) → Fin k → ℝ
+  value-hash e11ecf0450f49c9e
+
+#### Overload.alloc : def
+  (ℕ → ℝ) → ℝ → ℕ → ℝ
+  value-hash ebc4316cb03cdb44
+
+#### Overload.alloc_le_demand : theorem
+  ∀ {demand : ℕ → ℝ} {C : ℝ} (j : ℕ), Overload.alloc demand C j ≤ demand j
+
+#### Overload.alloc_le_residual : theorem
+  ∀ {demand : ℕ → ℝ} {C : ℝ} (j : ℕ), Overload.alloc demand C j ≤ Overload.residual demand C j
+
+#### Overload.alloc_le_residual_pin : theorem
+  Overload.alloc (fun j => if j = 0 then 3 else 9) 4 1 ≤ 1
+
+#### Overload.alloc_nonneg : theorem
+  ∀ {demand : ℕ → ℝ} {C : ℝ}, (∀ (j : ℕ), 0 ≤ demand j) → ∀ (j : ℕ), 0 ≤ Overload.alloc demand C j
+
+#### Overload.amp_eq_one_of_slow_remaining : theorem
+  ∀ {T B : ℕ → ℝ} {D : ℝ} {n : ℕ},
+    T 0 = D →
+      (∀ (j : ℕ), 0 < T j) →
+        (∀ (j : ℕ), 0 ≤ B j) → 1 ≤ n → ∀ (p : ℝ), Overload.expAttempts p (Overload.neff T B D n) = 1
+
+#### Overload.amp_eq_one_of_slow_remaining_pin : theorem
+  Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 1 3) = 1
+
+#### Overload.attemptDist : def
+  (p : ℝ) → {n : ℕ} → 0 ≤ p → p ≤ 1 → 1 ≤ n → PMF (Fin n)
+  value-hash 39cfa19f6879508b
+
+#### Overload.attemptDist_apply : theorem
+  ∀ (p : ℝ) {n : ℕ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (hn : 1 ≤ n) (j : Fin n),
+    (Overload.attemptDist p hp0 hp1 hn) j = ENNReal.ofReal (Overload.attemptWeight p n ↑j)
+
+#### Overload.attemptRate : def
+  {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℕ) → ℝ → ℝ
+  value-hash 139222c2eade21fd
+
+#### Overload.attemptRate_at_zero : theorem
+  ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ},
+    (∀ j ∈ s, 1 ≤ cap j) → Overload.attemptRate s lam cap 0 = ∑ j ∈ s, lam j
+
+#### Overload.attemptWeight : def
+  ℝ → ℕ → ℕ → ℝ
+  value-hash 25e53d27a4d22add
+
+#### Overload.attemptWeight_at_cap : theorem
+  ∀ {p : ℝ} {j : ℕ}, Overload.attemptWeight p (j + 1) j = p ^ j
+
+#### Overload.attemptWeight_nonneg : theorem
+  ∀ {p : ℝ}, 0 ≤ p → p ≤ 1 → ∀ (n j : ℕ), 0 ≤ Overload.attemptWeight p n j
+
+#### Overload.attemptWeight_of_cap_lt : theorem
+  ∀ {p : ℝ} {n j : ℕ}, n < j + 1 → Overload.attemptWeight p n j = 0
+
+#### Overload.attemptWeight_of_cap_lt_pin : theorem
+  Overload.attemptWeight (1 / 2) 2 5 = 0
+
+#### Overload.attemptWeight_of_lt : theorem
+  ∀ {p : ℝ} {n j : ℕ}, j + 1 < n → Overload.attemptWeight p n j = p ^ j * (1 - p)
+
+#### Overload.backpressureLoop : def
+  Overload.BoundedLoop
+  value-hash 72a90098ca28aaff
+
+#### Overload.backpressureLoop_no_congestedEq : theorem
+  ∀ (Θ : ℝ), ¬Overload.backpressureLoop.CongestedEq Θ
+
+#### Overload.backpressureLoop_not_one_le : theorem
+  ¬1 ≤ Overload.backpressureLoop.h 1
+
+#### Overload.band_pair_both_congestedEq : theorem
+  ∀ {lam A C : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A) (hlamA : 0 ≤ lam * A),
+    C ≤ lam * A →
+      0 < C →
+        (Overload.stepLoop lam C A ⋯ hA).CongestedEq C ∧
+          (Overload.stepLoop (lam * A) C 1 hlamA ⋯).CongestedEq C
+
+#### Overload.band_pair_both_congestedEq_three : theorem
+  (Overload.stepLoop 1 3 4 ⋯ ⋯).CongestedEq 3 ∧ (Overload.stepLoop (1 * 4) 3 1 ⋯ ⋯).CongestedEq 3
+
+#### Overload.band_pair_phase_divergent : theorem
+  ∀ {lam A C : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A) (hlamA : 0 ≤ lam * A),
+    C ≤ lam * A →
+      lam < C →
+        (∃ z₁ z₂,
+            Function.IsFixedPt (Overload.stepLoop lam C A ⋯ hA).F z₁ ∧
+              Function.IsFixedPt (Overload.stepLoop lam C A ⋯ hA).F z₂ ∧ z₁ < z₂) ∧
+          ¬∃ z₁ z₂,
+              Function.IsFixedPt (Overload.stepLoop (lam * A) C 1 hlamA ⋯).F z₁ ∧
+                Function.IsFixedPt (Overload.stepLoop (lam * A) C 1 hlamA ⋯).F z₂ ∧ z₁ < z₂
+
+#### Overload.bddAbove_postfixedPts : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ}, BddAbove (Overload.postfixedPts F a b)
+
+#### Overload.bddBelow_prefixedPts : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ}, BddBelow (Overload.prefixedPts F a b)
+
+#### Overload.binding_shift : theorem
+  ∀ {A s Cbot rk Ck : ℝ},
+    0 < rk → 0 < s → 0 < A → 0 < Cbot → (Ck / (A * rk) < Cbot / s ↔ Ck * s / (Cbot * rk) < A)
+
+#### Overload.binding_shift_at_amp_five : theorem
+  4000 / (5 * 1) < 1000 / 1 ↔ 4000 * 1 / (1000 * 1) < 5
+
+#### Overload.bistableBand_iff_edges : theorem
+  ∀ {lam A C : ℝ}, 0 < A → (Overload.BistableBand lam A C ↔ C / A ≤ lam ∧ lam < C)
+
+#### Overload.bistableBand_iff_rho : theorem
+  ∀ {lam A C : ℝ}, 0 < C → (Overload.BistableBand lam A C ↔ lam / C < 1 ∧ 1 ≤ lam / C * A)
+
+#### Overload.bistableBand_realized : theorem
+  ∀ {lam A C : ℝ},
+    Overload.BistableBand lam A C →
+      ∀ (hlam : 0 < lam) (hA : 1 ≤ A),
+        Overload.BistableOn (Overload.stepLoop lam C A ⋯ hA).F 0 (lam * A)
+
+#### Overload.bistableBand_realized_pin : theorem
+  Overload.BistableOn (Overload.stepLoop 1 (3 / 2) 2 ⋯ ⋯).F 0 (1 * 2)
+
+#### Overload.bistableBand_scale : theorem
+  ∀ {lam A C c : ℝ},
+    0 < c → (Overload.BistableBand (c * lam) A (c * C) ↔ Overload.BistableBand lam A C)
+
+#### Overload.bistableOn_of_certificate : theorem
+  ∀ {F : ℝ → ℝ} {a b x y : ℝ},
+    x ∈ Set.Icc a b → F x ≤ x → y ∈ Set.Icc a b → y ≤ F y → x < y → Overload.BistableOn F a b
+
+#### Overload.bistable_not_congestedOnly : theorem
+  ∀ {lam A C : ℝ}, Overload.BistableBand lam A C → ¬Overload.CongestedOnly lam C
+
+#### Overload.borgAcct : def
+  Overload.Accounting
+  value-hash 6ecfee0f2c5550a
+
+#### Overload.borgDemand : def
+  ℝ → ℕ → ℝ
+  value-hash d5560d3188c1c5a6
+
+#### Overload.borg_band_floor : theorem
+  ∀ (A : Fin 2 → ℝ),
+    (∀ (j : Fin 2), 1 ≤ A j) →
+      A 0 ≤ 2 →
+        A 1 ≤ 5 →
+          3 / 51 ≤ Overload.offeredAttempts ![3, 9] A 0 / ∑ j, Overload.offeredAttempts ![3, 9] A j
+
+#### Overload.borg_batch_bistable : theorem
+  Overload.BistableOn (Overload.stepLoop 30 100 4 ⋯ ⋯).F 0 (30 * 4)
+
+#### Overload.borg_batch_borrows : theorem
+  Overload.alloc (Overload.borgDemand 80) 100 1 = 40
+
+#### Overload.borg_batch_over_residual : theorem
+  ¬(Overload.cappedLoop 8 40 4 ⋯ ⋯).CongestedEq (Overload.residual (Overload.borgDemand 80) 100 1)
+
+#### Overload.borg_batch_residual : theorem
+  Overload.residual (Overload.borgDemand 80) 100 1 = 40
+
+#### Overload.borg_cascade_certified : theorem
+  ∀ (p₁ p₂ : ℝ) (h₁ : p₁ ∈ Set.Icc 0 1) (h₂ : p₂ ∈ Set.Icc 0 1) (g : ℝ → ℝ)
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)),
+    ¬(Overload.stackToLoop
+            [{ p := p₁, cap := 4, p_mem := h₁, cap_pos := ⋯ },
+              { p := p₂, cap := 3, p_mem := h₂, cap_pos := ⋯ }]
+            2 g ⋯ hg_mem hg_mono).CongestedEq
+        100
+
+#### Overload.borg_cliff_needs_waste : theorem
+  ∀ {w : ℝ},
+    0 ≤ w →
+      (1 - w) * Overload.goodput {0} (fun x => 200) (fun x => 1) (1 / 2) < min (∑ _j ∈ {0}, 200) 100 →
+        0 < w
+
+#### Overload.borg_no_stranding : theorem
+  ∑ j ∈ Finset.range 2, Overload.alloc (Overload.borgDemand 80) 100 j = 100
+
+#### Overload.borg_prod_immune : theorem
+  ∀ (b : ℝ), Overload.alloc (Overload.borgDemand b) 100 0 = 60
+
+#### Overload.borg_quota_bound : theorem
+  ∀ {A : ℝ}, A ≤ 3 → 10 * A ≤ 30
+
+#### Overload.borg_quota_needs_clamp : theorem
+  ∃ A, 0 < A ∧ 1000 < 10 * A
+
+#### Overload.borg_waste_caps_goodput : theorem
+  ∀ {G : ℝ},
+    G * Overload.borgAcct.time * 1 ≤ Overload.borgAcct.useful →
+      G * 1 ≤
+        (1 - 1 / 4) * Overload.borgAcct.capacity - Overload.borgAcct.idle / Overload.borgAcct.time
+
+#### Overload.bottom_binds_at_amp_one : theorem
+  1000 / 1 ≤ 4000 / (1 * 1)
+
+#### Overload.bottom_binds_of_provisioned : theorem
+  ∀ {s Cbot rk Ck : ℝ}, Cbot / s ≤ Ck / rk → Cbot / s ≤ Ck / (1 * rk)
+
+#### Overload.branching_wald : theorem
+  ∀ {ι : Type u_1} (N : ℕ) (s : Finset ι) (P : ℕ → ℝ) (Q x : ι → ℝ) (w : ℕ → ℕ → ι → ℝ),
+    (∀ j ∈ Finset.range N, ∀ k ∈ Finset.range (N + 1), ∀ i ∈ s, w j k i = P k * Q i) →
+      (∑ j ∈ Finset.range N,
+          ∑ k ∈ Finset.range (N + 1), ∑ i ∈ s, w j k i * if j < k then x i else 0) =
+        Overload.expOf N P * Overload.expCostOf s Q x
+
+#### Overload.branching_wald_pin : theorem
+  (∑ j ∈ Finset.range 2,
+      ∑ k ∈ Finset.range (2 + 1), ∑ i, 1 / 6 * if j < k then Overload.coupledX i else 0) =
+    3 / 2
+
+#### Overload.branching_wald_single : theorem
+  ∀ {ι : Type u_1} (N : ℕ) (s : Finset ι) (P : ℕ → ℝ) (Q x : ι → ℝ) (w : ℕ → ι → ℝ),
+    (∀ k ∈ Finset.range (N + 1), ∀ i ∈ s, w k i = P k * Q i) →
+      ∑ k ∈ Finset.range (N + 1), ∑ i ∈ s, w k i * (↑k * x i) =
+        Overload.expOf N P * Overload.expCostOf s Q x
+
+#### Overload.branching_wald_uniform : theorem
+  ∑ k ∈ Finset.range (2 + 1), ∑ i, 1 / 3 * (1 / 2) * (↑k * Overload.coupledX i) =
+    (Overload.expOf 2 fun x => 1 / 3) *
+      Overload.expCostOf Finset.univ (fun x => 1 / 2) Overload.coupledX
+
+#### Overload.breakerDemoLoop : def
+  Overload.ClosedLoop
+  value-hash 10d5b33c7c77d665
+
+#### Overload.breakerDemoLoop_attempt_admission_no_congestedEq : theorem
+  ¬(Overload.breakerDemoLoop.breakerLoop (9 / 3)).CongestedEq 10
+
+#### Overload.breakerDemoLoop_breaker_no_congestedEq : theorem
+  ¬(Overload.breakerDemoLoop.breakerLoop 2).CongestedEq 10
+
+#### Overload.breakerDemoLoop_congestedEq : theorem
+  Overload.breakerDemoLoop.CongestedEq 10
+
+#### Overload.breakerResponse : def
+  (ℝ → ℝ) → ℝ → ℝ → ℝ
+  value-hash df9dbd2624e97f64
+
+#### Overload.breakerResponse_le : theorem
+  ∀ (h : ℝ → ℝ) (K p : ℝ), Overload.breakerResponse h K p ≤ K
+
+#### Overload.budget_floor : theorem
+  ∀ {k : ℕ} {lam A β : Fin k → ℝ},
+    (∀ (j : Fin k), 0 ≤ lam j) →
+      (∀ (j : Fin k), 1 ≤ A j) →
+        (∀ (j : Fin k), A j ≤ 1 + β j) →
+          ∀ (i : Fin k),
+            0 < lam i →
+              lam i / ∑ j, lam j * (1 + β j) ≤
+                Overload.offeredAttempts lam A i / ∑ j, Overload.offeredAttempts lam A j
+
+#### Overload.burst_crosses_stepLoop_two : theorem
+  (Overload.stepLoop 1 2 3 ⋯ ⋯).CongestedEq 2
+
+#### Overload.burst_safe_stepLoop_five : theorem
+  (Overload.stepLoop 1 2 3 ⋯ ⋯).F^[5] (1 / 2 + 1 / 4) ≤ 1
+
+#### Overload.burst_tips_stepLoop_two : theorem
+  (Overload.stepLoop 1 2 3 ⋯ ⋯).F^[3] (1 / 2 + 6 / 4) ≤
+    (Overload.stepLoop 1 2 3 ⋯ ⋯).F^[3 + 1] (1 / 2 + 6 / 4)
+
+#### Overload.capProd : def
+  List (ℝ × ℕ) → ℝ
+  value-hash ace326796c16bf42
+
+#### Overload.capProd_cons : theorem
+  ∀ (x : ℝ × ℕ) (rest : List (ℝ × ℕ)), Overload.capProd (x :: rest) = ↑x.2 * Overload.capProd rest
+
+#### Overload.capProd_nil : theorem
+  Overload.capProd [] = 1
+
+#### Overload.cappedLoop : def
+  (lam : ℝ) → ℝ → (m : ℕ) → 0 ≤ lam → 1 ≤ m → Overload.ClosedLoop
+  value-hash e53c916356e2b87f
+
+#### Overload.cappedLoop_F_of_ge : theorem
+  ∀ {lam C : ℝ} {m : ℕ} {hlam : 0 ≤ lam} {hm : 1 ≤ m} {Λ : ℝ},
+    C ≤ Λ → (Overload.cappedLoop lam C m hlam hm).F Λ = lam * ↑m
+
+#### Overload.cappedLoop_F_of_lt : theorem
+  ∀ {lam C : ℝ} {m : ℕ} {hlam : 0 ≤ lam} {hm : 1 ≤ m} {Λ : ℝ},
+    Λ < C → (Overload.cappedLoop lam C m hlam hm).F Λ = lam
+
+#### Overload.cappedLoop_congestedEq_anti_capacity : theorem
+  ∀ {lam C C' : ℝ} {m : ℕ} (hlam : 0 ≤ lam) (hm : 1 ≤ m),
+    C ≤ C' →
+      (Overload.cappedLoop lam C' m hlam hm).CongestedEq C' →
+        (Overload.cappedLoop lam C m hlam hm).CongestedEq C
+
+#### Overload.cappedLoop_floor_certifies : theorem
+  ∀ {lam Cfloor C' : ℝ} {m : ℕ} (hlam : 0 ≤ lam) (hm : 1 ≤ m),
+    Cfloor ≤ C' →
+      ¬(Overload.cappedLoop lam Cfloor m hlam hm).CongestedEq Cfloor →
+        ¬(Overload.cappedLoop lam C' m hlam hm).CongestedEq C'
+
+#### Overload.cappedLoop_hundred_no_congestedEq : theorem
+  ¬(Overload.cappedLoop 1 100 5 ⋯ ⋯).CongestedEq 100
+
+#### Overload.cappedLoop_no_congestedEq : theorem
+  ∀ {lam C : ℝ} {m : ℕ} {Θ : ℝ} {hlam : 0 ≤ lam} {hm : 1 ≤ m},
+    lam * ↑m < Θ → ¬(Overload.cappedLoop lam C m hlam hm).CongestedEq Θ
+
+#### Overload.cappedLoop_withKernel : theorem
+  ∀ {lam C C' : ℝ} {m : ℕ} (hlam : 0 ≤ lam) (hm : 1 ≤ m),
+    (Overload.cappedLoop lam C m hlam hm).withKernel (Overload.stepKernel C') ⋯ ⋯ =
+      Overload.cappedLoop lam C' m hlam hm
+
+#### Overload.certificateWitness : theorem
+  Overload.Certificate !![1 / 2, 1 / 4; 1 / 4, 1 / 2]
+
+#### Overload.certificateWitness_rate : theorem
+  ∃ w ρ,
+    (∀ (i : Fin 2), 0 < w i) ∧
+      0 ≤ ρ ∧ ρ < 1 ∧ ∀ (i : Fin 2), !![1 / 2, 1 / 4; 1 / 4, 1 / 2].mulVec w i ≤ ρ * w i
+
+#### Overload.certificate_decay : theorem
+  ∀ {k : ℕ} {J : Matrix (Fin k) (Fin k) ℝ},
+    (∀ (i j : Fin k), 0 ≤ J i j) →
+      ∀ {w : Fin k → ℝ} {ρ M : ℝ},
+        0 ≤ M →
+          0 ≤ ρ →
+            (∀ (i : Fin k), J.mulVec w i ≤ ρ * w i) →
+              ∀ {c xstar : Fin k → ℝ},
+                Overload.affine J c xstar = xstar →
+                  ∀ {x₀ : Fin k → ℝ},
+                    (∀ (i : Fin k), |x₀ i - xstar i| ≤ M * w i) →
+                      ∀ (n : ℕ) (i : Fin k),
+                        |(Overload.affine J c)^[n] x₀ i - xstar i| ≤ ρ ^ n * M * w i
+
+#### Overload.certificate_decay_pin : theorem
+  |(Overload.affine !![1 / 2] ![0])^[3] ![1] 0 - ![0] 0| ≤ (1 / 2) ^ 3 * 1 * 1
+
+#### Overload.certificate_fixedPoint_unique : theorem
+  ∀ {k : ℕ} {J : Matrix (Fin k) (Fin k) ℝ} [NeZero k],
+    Overload.Certificate J →
+      ∀ {c x y : Fin k → ℝ}, Overload.affine J c x = x → Overload.affine J c y = y → x = y
+
+#### Overload.certificate_of_row_sums : theorem
+  ∀ {k : ℕ} {J : Matrix (Fin k) (Fin k) ℝ},
+    (∀ (i j : Fin k), 0 ≤ J i j) → (∀ (i : Fin k), ∑ j, J i j < 1) → Overload.Certificate J
+
+#### Overload.certificate_of_small_spill : theorem
+  ∀ {γ₁ γ₂ : ℝ},
+    0 ≤ γ₁ →
+      0 ≤ γ₂ →
+        γ₁ < 1 →
+          γ₂ < 1 →
+            ∃ ε₀,
+              0 < ε₀ ∧
+                ∀ (ε₁₂ ε₂₁ : ℝ),
+                  0 ≤ ε₁₂ → 0 ≤ ε₂₁ → ε₁₂ < ε₀ → ε₂₁ < ε₀ → Overload.Certificate !![γ₁, ε₁₂; ε₂₁, γ₂]
+
+#### Overload.certificate_of_small_spill_pi : theorem
+  ∀ {k : ℕ} {J : Matrix (Fin k) (Fin k) ℝ} {γ ε : ℝ},
+    (∀ (i j : Fin k), 0 ≤ J i j) →
+      (∀ (i : Fin k), J i i ≤ γ) →
+        (∀ (i j : Fin k), i ≠ j → J i j ≤ ε) → γ + (↑k - 1) * ε < 1 → Overload.Certificate J
+
+#### Overload.certificate_of_small_spill_pi_pin : theorem
+  Overload.Certificate !![1 / 2, 1 / 8, 1 / 8; 1 / 8, 1 / 2, 1 / 8; 1 / 8, 1 / 8, 1 / 2]
+
+#### Overload.certificate_of_small_spill_pin : theorem
+  ∃ ε₀,
+    0 < ε₀ ∧
+      ∀ (ε₁₂ ε₂₁ : ℝ),
+        0 ≤ ε₁₂ → 0 ≤ ε₂₁ → ε₁₂ < ε₀ → ε₂₁ < ε₀ → Overload.Certificate !![1 / 2, ε₁₂; ε₂₁, 3 / 4]
+
+#### Overload.certificate_of_two : theorem
+  ∀ {γ₁ ε₁₂ ε₂₁ γ₂ w₀ w₁ : ℝ},
+    0 ≤ γ₁ →
+      0 ≤ ε₁₂ →
+        0 ≤ ε₂₁ →
+          0 ≤ γ₂ →
+            0 < w₀ →
+              0 < w₁ →
+                γ₁ * w₀ + ε₁₂ * w₁ < w₀ →
+                  ε₂₁ * w₀ + γ₂ * w₁ < w₁ → Overload.Certificate !![γ₁, ε₁₂; ε₂₁, γ₂]
+
+#### Overload.certificate_rate : theorem
+  ∀ {k : ℕ} {J : Matrix (Fin k) (Fin k) ℝ} [NeZero k],
+    Overload.Certificate J →
+      ∃ w ρ, (∀ (i : Fin k), 0 < w i) ∧ 0 ≤ ρ ∧ ρ < 1 ∧ ∀ (i : Fin k), J.mulVec w i ≤ ρ * w i
+
+#### Overload.clamp_band_lower : theorem
+  ∀ (L : Overload.BoundedLoop) {K C : ℝ},
+    0 < K → (∀ p ∈ Set.Icc 0 1, L.h p ≤ K) → L.CongestedEq C → C / K ≤ L.lam
+
+#### Overload.clamp_fluid_strictAnti_pin : theorem
+  StrictAntiOn (fun t => 100 * Real.exp (-t)) (Set.Icc 0 1)
+
+#### Overload.class_clamp_at_overload : theorem
+  ¬(Overload.stepLoop (1 / 4) 10 2 ⋯ ⋯).CongestedEq ((Overload.propDiscipline 2).alloc ![3, 9] 4 0)
+
+#### Overload.cliff_implies_waste : theorem
+  ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ} {C : ℝ},
+    (∀ j ∈ s, 1 ≤ cap j) →
+      (∀ j ∈ s, 0 ≤ lam j) →
+        ∀ {p w : ℝ},
+          0 ≤ w →
+            Overload.UniformLossEq s lam cap C p →
+              (1 - w) * Overload.goodput s lam cap p < min (∑ j ∈ s, lam j) C → 0 < w
+
+#### Overload.cliff_implies_wasted : theorem
+  ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ} {C : ℝ} (A : Overload.Accounting)
+    {p w : ℝ},
+    0 ≤ w →
+      A.wasted = w * (A.capacity * A.time) →
+        (∀ j ∈ s, 1 ≤ cap j) →
+          (∀ j ∈ s, 0 ≤ lam j) →
+            Overload.UniformLossEq s lam cap C p →
+              (1 - w) * Overload.goodput s lam cap p < min (∑ j ∈ s, lam j) C → 0 < A.wasted
+
+#### Overload.composeFail : def
+  ℝ → ℝ → ℕ → ℝ
+  value-hash 407a527dfe98de36
+
+#### Overload.composeFail_antitone_cap : theorem
+  ∀ {ℓ f : ℝ},
+    ℓ ≤ 1 →
+      0 ≤ f → f ≤ 1 → ∀ {m m' : ℕ}, m ≤ m' → Overload.composeFail ℓ f m' ≤ Overload.composeFail ℓ f m
+
+#### Overload.composeFail_antitone_cap_pin : theorem
+  Overload.composeFail (1 / 2) (1 / 2) 2 ≤ Overload.composeFail (1 / 2) (1 / 2) 1 ∧
+    Overload.composeFail (1 / 2) (1 / 2) 2 = 5 / 8 ∧ Overload.composeFail (1 / 2) (1 / 2) 1 = 3 / 4
+
+#### Overload.composeFail_mem_Icc : theorem
+  ∀ {ℓ f : ℝ}, ℓ ∈ Set.Icc 0 1 → f ∈ Set.Icc 0 1 → ∀ (m : ℕ), Overload.composeFail ℓ f m ∈ Set.Icc 0 1
+
+#### Overload.composeFail_mono_down : theorem
+  ∀ {ℓ f f' : ℝ},
+    ℓ ≤ 1 → 0 ≤ f → f ≤ f' → ∀ (m : ℕ), Overload.composeFail ℓ f m ≤ Overload.composeFail ℓ f' m
+
+#### Overload.congestedOnly_iff_rho : theorem
+  ∀ {lam C : ℝ}, 0 < C → (Overload.CongestedOnly lam C ↔ 1 ≤ lam / C)
+
+#### Overload.congestedOnly_scale : theorem
+  ∀ {lam C c : ℝ}, 0 < c → (Overload.CongestedOnly (c * lam) (c * C) ↔ Overload.CongestedOnly lam C)
+
+#### Overload.congested_exists : theorem
+  ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ} {C : ℝ},
+    (∀ j ∈ s, 1 ≤ cap j) →
+      0 < C → C < ∑ j ∈ s, lam j → ∃ p, 0 < p ∧ p < 1 ∧ (1 - p) * Overload.attemptRate s lam cap p = C
+
+#### Overload.congested_exists_pin : theorem
+  ∃ p, 0 < p ∧ p < 1 ∧ (1 - p) * Overload.attemptRate Finset.univ (fun x => 4) (fun x => 2) p = 3
+
+#### Overload.count_comp_div_tendsto : theorem
+  ∀ {S : ℕ → ℝ} {c : ℝ → ℕ} {L ρ : ℝ},
+    Filter.Tendsto (fun n => S n / ↑n) Filter.atTop (nhds L) →
+      Filter.Tendsto (fun t => ↑(c t) / t) Filter.atTop (nhds ρ) →
+        Filter.Tendsto c Filter.atTop Filter.atTop →
+          Filter.Tendsto (fun t => S (c t) / t) Filter.atTop (nhds (L * ρ))
+
+#### Overload.count_div_tendsto : theorem
+  ∀ {f : ℕ → ℝ} {c : ℝ → ℕ} {τ : ℝ},
+    0 < τ →
+      Filter.Tendsto (fun n => f n / ↑n) Filter.atTop (nhds τ) →
+        (∀ (t : ℝ), t ≤ f (c t)) →
+          (∀ (t : ℝ), ∀ k < c t, f k ≤ t) →
+            Filter.Tendsto (fun t => ↑(c t) / t) Filter.atTop (nhds τ⁻¹)
+
+#### Overload.count_tendsto_atTop : theorem
+  ∀ {f : ℕ → ℝ} {c : ℝ → ℕ}, (∀ (t : ℝ), t ≤ f (c t)) → Filter.Tendsto c Filter.atTop Filter.atTop
+
+#### Overload.coupledAmp : def
+  List (ℝ × ℕ) → ℝ → ℝ
+  value-hash e9f1216bf7e18d6d
+
+#### Overload.coupledAmp_at_one : theorem
+  ∀ (layers : List (ℝ × ℕ)), Overload.coupledAmp layers 1 = Overload.capProd layers
+
+#### Overload.coupledAmp_cons : theorem
+  ∀ (ℓ : ℝ) (n : ℕ) (rest : List (ℝ × ℕ)) (p : ℝ),
+    Overload.coupledAmp ((ℓ, n) :: rest) p =
+      Overload.expAttempts (Overload.composeFail ℓ (Overload.invokeFail rest p) 1) n *
+        Overload.coupledAmp rest p
+
+#### Overload.coupledAmp_le_capProd : theorem
+  ∀ (layers : List (ℝ × ℕ)) {p : ℝ},
+    p ∈ Set.Icc 0 1 →
+      (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → Overload.coupledAmp layers p ≤ Overload.capProd layers
+
+#### Overload.coupledAmp_mono_base : theorem
+  ∀ (layers : List (ℝ × ℕ)) {p q : ℝ},
+    p ∈ Set.Icc 0 1 →
+      q ∈ Set.Icc 0 1 →
+        p ≤ q →
+          (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) →
+            Overload.coupledAmp layers p ≤ Overload.coupledAmp layers q
+
+#### Overload.coupledAmp_nil : theorem
+  ∀ (p : ℝ), Overload.coupledAmp [] p = 1
+
+#### Overload.coupledAmp_nonneg : theorem
+  ∀ (layers : List (ℝ × ℕ)) {p : ℝ},
+    p ∈ Set.Icc 0 1 → (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → 0 ≤ Overload.coupledAmp layers p
+
+#### Overload.coupledAmp_twoLayer_zero : theorem
+  Overload.coupledAmp [(1 / 2, 2), (1 / 2, 2)] 0 = 39 / 16
+
+#### Overload.coupledLoop : def
+  (lam : ℝ) →
+    (g : ℝ → ℝ) →
+      (layers : List (ℝ × ℕ)) →
+        0 ≤ lam →
+          (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) →
+            MonotoneOn g (Set.Ici 0) →
+              (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → (∀ x ∈ layers, 1 ≤ x.2) → Overload.ClosedLoop
+  value-hash 4fdee4816b47424
+
+#### Overload.coupledW : def
+  ℕ → Fin 2 → ℝ
+  value-hash ea60ec60400c14b0
+
+#### Overload.coupledX : def
+  Fin 2 → ℝ
+  value-hash a0ef5aee2de52d48
+
+#### Overload.coupled_budget_no_congestedEq : theorem
+  ∀ (lam : ℝ) (g : ℝ → ℝ) (layers : List (ℝ × ℕ)) (hlam : 0 ≤ lam)
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0))
+    (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) (hcap : ∀ x ∈ layers, 1 ≤ x.2) {C : ℝ},
+    lam * Overload.capProd layers < C →
+      ¬(Overload.coupledLoop lam g layers hlam hg_mem hg_mono hℓ hcap).CongestedEq C
+
+#### Overload.coupled_budget_no_congestedEq_at_five : theorem
+  ¬(Overload.coupledLoop 5 (Overload.stepKernel 24) [(1 / 2, 2), (1 / 2, 2)] ⋯ ⋯ ⋯
+          Overload.twoLayer_mem Overload.twoLayer_cap).CongestedEq
+      21
+
+#### Overload.coupled_budget_tight : theorem
+  ∀ (lam : ℝ) (layers : List (ℝ × ℕ)) (hlam : 0 ≤ lam) (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc 0 1)
+    (hcap : ∀ x ∈ layers, 1 ≤ x.2) {C : ℝ},
+    0 ≤ C →
+      C ≤ lam * Overload.capProd layers →
+        (Overload.coupledLoop lam (fun x => 1) layers hlam ⋯ ⋯ hℓ hcap).CongestedEq C
+
+#### Overload.coupled_budget_tight_pin : theorem
+  (Overload.coupledLoop 8 (fun x => 1) [(1 / 2, 2), (1 / 2, 2)] ⋯ ⋯ ⋯ Overload.twoLayer_mem
+        Overload.twoLayer_cap).CongestedEq
+    32
+
+#### Overload.coupled_two_layer_bistable : theorem
+  Overload.BistableOn Overload.twoLayerLoop.F 0 32
+
+#### Overload.coupled_two_layer_congestedEq : theorem
+  Overload.twoLayerLoop.CongestedEq 24
+
+#### Overload.coupled_weight_breaks_wald : theorem
+  ∑ k ∈ Finset.range 3, ∑ i, Overload.coupledW k i * (↑k * Overload.coupledX i) ≠
+    (Overload.expOf 2 fun k => ∑ i, Overload.coupledW k i) *
+      Overload.expCostOf Finset.univ (fun i => ∑ k ∈ Finset.range 3, Overload.coupledW k i)
+        Overload.coupledX
+
+#### Overload.cutFlow : def
+  ℝ → ℝ → (ℕ → ℝ) → ℕ → ℝ
+  value-hash e08006649c1a82ff
+
+#### Overload.cutFlow_const_of_global_balance : theorem
+  ∀ {lam mu : ℝ} {f : ℕ → ℝ},
+    (∀ (n : ℕ), (lam + mu) * f (n + 1) = lam * f n + mu * f (n + 2)) →
+      ∀ (n : ℕ), Overload.cutFlow lam mu f n = Overload.cutFlow lam mu f 0
+
+#### Overload.cutFlow_eq_zero_of_summable : theorem
+  ∀ {lam mu : ℝ} {f : ℕ → ℝ},
+    (∀ (n : ℕ), (lam + mu) * f (n + 1) = lam * f n + mu * f (n + 2)) →
+      Summable f → ∀ (n : ℕ), Overload.cutFlow lam mu f n = 0
+
+#### Overload.deficit_certified : theorem
+  Overload.Certificate !![1 / 2, 2 / 5; 1 / 2, 3 / 10]
+
+#### Overload.deficit_floor_blocks : theorem
+  ¬Overload.Certificate !![1 / 2, 2 / 5; 3 / 2, 3 / 10]
+
+#### Overload.demoEligibleLoop : def
+  (e : ℝ) → e ∈ Set.Icc 0 1 → Overload.ClosedLoop
+  value-hash 9fe243371c0fac8a
+
+#### Overload.demoEligibleLoop_miscoding_opens_amplification : theorem
+  (Overload.demoEligibleLoop 0 ⋯).NoSustaining ∧ 1 < (Overload.demoEligibleLoop 1 ⋯).h 1
+
+#### Overload.demoEligibleLoop_one_congestedEq : theorem
+  (Overload.demoEligibleLoop 1 ⋯).CongestedEq 3
+
+#### Overload.demoEligibleLoop_zero_no_congestedEq : theorem
+  ¬(Overload.demoEligibleLoop 0 ⋯).CongestedEq 3
+
+#### Overload.detailed_balance : theorem
+  ∀ {lam mu : ℝ},
+    mu ≠ 0 →
+      ∀ (n : ℕ),
+        mu * Overload.stationaryWeight (lam / mu) (n + 1) =
+          lam * Overload.stationaryWeight (lam / mu) n
+
+#### Overload.dlqLoop : def
+  (lam : ℝ) → ℝ → (m : ℕ) → 0 ≤ lam → 1 ≤ m → Overload.ClosedLoop
+  value-hash 6a45d3452f723f07
+
+#### Overload.doomedAmp : def
+  ℝ → ℝ → ℝ → ℝ
+  value-hash f2227ee0329b3105
+
+#### Overload.doomed_worsens : theorem
+  ∀ {d Aindep Acap : ℝ}, 0 ≤ d → Aindep ≤ Acap → Aindep ≤ Overload.doomedAmp d Aindep Acap
+
+#### Overload.doomed_worsens_pin : theorem
+  2 ≤ Overload.doomedAmp (1 / 4) 2 6 ∧ 2 ≤ Overload.doomedAmp 3 2 6
+
+#### Overload.effective_priority : theorem
+  ∀ {k : ℕ} (lam A : Fin k → ℝ) {ρ : ℝ},
+    ρ ≠ 0 →
+      ∀ {i j : Fin k},
+        Overload.sharedGoodput lam A ρ j / Overload.sharedGoodput lam A ρ i =
+          Overload.offeredAttempts lam A j / Overload.offeredAttempts lam A i
+
+#### Overload.eligibility_gate : theorem
+  ∀ (p : ℝ), Overload.expAttempts p 1 = 1
+
+#### Overload.eligibility_gate_pin : theorem
+  Overload.expAttempts 7 1 = 1
+
+#### Overload.eligibleLoop : def
+  (lam : ℝ) →
+    (g : ℝ → ℝ) →
+      (m : ℕ) →
+        (e : ℝ) →
+          0 ≤ lam →
+            1 ≤ m →
+              (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) →
+                MonotoneOn g (Set.Ici 0) → e ∈ Set.Icc 0 1 → Overload.ClosedLoop
+  value-hash 8cbf80731962a09c
+
+#### Overload.eligibleLoop_congestedEq_mono_mass : theorem
+  ∀ {lam : ℝ} {g : ℝ → ℝ} {m : ℕ} {e e' : ℝ} {hlam : 0 ≤ lam} {hm : 1 ≤ m}
+    {hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1} {hg_mono : MonotoneOn g (Set.Ici 0)}
+    {he : e ∈ Set.Icc 0 1} {he' : e' ∈ Set.Icc 0 1},
+    e ≤ e' →
+      ∀ {Θ : ℝ},
+        (Overload.eligibleLoop lam g m e hlam hm hg_mem hg_mono he).CongestedEq Θ →
+          (Overload.eligibleLoop lam g m e' hlam hm hg_mem hg_mono he').CongestedEq Θ
+
+#### Overload.eligibleLoop_zero_noSustaining : theorem
+  ∀ {lam : ℝ} {g : ℝ → ℝ} {m : ℕ} {hlam : 0 ≤ lam} {hm : 1 ≤ m}
+    {hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1} {hg_mono : MonotoneOn g (Set.Ici 0)},
+    (Overload.eligibleLoop lam g m 0 hlam hm hg_mem hg_mono ⋯).NoSustaining
+
+#### Overload.eligibleResponse : def
+  ℝ → ℕ → ℝ → ℝ
+  value-hash 99bd2c4608c6d93d
+
+#### Overload.eligibleResponse_mono_mass : theorem
+  ∀ {e e' : ℝ},
+    0 ≤ e →
+      e ≤ e' →
+        ∀ (m : ℕ) {p : ℝ}, 0 ≤ p → Overload.eligibleResponse e m p ≤ Overload.eligibleResponse e' m p
+
+#### Overload.equilibria_mono_lam_pin : theorem
+  Overload.lfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤
+      Overload.lfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8 ∧
+    Overload.gfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤
+      Overload.gfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8
+
+#### Overload.erlangB : def
+  ℝ → ℕ → ℝ
+  value-hash 69db0dbd4f0af436
+
+#### Overload.erlangB_antitone_servers : theorem
+  ∀ {a : ℝ}, 0 ≤ a → Antitone (Overload.erlangB a)
+
+#### Overload.erlangB_antitone_servers_one : theorem
+  Overload.erlangB 1 1 ≤ 1
+
+#### Overload.erlangB_carried_le : theorem
+  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), a * (1 - Overload.erlangB a c) ≤ ↑c
+
+#### Overload.erlangB_eq_closed : theorem
+  ∀ {a : ℝ},
+    0 < a →
+      ∀ (c : ℕ),
+        Overload.erlangB a c = a ^ c / ↑c.factorial / ∑ j ∈ Finset.range (c + 1), a ^ j / ↑j.factorial
+
+#### Overload.erlangB_le_one : theorem
+  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), Overload.erlangB a c ≤ 1
+
+#### Overload.erlangB_mem_Icc : theorem
+  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), Overload.erlangB a c ∈ Set.Icc 0 1
+
+#### Overload.erlangB_mono_load : theorem
+  ∀ {a a' : ℝ}, 0 ≤ a → a ≤ a' → ∀ (c : ℕ), Overload.erlangB a c ≤ Overload.erlangB a' c
+
+#### Overload.erlangB_mul_sum : theorem
+  ∀ {a : ℝ},
+    0 < a →
+      ∀ (c : ℕ),
+        Overload.erlangB a c * ∑ j ∈ Finset.range (c + 1), a ^ j / ↑j.factorial = a ^ c / ↑c.factorial
+
+#### Overload.erlangB_nonneg : theorem
+  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), 0 ≤ Overload.erlangB a c
+
+#### Overload.erlangB_one_one : theorem
+  Overload.erlangB 1 1 = 1 / 2
+
+#### Overload.erlangB_succ : theorem
+  ∀ (a : ℝ) (c : ℕ),
+    Overload.erlangB a (c + 1) = a * Overload.erlangB a c / (↑c + 1 + a * Overload.erlangB a c)
+
+#### Overload.erlangB_succ_le : theorem
+  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), Overload.erlangB a (c + 1) ≤ Overload.erlangB a c
+
+#### Overload.erlangB_two_two : theorem
+  Overload.erlangB 2 2 = 2 / 5
+
+#### Overload.erlangB_zero : theorem
+  ∀ (a : ℝ), Overload.erlangB a 0 = 1
+
+#### Overload.erlangKernel : def
+  ℝ → ℕ → ℝ → ℝ
+  value-hash df4bd08530411a67
+
+#### Overload.erlangKernel_mem : theorem
+  ∀ {μ : ℝ}, 0 < μ → ∀ (c : ℕ) (x : ℝ), 0 ≤ x → Overload.erlangKernel μ c x ∈ Set.Icc 0 1
+
+#### Overload.erlangKernel_monoOn : theorem
+  ∀ {μ : ℝ}, 0 < μ → ∀ (c : ℕ), MonotoneOn (Overload.erlangKernel μ c) (Set.Ici 0)
+
+#### Overload.erlangLoop : def
+  (lam μ : ℝ) → ℕ → (m : ℕ) → 0 ≤ lam → 0 < μ → 1 ≤ m → Overload.ClosedLoop
+  value-hash 80a758fca2228b58
+
+#### Overload.erlangLoop_no_congestedEq : theorem
+  ∀ {lam μ : ℝ} {c m : ℕ} {Θ : ℝ} {hlam : 0 ≤ lam} {hμ : 0 < μ} {hm : 1 ≤ m},
+    lam * ↑m < Θ → ¬(Overload.erlangLoop lam μ c m hlam hμ hm).CongestedEq Θ
+
+#### Overload.erlangLoop_no_congestedEq_pin : theorem
+  ¬(Overload.erlangLoop 1 1 1 2 ⋯ ⋯ ⋯).CongestedEq 3
+
+#### Overload.exists_fixedPt_ge : theorem
+  ∀ {F : ℝ → ℝ} {a b y : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        y ∈ Set.Icc a b → y ≤ F y → ∃ z ∈ Set.Icc y b, Function.IsFixedPt F z
+
+#### Overload.exists_fixedPt_le : theorem
+  ∀ {F : ℝ → ℝ} {a b x : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        x ∈ Set.Icc a b → F x ≤ x → ∃ z ∈ Set.Icc a x, Function.IsFixedPt F z
+
+#### Overload.exists_two_fixedPts_of_certificate : theorem
+  ∀ {F : ℝ → ℝ} {a b x y : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        x ∈ Set.Icc a b →
+          F x ≤ x →
+            y ∈ Set.Icc a b →
+              y ≤ F y →
+                x < y →
+                  ∃ z₁ z₂,
+                    Function.IsFixedPt F z₁ ∧ Function.IsFixedPt F z₂ ∧ z₁ ≤ x ∧ y ≤ z₂ ∧ z₁ < z₂
+
+#### Overload.expAttempts : def
+  ℝ → ℕ → ℝ
+  value-hash 140d693ab8944579
+
+#### Overload.expAttemptsDeriv : def
+  ℝ → ℕ → ℝ
+  value-hash 81a9620cf645ff15
+
+#### Overload.expAttemptsDeriv_pos : theorem
+  ∀ {p : ℝ}, 0 ≤ p → ∀ {n : ℕ}, 2 ≤ n → 0 < Overload.expAttemptsDeriv p n
+
+#### Overload.expAttemptsDeriv_pos_half_four : theorem
+  0 < Overload.expAttemptsDeriv (1 / 2) 4
+
+#### Overload.expAttempts_at_zero : theorem
+  ∀ {n : ℕ}, 1 ≤ n → Overload.expAttempts 0 n = 1
+
+#### Overload.expAttempts_def : theorem
+  ∀ (p : ℝ) (n : ℕ), Overload.expAttempts p n = ∑ k ∈ Finset.range n, p ^ k
+
+#### Overload.expAttempts_half_three_eq : theorem
+  Overload.expAttempts (1 / 2) 3 = 7 / 4
+
+#### Overload.expAttempts_le_cap : theorem
+  ∀ {p : ℝ}, 0 ≤ p → p ≤ 1 → ∀ (n : ℕ), Overload.expAttempts p n ≤ ↑n
+
+#### Overload.expAttempts_le_geom_bound : theorem
+  ∀ {p : ℝ}, 0 ≤ p → p < 1 → ∀ (n : ℕ), Overload.expAttempts p n ≤ 1 / (1 - p)
+
+#### Overload.expAttempts_le_one_add_mul : theorem
+  ∀ {p : ℝ}, 0 ≤ p → p ≤ 1 → ∀ (n : ℕ), Overload.expAttempts p n ≤ 1 + (↑n - 1) * p
+
+#### Overload.expAttempts_le_one_add_mul_pin : theorem
+  Overload.expAttempts (1 / 2) 3 ≤ 2
+
+#### Overload.expAttempts_mono_left : theorem
+  ∀ {p q : ℝ}, 0 ≤ p → p ≤ q → ∀ (n : ℕ), Overload.expAttempts p n ≤ Overload.expAttempts q n
+
+#### Overload.expAttempts_mono_right : theorem
+  ∀ {p : ℝ}, 0 ≤ p → ∀ {m n : ℕ}, m ≤ n → Overload.expAttempts p m ≤ Overload.expAttempts p n
+
+#### Overload.expAttempts_nonneg : theorem
+  ∀ {p : ℝ}, 0 ≤ p → ∀ (n : ℕ), 0 ≤ Overload.expAttempts p n
+
+#### Overload.expAttempts_succ : theorem
+  ∀ (p : ℝ) (n : ℕ), Overload.expAttempts p (n + 1) = Overload.expAttempts p n + p ^ n
+
+#### Overload.expCostOf : def
+  {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℝ) → ℝ
+  value-hash 2c74793dbc913484
+
+#### Overload.expOf : def
+  ℕ → (ℕ → ℝ) → ℝ
+  value-hash 80cf007c4ec9ab2e
+
+#### Overload.exp_neg_le_inv_one_add : theorem
+  ∀ {x : ℝ}, 0 ≤ x → Real.exp (-x) ≤ (1 + x)⁻¹
+
+#### Overload.extendDemand : def
+  {k : ℕ} → (Fin k → ℝ) → ℕ → ℝ
+  value-hash 3ecf961edb678baf
+
+#### Overload.extendDemand_nonneg : theorem
+  ∀ {k : ℕ} {d : Fin k → ℝ}, (∀ (j : Fin k), 0 ≤ d j) → ∀ (n : ℕ), 0 ≤ Overload.extendDemand d n
+
+#### Overload.factorsThroughSignature_iff : theorem
+  ∀ (P : Overload.ClosedLoop → Prop),
+    Overload.FactorsThroughSignature P ↔ ∃ Q, ∀ (L : Overload.ClosedLoop), P L ↔ Q L.signature
+
+#### Overload.fifoSojourn : def
+  ℝ → ℝ → ℝ
+  value-hash d7fa5a438bd28b1
+
+#### Overload.fifo_head_expired : theorem
+  ∀ {Q C D : ℝ}, 0 < C → D * C < Q → D < Overload.fifoSojourn Q C
+
+#### Overload.fitsIn : def
+  (ℕ → ℝ) → (ℕ → ℝ) → ℝ → ℕ → Prop
+  value-hash 96eb585d536d65ba
+
+#### Overload.fitsIn_neff : theorem
+  ∀ {T B : ℕ → ℝ} {D : ℝ} {n : ℕ}, 0 ≤ D → Overload.fitsIn T B D (Overload.neff T B D n)
+
+#### Overload.fitsIn_of_cheap : theorem
+  ∀ {T : ℕ → ℝ} {D : ℝ} {k : ℕ} {t : ℝ},
+    (∀ (j : ℕ), T j ≤ t) → ↑k * t ≤ D → Overload.fitsIn T (fun x => 0) D k
+
+#### Overload.fitsIn_zero : theorem
+  ∀ {D : ℝ} (T B : ℕ → ℝ), 0 ≤ D → Overload.fitsIn T B D 0
+
+#### Overload.fixedPt_unique_of_gain_lt_one : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    ContinuousOn F (Set.Icc a b) →
+      (∀ x ∈ Set.Ioo a b, DifferentiableAt ℝ F x) →
+        (∀ x ∈ Set.Ioo a b, deriv F x < 1) →
+          ∀ {x y : ℝ},
+            x ∈ Set.Icc a b →
+              y ∈ Set.Icc a b → Function.IsFixedPt F x → Function.IsFixedPt F y → x = y
+
+#### Overload.flatLoop : def
+  Overload.ClosedLoop
+  value-hash edc8c5e355a69c52
+
+#### Overload.flatLoop_congestedEq : theorem
+  Overload.flatLoop.CongestedEq 3
+
+#### Overload.flat_split_fixedPt_unique : theorem
+  ∀ {lam C : ℝ} (hlam : 0 ≤ lam) {z : ℝ},
+    Function.IsFixedPt (Overload.stepLoop lam C 1 hlam ⋯).F z → z = lam
+
+#### Overload.floor_certifies_at_hundred : theorem
+  ¬((Overload.stepLoop 1 6 5 ⋯ ⋯).withKernel (Overload.stepKernel 100) ⋯ ⋯).CongestedEq 100
+
+#### Overload.fluid_decay_of_deriv_le : theorem
+  ∀ {F : ℝ → ℝ} {L a b Λ₀ t₀ t₁ : ℝ} {x : ℝ → ℝ},
+    Λ₀ ∈ Set.Icc a b →
+      Function.IsFixedPt F Λ₀ →
+        ContinuousOn F (Set.Icc a b) →
+          DifferentiableOn ℝ F (Set.Ioo a b) →
+            (∀ z ∈ Set.Ioo a b, deriv F z ≤ L) →
+              (∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (F (x t) - x t) t) →
+                (∀ t ∈ Set.Icc t₀ t₁, x t ∈ Set.Icc a b) →
+                  (∀ t ∈ Set.Icc t₀ t₁, Λ₀ ≤ x t) →
+                    ∀ t ∈ Set.Icc t₀ t₁, x t - Λ₀ ≤ (x t₀ - Λ₀) * Real.exp (-((1 - L) * (t - t₀)))
+
+#### Overload.fluid_decay_of_gain_le : theorem
+  ∀ {F : ℝ → ℝ} {L Λ₀ t₀ t₁ : ℝ} {x : ℝ → ℝ},
+    (∀ t ∈ Set.Icc t₀ t₁, F (x t) - Λ₀ ≤ L * (x t - Λ₀)) →
+      (∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (F (x t) - x t) t) →
+        ∀ t ∈ Set.Icc t₀ t₁, x t - Λ₀ ≤ (x t₀ - Λ₀) * Real.exp (-((1 - L) * (t - t₀)))
+
+#### Overload.fluid_decay_witness : theorem
+  ∀ t ∈ Set.Icc 0 1, Real.exp (-t) - 0 ≤ (Real.exp (-0) - 0) * Real.exp (-((1 - 0) * (t - 0)))
+
+#### Overload.fluid_drain_clears : theorem
+  ∀ {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ},
+    0 < δ →
+      (∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (v t) t) →
+        (∀ t ∈ Set.Icc t₀ t₁, v t ≤ -δ) → ∀ t ∈ Set.Icc t₀ t₁, t₀ + x t₀ / δ ≤ t → x t ≤ 0
+
+#### Overload.fluid_drain_le : theorem
+  ∀ {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ},
+    (∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (v t) t) →
+      (∀ t ∈ Set.Icc t₀ t₁, v t ≤ -δ) → ∀ t ∈ Set.Icc t₀ t₁, x t ≤ x t₀ - δ * (t - t₀)
+
+#### Overload.fluid_drain_twelve_clears_at_four : theorem
+  (fun t => 12 - 3 * t) 4 ≤ 0
+
+#### Overload.fluid_recovery_within : theorem
+  ∀ {F : ℝ → ℝ} {L Λ₀ t₀ t₁ ε : ℝ} {x : ℝ → ℝ},
+    L < 1 →
+      0 < ε →
+        (∀ t ∈ Set.Icc t₀ t₁, F (x t) - Λ₀ ≤ L * (x t - Λ₀)) →
+          (∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (F (x t) - x t) t) →
+            ∀ t ∈ Set.Icc t₀ t₁, t₀ + Real.log ((x t₀ - Λ₀) / ε) / (1 - L) ≤ t → x t - Λ₀ ≤ ε
+
+#### Overload.fluid_recovery_within_half : theorem
+  Real.exp (-1) - 0 ≤ 1 / 2
+
+#### Overload.gain_gt_one_repels : theorem
+  ∀ {F : ℝ → ℝ} {a b Λ₀ : ℝ},
+    Λ₀ ∈ Set.Icc a b →
+      Function.IsFixedPt F Λ₀ →
+        ContinuousOn F (Set.Icc a b) →
+          (∀ x ∈ Set.Ioo a b, 1 < deriv F x) →
+            (∀ x ∈ Set.Icc a b, x < Λ₀ → F x < x) ∧ ∀ x ∈ Set.Icc a b, Λ₀ < x → x < F x
+
+#### Overload.gain_gt_one_repels_pin : theorem
+  (∀ x ∈ Set.Icc (-1) 1, x < 0 → 2 * x < x) ∧ ∀ x ∈ Set.Icc (-1) 1, 0 < x → x < 2 * x
+
+#### Overload.gfpIcc : def
+  (ℝ → ℝ) → ℝ → ℝ → ℝ
+  value-hash e98b47243666ed0b
+
+#### Overload.gfpIcc_eq_gfp_restrict : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ} [inst : Fact (a ≤ b)] (hm : MonotoneOn F (Set.Icc a b))
+    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)),
+    Overload.gfpIcc F a b = ↑(OrderHom.gfp (Overload.restrictIcc F a b hm hf))
+
+#### Overload.gfpIcc_le_iterate : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b →
+      MonotoneOn F (Set.Icc a b) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → ∀ (n : ℕ), Overload.gfpIcc F a b ≤ F^[n] b
+
+#### Overload.gfpIcc_mem_Icc : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b → Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.gfpIcc F a b ∈ Set.Icc a b
+
+#### Overload.gfpIcc_mono_of_le : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ} {G : ℝ → ℝ},
+    a ≤ b →
+      (∀ x ∈ Set.Icc a b, F x ≤ G x) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.gfpIcc F a b ≤ Overload.gfpIcc G a b
+
+#### Overload.global_balance : theorem
+  ∀ {lam mu : ℝ},
+    mu ≠ 0 →
+      ∀ (n : ℕ),
+        (lam + mu) * Overload.stationaryWeight (lam / mu) (n + 1) =
+          lam * Overload.stationaryWeight (lam / mu) n +
+            mu * Overload.stationaryWeight (lam / mu) (n + 2)
+
+#### Overload.global_balance_iff_cutFlow_succ : theorem
+  ∀ (lam mu : ℝ) (f : ℕ → ℝ) (n : ℕ),
+    (lam + mu) * f (n + 1) = lam * f n + mu * f (n + 2) ↔
+      Overload.cutFlow lam mu f (n + 1) = Overload.cutFlow lam mu f n
+
+#### Overload.global_balance_pin : theorem
+  (1 + 2) * Overload.stationaryWeight (1 / 2) 1 =
+    1 * Overload.stationaryWeight (1 / 2) 0 + 2 * Overload.stationaryWeight (1 / 2) 2
+
+#### Overload.goodput : def
+  {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℕ) → ℝ → ℝ
+  value-hash a7669ee3e92c077
+
+#### Overload.goodput_at_zero : theorem
+  ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ},
+    (∀ j ∈ s, 1 ≤ cap j) → Overload.goodput s lam cap 0 = ∑ j ∈ s, lam j
+
+#### Overload.goodput_eq_one_sub_mul : theorem
+  ∀ {ι : Type u_1} (s : Finset ι) (lam : ι → ℝ) (cap : ι → ℕ) (p : ℝ),
+    Overload.goodput s lam cap p = (1 - p) * Overload.attemptRate s lam cap p
+
+#### Overload.hasDerivAt_expAttempts : theorem
+  ∀ (p : ℝ) (n : ℕ), HasDerivAt (fun q => Overload.expAttempts q n) (Overload.expAttemptsDeriv p n) p
+
+#### Overload.hasDerivAt_mm1Kernel : theorem
+  ∀ {C τ Λ : ℝ}, Λ < C → HasDerivAt (Overload.mm1Kernel C τ) (τ * Real.exp (-((C - Λ) * τ))) Λ
+
+#### Overload.hasDerivAt_mm1Loop_F : theorem
+  ∀ {lam C τ Λ : ℝ} {m : ℕ} (hlam : 0 ≤ lam) (hτ : 0 ≤ τ) (hm : 1 ≤ m),
+    Λ < C →
+      HasDerivAt (Overload.mm1Loop lam C τ m hlam hτ hm).F
+        (lam *
+          (Overload.expAttemptsDeriv (Overload.mm1Kernel C τ Λ) m * (τ * Real.exp (-((C - Λ) * τ)))))
+        Λ
+
+#### Overload.hasDerivAt_smoothLoop_F : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A) {Λ : ℝ},
+    0 ≤ Λ →
+      HasDerivAt (Overload.smoothLoop lam C A hlam hC hA).F (lam * ((A - 1) * (C / (Λ + C) ^ 2))) Λ
+
+#### Overload.hasSum_stationaryWeight : theorem
+  ∀ {ρ : ℝ}, 0 ≤ ρ → ρ < 1 → HasSum (Overload.stationaryWeight ρ) 1
+
+#### Overload.headroomLoop : def
+  Overload.ClosedLoop
+  value-hash 4e158701552d927f
+
+#### Overload.headroomLoop_no_congestedEq : theorem
+  ¬Overload.headroomLoop.CongestedEq 3
+
+#### Overload.headroomLoop_signature_eq_flatLoop : theorem
+  Overload.headroomLoop.signature = Overload.flatLoop.signature
+
+#### Overload.healthyOnly_iff_rho : theorem
+  ∀ {lam A C : ℝ}, 0 < C → (Overload.HealthyOnly lam A C ↔ lam / C * A < 1)
+
+#### Overload.healthyOnly_not_bistable : theorem
+  ∀ {lam A C : ℝ}, Overload.HealthyOnly lam A C → ¬Overload.BistableBand lam A C
+
+#### Overload.healthyOnly_not_congestedOnly : theorem
+  ∀ {lam A C : ℝ}, 0 ≤ lam → 1 ≤ A → Overload.HealthyOnly lam A C → ¬Overload.CongestedOnly lam C
+
+#### Overload.healthyOnly_scale : theorem
+  ∀ {lam A C c : ℝ}, 0 < c → (Overload.HealthyOnly (c * lam) A (c * C) ↔ Overload.HealthyOnly lam A C)
+
+#### Overload.hop_amplification_bound : theorem
+  ∀ {K : ℕ} {lam A : ℝ} {r C : Fin K → ℝ} (k : Fin K),
+    0 < r k → 0 < A → lam * A * r k ≤ C k → lam ≤ C k / (A * r k)
+
+#### Overload.hop_binds_at_amp_five : theorem
+  4000 / (5 * 1) < 1000 / 1
+
+#### Overload.instrument_blind : theorem
+  ∀ {State : Type u_1} {Wire : Type u_2} {Reading : Type u_3} {instr : State → Reading}
+    {wire : State → Wire},
+    Overload.FactorsThrough instr wire → ∀ {s t : State}, wire s = wire t → instr s = instr t
+
+#### Overload.integral_attemptDist : theorem
+  ∀ (p : ℝ) {n : ℕ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (hn : 1 ≤ n),
+    ∫ (j : Fin n), ↑↑j + 1 ∂(Overload.attemptDist p hp0 hp1 hn).toMeasure = Overload.expAttempts p n
+
+#### Overload.integral_attemptDist_half_three : theorem
+  ∫ (j : Fin 3), ↑↑j + 1 ∂(Overload.attemptDist (1 / 2) ⋯ ⋯ ⋯).toMeasure = 7 / 4
+
+#### Overload.intent_factorsThrough_refined : theorem
+  ∀ {State : Type u_1} {Wire : Type u_2} {Reading : Type u_3} {wire : State → Wire}
+    (intent : State → Reading), Overload.FactorsThrough intent (Overload.refinedLabel wire intent)
+
+#### Overload.intent_refines : theorem
+  ∀ {State : Type u_1} {Wire : Type u_2} {Reading : Type u_3} {wire : State → Wire}
+    {intent : State → Reading} {s t : State},
+    intent s ≠ intent t → Overload.refinedLabel wire intent s ≠ Overload.refinedLabel wire intent t
+
+#### Overload.inversion : theorem
+  ∀ {lam Ahi : ℝ},
+    0 < lam →
+      0 < Ahi →
+        ∀ {lamlo : ℝ},
+          0 < lamlo → ∀ {ε : ℝ}, 0 < ε → ∃ Alo, 0 < Alo ∧ lam * Ahi / (lam * Ahi + lamlo * Alo) < ε
+
+#### Overload.inversion_threshold : theorem
+  ∀ {lam Ahi lamlo ε Alo : ℝ},
+    0 < lam →
+      0 < Ahi →
+        0 < lamlo → 0 < ε → lam * Ahi / (lamlo * ε) < Alo → lam * Ahi / (lam * Ahi + lamlo * Alo) < ε
+
+#### Overload.inversion_threshold_pin : theorem
+  1 * 1 / (1 * 1 + 1 * 11) < 1 / 10
+
+#### Overload.invokeFail : def
+  List (ℝ × ℕ) → ℝ → ℝ
+  value-hash 59aae05b56b99e04
+
+#### Overload.invokeFail_at_one : theorem
+  ∀ (layers : List (ℝ × ℕ)), Overload.invokeFail layers 1 = 1
+
+#### Overload.invokeFail_cons : theorem
+  ∀ (ℓ : ℝ) (n : ℕ) (rest : List (ℝ × ℕ)) (p : ℝ),
+    Overload.invokeFail ((ℓ, n) :: rest) p = Overload.composeFail ℓ (Overload.invokeFail rest p) 1 ^ n
+
+#### Overload.invokeFail_mem_Icc : theorem
+  ∀ (layers : List (ℝ × ℕ)) {p : ℝ},
+    p ∈ Set.Icc 0 1 → (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → Overload.invokeFail layers p ∈ Set.Icc 0 1
+
+#### Overload.invokeFail_mono_base : theorem
+  ∀ (layers : List (ℝ × ℕ)) {p q : ℝ},
+    p ∈ Set.Icc 0 1 →
+      p ≤ q →
+        (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) →
+          Overload.invokeFail layers p ≤ Overload.invokeFail layers q
+
+#### Overload.invokeFail_nil : theorem
+  ∀ (p : ℝ), Overload.invokeFail [] p = p
+
+#### Overload.isFixedPt_gfpIcc : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b →
+      MonotoneOn F (Set.Icc a b) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Function.IsFixedPt F (Overload.gfpIcc F a b)
+
+#### Overload.isFixedPt_le_gfpIcc : theorem
+  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → Function.IsFixedPt F x → x ≤ Overload.gfpIcc F a b
+
+#### Overload.isFixedPt_lfpIcc : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b →
+      MonotoneOn F (Set.Icc a b) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Function.IsFixedPt F (Overload.lfpIcc F a b)
+
+#### Overload.iterate_le_lfpIcc : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b →
+      MonotoneOn F (Set.Icc a b) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → ∀ (n : ℕ), F^[n] a ≤ Overload.lfpIcc F a b
+
+#### Overload.iterate_le_of_le_fixedPt : theorem
+  ∀ {F : ℝ → ℝ} {a b x z : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        z ∈ Set.Icc a b → Function.IsFixedPt F z → x ∈ Set.Icc a b → x ≤ z → ∀ (n : ℕ), F^[n] x ≤ z
+
+#### Overload.jitter_window_avoids : theorem
+  ∀ {B Λ₀ z w : ℝ}, Λ₀ < z → B / (z - Λ₀) ≤ w → 0 < w → Λ₀ + B / w ≤ z
+
+#### Overload.jitter_window_avoids_three : theorem
+  1 + 3 / 3 ≤ 2
+
+#### Overload.kernelLoop : def
+  (lam : ℝ) →
+    (g : ℝ → ℝ) →
+      (m : ℕ) →
+        0 ≤ lam →
+          1 ≤ m →
+            (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → MonotoneOn g (Set.Ici 0) → Overload.ClosedLoop
+  value-hash a0eb04bf49eaa889
+
+#### Overload.kernelLoop_congestedEq_mono_cap : theorem
+  ∀ {lam : ℝ} {g : ℝ → ℝ} {m m' : ℕ} (hlam : 0 ≤ lam) (hm : 1 ≤ m) (hm' : 1 ≤ m')
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)),
+    m ≤ m' →
+      ∀ {Θ : ℝ},
+        (Overload.kernelLoop lam g m hlam hm hg_mem hg_mono).CongestedEq Θ →
+          (Overload.kernelLoop lam g m' hlam hm' hg_mem hg_mono).CongestedEq Θ
+
+#### Overload.kernelLoop_congestedEq_mono_cap_pin : theorem
+  (Overload.kernelLoop 2 (Overload.stepKernel 2) 3 ⋯ ⋯ ⋯ ⋯).CongestedEq 2
+
+#### Overload.layersAmp : def
+  List Overload.Layer → ℝ
+  value-hash bf57fd6cea7bdc2e
+
+#### Overload.layersAmp_cons : theorem
+  ∀ (ℓ : Overload.Layer) (S : List Overload.Layer),
+    Overload.layersAmp (ℓ :: S) = ℓ.amp * Overload.layersAmp S
+
+#### Overload.layersAmp_le_prod_cap : theorem
+  ∀ (S : List Overload.Layer), Overload.layersAmp S ≤ (List.map (fun ℓ => ↑ℓ.cap) S).prod
+
+#### Overload.layersAmp_nil : theorem
+  Overload.layersAmp [] = 1
+
+#### Overload.layersAmp_pos : theorem
+  ∀ (S : List Overload.Layer), 0 < Overload.layersAmp S
+
+#### Overload.layersAmp_region1Stack : theorem
+  Overload.layersAmp Overload.region1Stack = 6
+
+#### Overload.layersAmp_region2Stack : theorem
+  Overload.layersAmp Overload.region2Stack = 4
+
+#### Overload.le_gfpIcc_of_postfixed : theorem
+  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → x ≤ F x → x ≤ Overload.gfpIcc F a b
+
+#### Overload.le_iterate_of_fixedPt_le : theorem
+  ∀ {F : ℝ → ℝ} {a b x z : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        z ∈ Set.Icc a b → Function.IsFixedPt F z → x ∈ Set.Icc a b → z ≤ x → ∀ (n : ℕ), z ≤ F^[n] x
+
+#### Overload.le_iterate_of_fixedPt_le_pin : theorem
+  2 ≤ (Overload.stepLoop 2 5 4 ⋯ ⋯).F^[3] (2 * 4)
+
+#### Overload.le_iterate_of_postfixed : theorem
+  ∀ {F : ℝ → ℝ} {a b y : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        y ∈ Set.Icc a b → y ≤ F y → ∀ (n : ℕ), F^[n] y ≤ F^[n + 1] y
+
+#### Overload.le_neff : theorem
+  ∀ {T B : ℕ → ℝ} {D : ℝ} {k n : ℕ}, k ≤ n → Overload.fitsIn T B D k → k ≤ Overload.neff T B D n
+
+#### Overload.lfpIcc : def
+  (ℝ → ℝ) → ℝ → ℝ → ℝ
+  value-hash 974286ef250c92b3
+
+#### Overload.lfpIcc_eq_lfp_restrict : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ} [inst : Fact (a ≤ b)] (hm : MonotoneOn F (Set.Icc a b))
+    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)),
+    Overload.lfpIcc F a b = ↑(OrderHom.lfp (Overload.restrictIcc F a b hm hf))
+
+#### Overload.lfpIcc_le_gfpIcc : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b →
+      MonotoneOn F (Set.Icc a b) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.lfpIcc F a b ≤ Overload.gfpIcc F a b
+
+#### Overload.lfpIcc_le_isFixedPt : theorem
+  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → Function.IsFixedPt F x → Overload.lfpIcc F a b ≤ x
+
+#### Overload.lfpIcc_le_of_prefixed : theorem
+  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → F x ≤ x → Overload.lfpIcc F a b ≤ x
+
+#### Overload.lfpIcc_mem_Icc : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ},
+    a ≤ b → Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.lfpIcc F a b ∈ Set.Icc a b
+
+#### Overload.lfpIcc_mono_of_le : theorem
+  ∀ {F : ℝ → ℝ} {a b : ℝ} {G : ℝ → ℝ},
+    a ≤ b →
+      (∀ x ∈ Set.Icc a b, F x ≤ G x) →
+        Set.MapsTo G (Set.Icc a b) (Set.Icc a b) → Overload.lfpIcc F a b ≤ Overload.lfpIcc G a b
+
+#### Overload.lifoSojourn : def
+  ℝ
+  value-hash a00b9350ae2c0b96
+
+#### Overload.lifo_fresh : theorem
+  ∀ {D : ℝ}, 0 ≤ D → Overload.lifoSojourn ≤ D
+
+#### Overload.looseBudgetLoop : def
+  Overload.BoundedLoop
+  value-hash 41204baf03a7a96b
+
+#### Overload.looseBudgetLoop_safe : theorem
+  ¬Overload.looseBudgetLoop.CongestedEq 10
+
+#### Overload.mapsTo_Icc_of_postfixed : theorem
+  ∀ {F : ℝ → ℝ} {a b y : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        y ∈ Set.Icc a b → y ≤ F y → Set.MapsTo F (Set.Icc y b) (Set.Icc y b)
+
+#### Overload.mapsTo_Icc_of_prefixed : theorem
+  ∀ {F : ℝ → ℝ} {a b x : ℝ},
+    MonotoneOn F (Set.Icc a b) →
+      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
+        x ∈ Set.Icc a b → F x ≤ x → Set.MapsTo F (Set.Icc a x) (Set.Icc a x)
+
+#### Overload.meanQueue : def
+  ℝ → ℝ
+  value-hash 3496bffc25404bc5
+
+#### Overload.meanQueueWaiting : def
+  ℝ → ℝ
+  value-hash c7064bcd0d3dce9
+
+#### Overload.meanQueueWaiting_add_util : theorem
+  ∀ {ρ : ℝ}, 0 ≤ ρ → ρ < 1 → Overload.meanQueueWaiting ρ + ρ = Overload.meanQueue ρ
+
+#### Overload.meanQueueWaiting_add_util_pin : theorem
+  Overload.meanQueueWaiting (3 / 4) + 3 / 4 = Overload.meanQueue (3 / 4)
+
+#### Overload.meanQueueWaiting_eq : theorem
+  ∀ {ρ : ℝ}, 0 ≤ ρ → ρ < 1 → Overload.meanQueueWaiting ρ = ρ ^ 2 / (1 - ρ)
+
+#### Overload.meanQueue_eq : theorem
+  ∀ {ρ : ℝ}, 0 ≤ ρ → ρ < 1 → Overload.meanQueue ρ = ρ / (1 - ρ)
+
+#### Overload.meanQueue_eq_lam_mul_meanWait : theorem
+  ∀ {lam mu : ℝ}, lam ≠ 0 → Overload.meanQueue (lam / mu) = lam * Overload.meanWait lam mu
+
+#### Overload.meanQueue_half : theorem
+  Overload.meanQueue (1 / 2) = 1
+
+#### Overload.meanQueue_strictMonoOn : theorem
+  StrictMonoOn Overload.meanQueue (Set.Ico 0 1)
+
+#### Overload.meanQueue_three_quarters : theorem
+  Overload.meanQueue (3 / 4) = 3
+
+#### Overload.meanQueue_two : theorem
+  Overload.meanQueue 2 = 0
+
+#### Overload.meanWait : def
+  ℝ → ℝ → ℝ
+  value-hash d827d11c97b6e0fd
+
+#### Overload.meanWait_eq : theorem
+  ∀ {lam mu : ℝ}, 0 < lam → lam < mu → Overload.meanWait lam mu = (mu - lam)⁻¹
+
+#### Overload.meanWait_eq_of_little : theorem
+  ∀ {lam mu W : ℝ}, 0 < lam → lam < mu → Overload.meanQueue (lam / mu) = lam * W → W = (mu - lam)⁻¹
+
+#### Overload.meanWait_eq_of_little_pin : theorem
+  1 = (2 - 1)⁻¹
+
+#### Overload.meanWait_false_above_saturation : theorem
+  Overload.meanWait 2 1 ≠ (1 - 2)⁻¹
+
+#### Overload.meanWait_fifty_hundred : theorem
+  Overload.meanWait 50 100 = 50⁻¹
+
+#### Overload.meanWait_one_two : theorem
+  Overload.meanWait 1 2 = 1
+
+#### Overload.meanWait_saturation_junk : theorem
+  Overload.meanWait 1 1 = (1 - 1)⁻¹
+
+#### Overload.mesh_certified : theorem
+  Overload.Certificate !![3 / 5, 1 / 5; 1 / 5, 3 / 10]
+
+#### Overload.mesh_fixed_fraction_blocked : theorem
+  ¬Overload.Certificate !![3 / 5, 3 / 5; 3 / 5, 3 / 10]
+
+#### Overload.miscoded_pair_blind_then_refined : theorem
+  (fun x => 0) 0 = (fun x => 0) 1 ∧
+    Overload.refinedLabel (fun x => 0) (fun s => s) 0 ≠
+        Overload.refinedLabel (fun x => 0) (fun s => s) 1 ∧
+      Overload.FactorsThrough (fun s => s) (Overload.refinedLabel (fun x => 0) fun s => s)
+
+#### Overload.miscoding_opens_amplification : theorem
+  ∀ {lam : ℝ} {g : ℝ → ℝ} {m : ℕ} {e : ℝ} {hlam : 0 ≤ lam} {hm : 1 ≤ m}
+    {hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1} {hg_mono : MonotoneOn g (Set.Ici 0)}
+    {he : e ∈ Set.Icc 0 1},
+    0 < e →
+      2 ≤ m →
+        (Overload.eligibleLoop lam g m 0 hlam hm hg_mem hg_mono ⋯).NoSustaining ∧
+          1 < (Overload.eligibleLoop lam g m e hlam hm hg_mem hg_mono he).h 1
+
+#### Overload.mm1BandLoop : def
+  Overload.ClosedLoop
+  value-hash b7c7a643790ee4d8
+
+#### Overload.mm1BandLoop_gain_lt_one : theorem
+  deriv Overload.mm1BandLoop.F 31 < 1
+
+#### Overload.mm1BandLoop_healthy : theorem
+  Overload.mm1BandLoop.F 31 ≤ 31
+
+#### Overload.mm1BandLoop_inflow : theorem
+  100 ≤ Overload.mm1BandLoop.F 100
+
+#### Overload.mm1FlatLoop : def
+  Overload.ClosedLoop
+  value-hash 80f0e8a7621c1ec1
+
+#### Overload.mm1FlatLoop_not_bistable : theorem
+  ¬Overload.BistableOn Overload.mm1FlatLoop.F 0 120
+
+#### Overload.mm1Kernel : def
+  ℝ → ℝ → ℝ → ℝ
+  value-hash 25a810e17a829f27
+
+#### Overload.mm1Kernel_lt_one : theorem
+  ∀ {C τ Λ : ℝ}, Λ < C → 0 < τ → Overload.mm1Kernel C τ Λ < 1
+
+#### Overload.mm1Kernel_lt_one_pin : theorem
+  Overload.mm1Kernel 100 1 31 < 1
+
+#### Overload.mm1Kernel_mem : theorem
+  ∀ {C τ : ℝ}, 0 ≤ τ → ∀ (x : ℝ), 0 ≤ x → Overload.mm1Kernel C τ x ∈ Set.Icc 0 1
+
+#### Overload.mm1Kernel_monoOn : theorem
+  ∀ {C τ : ℝ}, 0 ≤ τ → MonotoneOn (Overload.mm1Kernel C τ) (Set.Ici 0)
+
+#### Overload.mm1Kernel_of_ge : theorem
+  ∀ {C τ Λ : ℝ}, C ≤ Λ → Overload.mm1Kernel C τ Λ = 1
+
+#### Overload.mm1Kernel_of_lt : theorem
+  ∀ {C τ Λ : ℝ}, Λ < C → Overload.mm1Kernel C τ Λ = Real.exp (-((C - Λ) * τ))
+
+#### Overload.mm1Kernel_tendsto_zero : theorem
+  ∀ {C Λ : ℝ}, Λ < C → Filter.Tendsto (fun τ => Overload.mm1Kernel C τ Λ) Filter.atTop (nhds 0)
+
+#### Overload.mm1Kernel_tendsto_zero_pin : theorem
+  Filter.Tendsto (fun τ => Overload.mm1Kernel 100 τ 31) Filter.atTop (nhds 0)
+
+#### Overload.mm1Kernel_zero_tau : theorem
+  ∀ (C Λ : ℝ), Overload.mm1Kernel C 0 Λ = 1
+
+#### Overload.mm1Loop : def
+  (lam : ℝ) → ℝ → (τ : ℝ) → (m : ℕ) → 0 ≤ lam → 0 ≤ τ → 1 ≤ m → Overload.ClosedLoop
+  value-hash 347e5c28a9c3bdcc
+
+#### Overload.mm1Loop_bistable : theorem
+  Overload.BistableOn (Overload.mm1Loop 30 100 1 4 ⋯ ⋯ ⋯).F 0 120
+
+#### Overload.mm1Loop_congestedEq : theorem
+  Overload.mm1BandLoop.CongestedEq 100
+
+#### Overload.mm1Loop_two_fixedPts : theorem
+  ∃ z₁ z₂,
+    Function.IsFixedPt Overload.mm1BandLoop.F z₁ ∧
+      Function.IsFixedPt Overload.mm1BandLoop.F z₂ ∧ z₁ ≤ 31 ∧ 100 ≤ z₂ ∧ z₁ < z₂
+
+#### Overload.mulVec_apply' : theorem
+  ∀ {k : ℕ} (J : Matrix (Fin k) (Fin k) ℝ) (x : Fin k → ℝ) (i : Fin k),
+    J.mulVec x i = ∑ j, J i j * x j
+
+#### Overload.neff : def
+  (ℕ → ℝ) → (ℕ → ℝ) → ℝ → ℕ → ℕ
+  value-hash 4a0ce20e713bc134
+
+#### Overload.neff_antitone_latency : theorem
+  ∀ {T T' B : ℕ → ℝ} {D : ℝ} {n : ℕ},
+    (∀ (j : ℕ), T j ≤ T' j) → Overload.neff T' B D n ≤ Overload.neff T B D n
+
+#### Overload.neff_antitone_latency_pin : theorem
+  Overload.neff (fun x => 2) (fun x => 0) (7 / 2) 10 ≤ 3
+
+#### Overload.neff_const : theorem
+  ∀ {D t b : ℝ},
+    0 < t →
+      0 ≤ b →
+        0 ≤ D → ∀ (n : ℕ), Overload.neff (fun x => t) (fun x => b) D n = min n ⌊(D + b) / (t + b)⌋₊
+
+#### Overload.neff_eq_zero_of_strictly_slow : theorem
+  ∀ {T B : ℕ → ℝ} {D : ℝ} {n : ℕ},
+    D < T 0 → (∀ (j : ℕ), 0 ≤ T j) → (∀ (j : ℕ), 0 ≤ B j) → Overload.neff T B D n = 0
+
+#### Overload.neff_eq_zero_of_strictly_slow_pin : theorem
+  Overload.neff (fun x => 5) (fun x => 0) 2 10 = 0
+
+#### Overload.neff_ge_of_fast : theorem
+  ∀ {D : ℝ} {k n : ℕ},
+    k ≤ n →
+      0 < D → ∃ t, 0 < t ∧ ∀ (T : ℕ → ℝ), (∀ (j : ℕ), T j ≤ t) → k ≤ Overload.neff T (fun x => 0) D n
+
+#### Overload.neff_ge_of_fast_pin : theorem
+  ∃ t, 0 < t ∧ ∀ (T : ℕ → ℝ), (∀ (j : ℕ), T j ≤ t) → 5 ≤ Overload.neff T (fun x => 0) 10 20
+
+#### Overload.neff_geom_backoff_le : theorem
+  ∀ {T : ℕ → ℝ} {D b r : ℝ},
+    1 < r →
+      0 < b →
+        (∀ (j : ℕ), 0 ≤ T j) →
+          0 ≤ D →
+            ∀ (n : ℕ),
+              ↑(Overload.neff T (fun j => b * r ^ j) D n) ≤ 1 + Real.logb r (1 + D * (r - 1) / b)
+
+#### Overload.neff_geom_backoff_le_pin : theorem
+  ↑(Overload.neff (fun x => 1) (fun j => 1 * 2 ^ j) 7 100) ≤ 4
+
+#### Overload.neff_le : theorem
+  ∀ (T B : ℕ → ℝ) (D : ℝ) (n : ℕ), Overload.neff T B D n ≤ n
+
+#### Overload.neff_le_one_of_slow : theorem
+  ∀ {T B : ℕ → ℝ} {D : ℝ} {n : ℕ},
+    D ≤ T 0 → (∀ (j : ℕ), 0 < T j) → (∀ (j : ℕ), 0 ≤ B j) → Overload.neff T B D n ≤ 1
+
+#### Overload.neff_linear_backoff_le : theorem
+  ∀ {T : ℕ → ℝ} {D b : ℝ},
+    0 < b →
+      (∀ (j : ℕ), 0 ≤ T j) →
+        0 ≤ D → ∀ (n : ℕ), ↑(Overload.neff T (fun j => (↑j + 1) * b) D n) ≤ 1 + √(2 * D / b)
+
+#### Overload.neff_linear_backoff_le_pin : theorem
+  ↑(Overload.neff (fun x => 1) (fun j => (↑j + 1) * 1) 8 100) ≤ 5
+
+#### Overload.neff_rearmed : theorem
+  ∀ {D τ : ℝ}, 0 < τ → 0 ≤ D → ∀ (n : ℕ), Overload.neff (fun x => τ) (fun x => 0) D n = min n ⌊D / τ⌋₊
+
+#### Overload.neff_slow_remaining : theorem
+  ∀ {T B : ℕ → ℝ} {D : ℝ} {n : ℕ},
+    T 0 = D → (∀ (j : ℕ), 0 < T j) → (∀ (j : ℕ), 0 ≤ B j) → 1 ≤ n → Overload.neff T B D n = 1
+
+#### Overload.neff_unit_no_backoff_eq_three : theorem
+  Overload.neff (fun x => 1) (fun x => 0) (7 / 2) 10 = 3
+
+#### Overload.noRetryLoop : def
+  (lam : ℝ) → 0 ≤ lam → Overload.ClosedLoop
+  value-hash 6eb485dc26728246
+
+#### Overload.noRetryLoop_noSustaining : theorem
+  ∀ (lam : ℝ) (hlam : 0 ≤ lam), (Overload.noRetryLoop lam hlam).NoSustaining
+
+#### Overload.noRetryLoop_no_congestedEq : theorem
+  ¬(Overload.noRetryLoop 1 ⋯).CongestedEq 2
+
+#### Overload.noRetryLoop_reduction_budget_zero : theorem
+  ¬(Overload.noRetryLoop 3 ⋯).CongestedEq 5
+
+#### Overload.no_signature_cert_of_separating_pair : theorem
+  ∀ {Φ : Overload.ClosedLoop → Prop} {L₁ L₂ : Overload.ClosedLoop},
+    L₁.signature = L₂.signature →
+      Φ L₁ →
+        ¬Φ L₂ →
+          ∀ (P : Overload.ClosedLoop → Prop),
+            Overload.FactorsThroughSignature P → ¬∀ (L : Overload.ClosedLoop), P L ↔ Φ L
+
+#### Overload.no_star_signature_cert_of_separating_pair : theorem
+  ∀ {Φ : Overload.Star 1 → Prop} {S₁ S₂ : Overload.Star 1} {K₁ K₂ : Fin 1 → ℝ},
+    S₁.Contract K₁ →
+      S₂.Contract K₂ →
+        ∑ i, S₁.signature K₁ i = ∑ i, S₂.signature K₂ i →
+          Φ S₁ →
+            ¬Φ S₂ →
+              ∀ (P : Overload.Star 1 → (Fin 1 → ℝ) → Prop),
+                Overload.FactorsThroughStarSignature P →
+                  ¬∀ (S : Overload.Star 1) (K : Fin 1 → ℝ), S.Contract K → (P S K ↔ Φ S)
+
+#### Overload.no_stranding : theorem
+  ∀ {demand : ℕ → ℝ} {C : ℝ},
+    0 ≤ C →
+      (∀ (j : ℕ), 0 ≤ demand j) →
+        ∀ (k : ℕ),
+          ∑ j ∈ Finset.range k, Overload.alloc demand C j = min (∑ j ∈ Finset.range k, demand j) C
+
+#### Overload.not_congestedEq_of_le_pin : theorem
+  ¬(Overload.stepLoop 1 10 4 ⋯ ⋯).CongestedEq 10
+
+#### Overload.offeredAttempts : def
+  {k : ℕ} → (Fin k → ℝ) → (Fin k → ℝ) → Fin k → ℝ
+  value-hash 28d6800cafa85df9
+
+#### Overload.one_add_le_amp_of_rearmed : theorem
+  ∀ {τ D : ℝ} {n : ℕ},
+    0 < τ →
+      2 * τ ≤ D →
+        2 ≤ n →
+          ∀ {p : ℝ},
+            0 ≤ p → 1 + p ≤ Overload.expAttempts p (Overload.neff (fun x => τ) (fun x => 0) D n)
+
+#### Overload.one_add_le_amp_of_rearmed_pin : theorem
+  1 + 1 / 2 ≤ Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 2 2)
+
+#### Overload.one_add_le_expAttempts : theorem
+  ∀ {p : ℝ}, 0 ≤ p → ∀ {n : ℕ}, 2 ≤ n → 1 + p ≤ Overload.expAttempts p n
+
+#### Overload.one_le_coupledAmp : theorem
+  ∀ (layers : List (ℝ × ℕ)) {p : ℝ},
+    p ∈ Set.Icc 0 1 →
+      (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → (∀ x ∈ layers, 1 ≤ x.2) → 1 ≤ Overload.coupledAmp layers p
+
+#### Overload.one_le_expAttempts : theorem
+  ∀ {p : ℝ}, 0 ≤ p → ∀ {n : ℕ}, 1 ≤ n → 1 ≤ Overload.expAttempts p n
+
+#### Overload.one_le_expAttemptsDeriv : theorem
+  ∀ {p : ℝ}, 0 ≤ p → ∀ {n : ℕ}, 2 ≤ n → 1 ≤ Overload.expAttemptsDeriv p n
+
+#### Overload.one_le_layersAmp : theorem
+  ∀ (S : List Overload.Layer), 1 ≤ Overload.layersAmp S
+
+#### Overload.one_le_stackAmp : theorem
+  ∀ {ι : Type u_1} (s : Finset ι) {p : ι → ℝ} {n : ι → ℕ},
+    (∀ i ∈ s, 0 ≤ p i) → (∀ i ∈ s, 1 ≤ n i) → 1 ≤ Overload.stackAmp s p n
+
+#### Overload.one_lt_mm1BandLoop_gain : theorem
+  1 < deriv Overload.mm1BandLoop.F 99
+
+#### Overload.one_sub_mul_expAttempts : theorem
+  ∀ (p : ℝ) (n : ℕ), (1 - p) * Overload.expAttempts p n = 1 - p ^ n
+
+#### Overload.operator_bracket_pin : theorem
+  Overload.lfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) ≤
+      Overload.gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) ∧
+    2 * 4 ≤ Overload.gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4)
+
+#### Overload.overloadOmittedTokens : def
+  List String
+  value-hash 6233aa6ff3b97690
+
+#### Overload.pairing_lt_of_rankOne_certificate : theorem
+  ∀ {k : ℕ} {a b : Fin k → ℝ},
+    (∀ (j : Fin k), 0 ≤ b j) →
+      Overload.Certificate (Matrix.of fun i j => a i * b j) → ∑ j, b j * a j < 1
+
+#### Overload.phase_matches_of_rho_eq : theorem
+  ∀ {lam₁ C₁ lam₂ C₂ A : ℝ},
+    0 < C₁ →
+      0 < C₂ →
+        lam₁ / C₁ = lam₂ / C₂ →
+          (Overload.HealthyOnly lam₁ A C₁ ↔ Overload.HealthyOnly lam₂ A C₂) ∧
+            (Overload.BistableBand lam₁ A C₁ ↔ Overload.BistableBand lam₂ A C₂) ∧
+              (Overload.CongestedOnly lam₁ C₁ ↔ Overload.CongestedOnly lam₂ C₂)
+
+#### Overload.phase_matches_of_rho_eq_pin : theorem
+  Overload.BistableBand 5 3 10
+
+#### Overload.phase_regions_disjoint_pin : theorem
+  ¬Overload.BistableBand 1 2 3 ∧ ¬Overload.CongestedOnly 1 3 ∧ ¬Overload.CongestedOnly 1 2
+
+#### Overload.phase_scale_pin : theorem
+  Overload.HealthyOnly (2 * 1) 2 (2 * 3) ∧
+    Overload.BistableBand (2 * 1) 3 (2 * 2) ∧ Overload.CongestedOnly (2 * 3) (2 * 1)
+
+#### Overload.phase_trichotomy : theorem
+  ∀ (lam A C : ℝ),
+    Overload.HealthyOnly lam A C ∨ Overload.BistableBand lam A C ∨ Overload.CongestedOnly lam C
+
+#### Overload.phase_trichotomy_pin : theorem
+  (Overload.HealthyOnly 3 (1 / 2) 2 ∨
+      Overload.BistableBand 3 (1 / 2) 2 ∨ Overload.CongestedOnly 3 2) ∧
+    Overload.HealthyOnly 3 (1 / 2) 2 ∧ Overload.CongestedOnly 3 2
+
+#### Overload.pipelineAcct : def
+  Overload.Accounting
+  value-hash a791bf0766c04be6
+
+#### Overload.pipeline_replay_envelope : theorem
+  ∀ {lam : ℝ}, lam * 2 * 1 ≤ 8 → lam ≤ 8 / (2 * 1)
+
+#### Overload.pipeline_replay_envelope_at_four : theorem
+  4 ≤ 8 / (2 * 1)
+
+#### Overload.pipeline_squash_caps_ipc : theorem
+  ∀ {G : ℝ},
+    G * Overload.pipelineAcct.time * 1 ≤ Overload.pipelineAcct.useful →
+      G * 1 ≤
+        (1 - 1 / 4) * Overload.pipelineAcct.capacity -
+          Overload.pipelineAcct.idle / Overload.pipelineAcct.time
+
+#### Overload.plateau : theorem
+  ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ} {C : ℝ},
+    (∀ j ∈ s, 1 ≤ cap j) →
+      (∀ j ∈ s, 0 ≤ lam j) →
+        ∀ {p : ℝ},
+          Overload.UniformLossEq s lam cap C p → Overload.goodput s lam cap p = min (∑ j ∈ s, lam j) C
+
+#### Overload.pool_rate_bound : theorem
+  ∀ {inflight rate sojourn P : ℝ},
+    inflight = rate * sojourn → inflight ≤ P → 0 < sojourn → rate ≤ P / sojourn
+
+#### Overload.pool_rate_bound_pin : theorem
+  4 ≤ 1 / (1 / 4)
+
+#### Overload.postfixedPts : def
+  (ℝ → ℝ) → ℝ → ℝ → Set ℝ
+  value-hash 89f013287257590d
+
+#### Overload.prefixedPts : def
+  (ℝ → ℝ) → ℝ → ℝ → Set ℝ
+  value-hash 8354e6b927dad707
+
+#### Overload.propDiscipline : def
+  (k : ℕ) → Overload.Discipline k
+  value-hash eef4dbed9ff3cc2d
+
+#### Overload.propDiscipline_alloc_at_overload : theorem
+  (Overload.propDiscipline 2).alloc ![3, 9] 4 0 = 1
+
+#### Overload.propDiscipline_alloc_eq_sharedGoodput : theorem
+  ∀ {k : ℕ} (lam A : Fin k → ℝ) (C : ℝ) (i : Fin k),
+    (Overload.propDiscipline k).alloc (Overload.offeredAttempts lam A) C i =
+      Overload.sharedGoodput lam A (min 1 (C / ∑ j, Overload.offeredAttempts lam A j)) i
+
+#### Overload.propDiscipline_sum_alloc_at_overload : theorem
+  ∑ i, (Overload.propDiscipline 2).alloc ![3, 9] 4 i = 4
+
+#### Overload.propDiscipline_sum_alloc_le_at_underload : theorem
+  ∑ i, (Overload.propDiscipline 2).alloc ![1, 2] 10 i ≤ 10 ∧
+    ∑ i, (Overload.propDiscipline 2).alloc ![1, 2] 10 i = 3
+
+#### Overload.rankOne_certificate_iff : theorem
+  ∀ {k : ℕ} {a b : Fin k → ℝ},
+    (∀ (i : Fin k), 0 ≤ a i) →
+      (∀ (j : Fin k), 0 ≤ b j) →
+        (Overload.Certificate (Matrix.of fun i j => a i * b j) ↔ ∑ j, b j * a j < 1)
+
+#### Overload.rankOne_certificate_of_pairing_lt : theorem
+  ∀ {k : ℕ} {a b : Fin k → ℝ},
+    (∀ (i : Fin k), 0 ≤ a i) →
+      (∀ (j : Fin k), 0 ≤ b j) →
+        ∑ j, b j * a j < 1 → Overload.Certificate (Matrix.of fun i j => a i * b j)
+
+#### Overload.reduction_budget_zero : theorem
+  ∀ (L : Overload.BoundedLoop) {Θ : ℝ}, (∀ p ∈ Set.Icc 0 1, L.h p ≤ 1) → L.lam < Θ → ¬L.CongestedEq Θ
+
+#### Overload.reduction_forced_failure : theorem
+  ∀ {ι : Type u_1} (s : Finset ι) (n : ι → ℕ), Overload.stackAmp s (fun x => 1) n = ∏ i ∈ s, ↑(n i)
+
+#### Overload.reduction_forced_failure_pin : theorem
+  Overload.stackAmp Finset.univ (fun x => 1) ![2, 3] = 6
+
+#### Overload.reduction_no_retries : theorem
+  ∀ {ι : Type u_1} (s : Finset ι) (p : ι → ℝ), (Overload.stackAmp s p fun x => 1) = 1
+
+#### Overload.reduction_no_retries_pin : theorem
+  (Overload.stackAmp Finset.univ ![1 / 2, 3 / 4] fun x => 1) = 1
+
+#### Overload.refinedLabel : def
+  {State : Type u_1} →
+    {Wire : Type u_2} →
+      {Reading : Type u_3} → (State → Wire) → (State → Reading) → State → Wire × Reading
+  value-hash 4b71b03fa7461a3
+
+#### Overload.region1Stack : def
+  List Overload.Layer
+  value-hash 82192d7b66681556
+
+#### Overload.region2Stack : def
+  List Overload.Layer
+  value-hash 48cf709feda40146
+
+#### Overload.residual : def
+  (ℕ → ℝ) → ℝ → ℕ → ℝ
+  value-hash 2d6d66882ae93d35
+
+#### Overload.residual_nonneg : theorem
+  ∀ (demand : ℕ → ℝ) (C : ℝ) (m : ℕ), 0 ≤ Overload.residual demand C m
+
+#### Overload.restrictIcc : def
+  (F : ℝ → ℝ) →
+    (a b : ℝ) →
+      MonotoneOn F (Set.Icc a b) →
+        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → ↑(Set.Icc a b) →o ↑(Set.Icc a b)
+  value-hash 3fbe5b28e7f250a8
+
+#### Overload.service_order_at_backlog : theorem
+  2 < Overload.fifoSojourn 25 10 ∧ Overload.lifoSojourn ≤ 2
+
+#### Overload.sharedGoodput : def
+  {k : ℕ} → (Fin k → ℝ) → (Fin k → ℝ) → ℝ → Fin k → ℝ
+  value-hash 5681bb0cea2f0322
+
+#### Overload.shared_budget_breaks_wald : theorem
+  ∀ {r : Fin 2 → ℕ}, r 0 + r 1 ≤ 1 → Overload.twoReqTotal r < Overload.twoReqTotal ![1, 1]
+
+#### Overload.shared_budget_breaks_wald_pin : theorem
+  Overload.twoReqTotal ![1, 0] < Overload.twoReqTotal ![1, 1]
+
+#### Overload.signature_gap_witnessed : theorem
+  ∀ (P : Overload.ClosedLoop → Prop),
+    Overload.FactorsThroughSignature P → ¬∀ (L : Overload.ClosedLoop), P L ↔ ¬L.CongestedEq 3
+
+#### Overload.signature_not_decide_congestedEq : theorem
+  ∀ {lam A C Θ : ℝ},
+    0 < lam →
+      1 ≤ A →
+        lam < Θ →
+          Θ ≤ lam * A →
+            lam * A < C →
+              ∀ (P : Overload.ClosedLoop → Prop),
+                Overload.FactorsThroughSignature P →
+                  ¬∀ (L : Overload.ClosedLoop), P L ↔ ¬L.CongestedEq Θ
+
+#### Overload.signature_not_decide_congestedEq_three : theorem
+  ∀ (P : Overload.ClosedLoop → Prop),
+    Overload.FactorsThroughSignature P → ¬∀ (L : Overload.ClosedLoop), P L ↔ ¬L.CongestedEq 3
+
+#### Overload.signature_not_decide_two_fixedPts : theorem
+  ∀ {lam A C : ℝ},
+    0 < lam →
+      1 ≤ A →
+        C ≤ lam * A →
+          lam < C →
+            ∀ (P : Overload.ClosedLoop → Prop),
+              Overload.FactorsThroughSignature P →
+                ¬∀ (L : Overload.ClosedLoop),
+                    P L ↔ ∃ z₁ z₂, Function.IsFixedPt L.F z₁ ∧ Function.IsFixedPt L.F z₂ ∧ z₁ < z₂
+
+#### Overload.signature_not_decide_two_fixedPts_three : theorem
+  ∀ (P : Overload.ClosedLoop → Prop),
+    Overload.FactorsThroughSignature P →
+      ¬∀ (L : Overload.ClosedLoop),
+          P L ↔ ∃ z₁ z₂, Function.IsFixedPt L.F z₁ ∧ Function.IsFixedPt L.F z₂ ∧ z₁ < z₂
+
+#### Overload.smoothDemoLoop_fixedPt_unique_pin : theorem
+  ¬(Function.IsFixedPt (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 10 ∧
+      Function.IsFixedPt (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 20)
+
+#### Overload.smoothDemoLoop_not_bistableOn : theorem
+  ¬Overload.BistableOn (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 0 (10 * 2)
+
+#### Overload.smoothLoop : def
+  (lam C A : ℝ) → 0 ≤ lam → 0 < C → 1 ≤ A → Overload.ClosedLoop
+  value-hash 5071faebae04c0cc
+
+#### Overload.smoothLoop_deriv_lt_one : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
+    lam * (A - 1) < C → ∀ {Λ : ℝ}, 0 ≤ Λ → deriv (Overload.smoothLoop lam C A hlam hC hA).F Λ < 1
+
+#### Overload.smoothLoop_fixedPt_unique : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
+    lam * (A - 1) < C →
+      ∀ {x y : ℝ},
+        x ∈ Set.Icc 0 (lam * A) →
+          y ∈ Set.Icc 0 (lam * A) →
+            Function.IsFixedPt (Overload.smoothLoop lam C A hlam hC hA).F x →
+              Function.IsFixedPt (Overload.smoothLoop lam C A hlam hC hA).F y → x = y
+
+#### Overload.smoothLoop_not_bistableOn : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
+    lam * (A - 1) < C → ¬Overload.BistableOn (Overload.smoothLoop lam C A hlam hC hA).F 0 (lam * A)
+
+#### Overload.spikeLoop : def
+  Overload.ClosedLoop
+  value-hash a0517218d05e9b3d
+
+#### Overload.spikeLoop_no_congestedEq : theorem
+  ¬Overload.spikeLoop.CongestedEq 3
+
+#### Overload.spikeLoop_pointwise_fails : theorem
+  ¬∀ p ∈ Set.Icc 0 1, Overload.spikeLoop.lam * Overload.spikeLoop.h p < 3
+
+#### Overload.spikeLoop_sibling_congestedEq : theorem
+  (Overload.spikeLoop.constLoop 1 ⋯).CongestedEq 3
+
+#### Overload.spill_floor_blocks : theorem
+  ∀ {γ₁ γ₂ ε₁₂ ε₂₁ : ℝ},
+    0 ≤ ε₁₂ →
+      0 ≤ ε₂₁ →
+        γ₁ < 1 → γ₂ < 1 → (1 - γ₁) * (1 - γ₂) ≤ ε₁₂ * ε₂₁ → ¬Overload.Certificate !![γ₁, ε₁₂; ε₂₁, γ₂]
+
+#### Overload.spill_floor_blocks_weights : theorem
+  ∀ {γ₁ γ₂ ε₁₂ ε₂₁ : ℝ},
+    0 ≤ ε₁₂ →
+      0 ≤ ε₂₁ →
+        (1 - γ₁) * (1 - γ₂) ≤ ε₁₂ * ε₂₁ →
+          ¬∃ w, (∀ (i : Fin 2), 0 < w i) ∧ ∀ (i : Fin 2), !![γ₁, ε₁₂; ε₂₁, γ₂].mulVec w i < w i
+
+#### Overload.sqsUnclampedLoop : def
+  Overload.ClosedLoop
+  value-hash 4a5d3ae02ace534d
+
+#### Overload.sqs_bulk_outranks : theorem
+  ∀ {ρ : ℝ},
+    ρ ≠ 0 →
+      Overload.sharedGoodput ![2, 1] ![1, 30] ρ 1 / Overload.sharedGoodput ![2, 1] ![1, 30] ρ 0 = 15
+
+#### Overload.sqs_dlq_band_lower : theorem
+  ∀ {lam : ℝ} (hlam : 0 ≤ lam), (Overload.dlqLoop lam 100 5 hlam ⋯).CongestedEq 100 → 20 ≤ lam
+
+#### Overload.sqs_dlq_band_residual : theorem
+  Overload.BistableOn (Overload.dlqLoop 25 100 5 ⋯ ⋯).F 0 125
+
+#### Overload.sqs_dlq_no_congestedEq : theorem
+  ¬(Overload.dlqLoop 1 100 5 ⋯ ⋯).CongestedEq 100
+
+#### Overload.sqs_inversion_instance : theorem
+  ∃ Alo, 0 < Alo ∧ 2 * 1 / (2 * 1 + 1 * Alo) < 1 / 100
+
+#### Overload.sqs_redelivery_cap : theorem
+  Overload.neff (fun x => 30) (fun x => 0) 345600 20000 = 11520
+
+#### Overload.sqs_unclamped_bistable : theorem
+  Overload.BistableOn Overload.sqsUnclampedLoop.F 0 (1 * 11520)
+
+#### Overload.sqs_unclamped_congestedEq : theorem
+  Overload.sqsUnclampedLoop.CongestedEq 100
+
+#### Overload.stackAmp : def
+  {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℕ) → ℝ
+  value-hash 91c28b774ab32a8c
+
+#### Overload.stackAmp_le_prod_cap : theorem
+  ∀ {ι : Type u_1} (s : Finset ι) {p : ι → ℝ} (n : ι → ℕ),
+    (∀ i ∈ s, 0 ≤ p i) → (∀ i ∈ s, p i ≤ 1) → Overload.stackAmp s p n ≤ ∏ i ∈ s, ↑(n i)
+
+#### Overload.stackAmp_range_pin : theorem
+  (1 ≤ Overload.stackAmp Finset.univ (fun x => 1 / 2) fun x => 2) ∧
+    (Overload.stackAmp Finset.univ (fun x => 1 / 2) fun x => 2) ≤ 4
+
+#### Overload.stackFail : def
+  List (ℝ × ℕ) → ℝ → ℝ
+  value-hash 9e1d92bd0189ae12
+
+#### Overload.stackFail_cons : theorem
+  ∀ (ℓ : ℝ) (m : ℕ) (rest : List (ℝ × ℕ)) (base : ℝ),
+    Overload.stackFail ((ℓ, m) :: rest) base = Overload.composeFail ℓ (Overload.stackFail rest base) m
+
+#### Overload.stackFail_mem_Icc : theorem
+  ∀ (layers : List (ℝ × ℕ)) {base : ℝ},
+    base ∈ Set.Icc 0 1 →
+      (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → Overload.stackFail layers base ∈ Set.Icc 0 1
+
+#### Overload.stackFail_mono_base : theorem
+  ∀ (layers : List (ℝ × ℕ)) {b b' : ℝ},
+    b ∈ Set.Icc 0 1 →
+      b ≤ b' →
+        (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → Overload.stackFail layers b ≤ Overload.stackFail layers b'
+
+#### Overload.stackFail_mono_base_pin : theorem
+  Overload.stackFail [(1 / 2, 1)] 0 ≤ Overload.stackFail [(1 / 2, 1)] 1 ∧
+    Overload.stackFail [(1 / 2, 1)] 0 = 1 / 2 ∧ Overload.stackFail [(1 / 2, 1)] 1 = 1
+
+#### Overload.stackFail_nil : theorem
+  ∀ (base : ℝ), Overload.stackFail [] base = base
+
+#### Overload.stackToLoop : def
+  List Overload.Layer →
+    (lam : ℝ) →
+      (g : ℝ → ℝ) →
+        0 ≤ lam →
+          (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → MonotoneOn g (Set.Ici 0) → Overload.ClosedLoop
+  value-hash d164f8ada5089901
+
+#### Overload.stackToLoop_F : theorem
+  ∀ (S : List Overload.Layer) (lam : ℝ) (g : ℝ → ℝ) (hlam : 0 ≤ lam)
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)) (Λ : ℝ),
+    (Overload.stackToLoop S lam g hlam hg_mem hg_mono).F Λ = lam * Overload.layersAmp S
+
+#### Overload.stackToLoop_F_at_demo : theorem
+  (Overload.stackToLoop [{ p := 1 / 2, cap := 2, p_mem := ⋯, cap_pos := ⋯ }] 2
+            (Overload.stepKernel 10) ⋯ ⋯ ⋯).F
+        5 =
+      3 ∧
+    (Overload.stackToLoop [{ p := 1 / 2, cap := 2, p_mem := ⋯, cap_pos := ⋯ }] 2
+            (Overload.stepKernel 10) ⋯ ⋯ ⋯).F
+        100 =
+      3
+
+#### Overload.stack_budget_no_congestedEq : theorem
+  ∀ (S : List Overload.Layer) {lam C : ℝ} (g : ℝ → ℝ) (hlam : 0 ≤ lam)
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)),
+    lam * Overload.layersAmp S < C → ¬(Overload.stackToLoop S lam g hlam hg_mem hg_mono).CongestedEq C
+
+#### Overload.starWitness : def
+  Overload.Star 2
+  value-hash b9579c40e9075950
+
+#### Overload.starWitnessLight : def
+  Overload.Star 2
+  value-hash 8d3bdbcbfcef867
+
+#### Overload.starWitnessLight_no_congestedEq : theorem
+  ¬Overload.starWitnessLight.CongestedEq 10
+
+#### Overload.starWitness_F : theorem
+  ∀ (y : ℝ), Overload.starWitness.F y = 8 + 16 * Overload.stepKernel 10 y
+
+#### Overload.starWitness_bistable : theorem
+  Overload.BistableOn Overload.starWitness.F 0 24
+
+#### Overload.starWitness_congestedEq : theorem
+  Overload.starWitness.CongestedEq 10
+
+#### Overload.starWitness_isVectorEq : theorem
+  ∃ Λ,
+    ∑ j, Overload.starWitness.r j * Λ j = 24 ∧
+      ∀ (i : Fin 2),
+        Λ i =
+          Overload.starWitness.lam i *
+            Overload.starWitness.h i (Overload.starWitness.gD (∑ j, Overload.starWitness.r j * Λ j))
+
+#### Overload.star_signature_not_decide_congestedEq : theorem
+  ∀ (P : Overload.Star 1 → (Fin 1 → ℝ) → Prop),
+    Overload.FactorsThroughStarSignature P →
+      ¬∀ (S : Overload.Star 1) (K : Fin 1 → ℝ), S.Contract K → (P S K ↔ ¬S.CongestedEq 3)
+
+#### Overload.stationaryWeight : def
+  ℝ → ℕ → ℝ
+  value-hash 675823351d1c37c8
+
+#### Overload.stationaryWeight_nonneg : theorem
+  ∀ {ρ : ℝ}, 0 ≤ ρ → ρ ≤ 1 → ∀ (n : ℕ), 0 ≤ Overload.stationaryWeight ρ n
+
+#### Overload.stationaryWeight_nonneg_pin : theorem
+  0 ≤ Overload.stationaryWeight (1 / 2) 3
+
+#### Overload.stationaryWeight_succ : theorem
+  ∀ (ρ : ℝ) (n : ℕ), Overload.stationaryWeight ρ (n + 1) = ρ * Overload.stationaryWeight ρ n
+
+#### Overload.stationaryWeight_unique : theorem
+  ∀ {ρ : ℝ},
+    0 ≤ ρ →
+      ρ < 1 →
+        ∀ {f : ℕ → ℝ},
+          (∀ (n : ℕ), f (n + 1) = ρ * f n) →
+            HasSum f 1 → ∀ (n : ℕ), f n = Overload.stationaryWeight ρ n
+
+#### Overload.stationaryWeight_unique_of_global_balance : theorem
+  ∀ {lam mu : ℝ},
+    0 ≤ lam →
+      lam < mu →
+        ∀ {f : ℕ → ℝ},
+          (∀ (n : ℕ), (lam + mu) * f (n + 1) = lam * f n + mu * f (n + 2)) →
+            HasSum f 1 → ∀ (n : ℕ), f n = Overload.stationaryWeight (lam / mu) n
+
+#### Overload.stationaryWeight_zero : theorem
+  ∀ (ρ : ℝ), Overload.stationaryWeight ρ 0 = 1 - ρ
+
+#### Overload.stationaryWeight_zero_half : theorem
+  Overload.stationaryWeight (1 / 2) 0 = 1 / 2
+
+#### Overload.stepKernel : def
+  ℝ → ℝ → ℝ
+  value-hash cde05be21e3553de
+
+#### Overload.stepKernel_anti_capacity : theorem
+  ∀ {C C' : ℝ}, C ≤ C' → ∀ (x : ℝ), Overload.stepKernel C' x ≤ Overload.stepKernel C x
+
+#### Overload.stepKernel_mem : theorem
+  ∀ (C x : ℝ), 0 ≤ x → Overload.stepKernel C x ∈ Set.Icc 0 1
+
+#### Overload.stepKernel_monoOn : theorem
+  ∀ (C : ℝ), MonotoneOn (Overload.stepKernel C) (Set.Ici 0)
+
+#### Overload.stepKernel_of_ge : theorem
+  ∀ {C Λ : ℝ}, C ≤ Λ → Overload.stepKernel C Λ = 1
+
+#### Overload.stepKernel_of_lt : theorem
+  ∀ {C Λ : ℝ}, Λ < C → Overload.stepKernel C Λ = 0
+
+#### Overload.stepLoop : def
+  (lam : ℝ) → ℝ → (A : ℝ) → 0 ≤ lam → 1 ≤ A → Overload.ClosedLoop
+  value-hash d6705a28656296e9
+
+#### Overload.stepLoop_F_of_ge : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) {Λ : ℝ},
+    C ≤ Λ → (Overload.stepLoop lam C A hlam hA).F Λ = lam * A
+
+#### Overload.stepLoop_F_of_lt : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) {Λ : ℝ},
+    Λ < C → (Overload.stepLoop lam C A hlam hA).F Λ = lam
+
+#### Overload.stepLoop_bistable : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A),
+    C ≤ lam * A → lam < C → Overload.BistableOn (Overload.stepLoop lam C A ⋯ hA).F 0 (lam * A)
+
+#### Overload.stepLoop_burst_crosses : theorem
+  ∀ {lam C A Λ₀ B w : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A),
+    0 ≤ Λ₀ →
+      0 < w →
+        0 ≤ B → C ≤ Λ₀ + B / w → Λ₀ + B / w ≤ lam * A → (Overload.stepLoop lam C A ⋯ hA).CongestedEq C
+
+#### Overload.stepLoop_congestedEq : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A),
+    C ≤ lam * A → 0 < C → (Overload.stepLoop lam C A ⋯ hA).CongestedEq C
+
+#### Overload.stepLoop_congestedEq_anti_capacity : theorem
+  ∀ {lam C C' A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    C ≤ C' →
+      (Overload.stepLoop lam C' A hlam hA).CongestedEq C' →
+        (Overload.stepLoop lam C A hlam hA).CongestedEq C
+
+#### Overload.stepLoop_congestedEq_iff : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A),
+    0 < C → ((Overload.stepLoop lam C A ⋯ hA).CongestedEq C ↔ C / A ≤ lam)
+
+#### Overload.stepLoop_congestedEq_neg : theorem
+  (Overload.stepLoop 3 10 5 ⋯ ⋯).CongestedEq (-5)
+
+#### Overload.stepLoop_congestionEdge : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    0 < C → (Overload.stepLoop lam C A hlam hA).congestionEdge C = C / A
+
+#### Overload.stepLoop_congestionEdge_pin : theorem
+  (Overload.stepLoop 2 5 4 ⋯ ⋯).congestionEdge 5 = 5 / 4 ∧
+    5 / 4 ≤ (Overload.stepLoop 2 5 4 ⋯ ⋯).congestionEdge 5 ∧
+      (Overload.stepLoop 2 5 4 ⋯ ⋯).congestionEdge 5 ≤ 5
+
+#### Overload.stepLoop_equilibrium_trichotomy : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    (Overload.HealthyOnly lam A C →
+        Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam ∧
+          Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam) ∧
+      (Overload.BistableBand lam A C →
+          Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam ∧
+            Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A) ∧
+        (Overload.CongestedOnly lam C →
+          Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A ∧
+            Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A)
+
+#### Overload.stepLoop_equilibrium_trichotomy_pin : theorem
+  Overload.lfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) = 2 ∧
+    Overload.gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) = 2 * 4
+
+#### Overload.stepLoop_floor_certifies : theorem
+  ∀ {lam Cfloor C' A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    Cfloor ≤ C' →
+      ¬(Overload.stepLoop lam Cfloor A hlam hA).CongestedEq Cfloor →
+        ¬(Overload.stepLoop lam C' A hlam hA).CongestedEq C'
+
+#### Overload.stepLoop_gfpIcc_of_ge : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    C ≤ lam * A → Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A
+
+#### Overload.stepLoop_gfpIcc_of_healthyOnly : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    lam * A < C → Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam
+
+#### Overload.stepLoop_hundred_no_congestedEq : theorem
+  ¬(Overload.stepLoop 1 100 5 ⋯ ⋯).CongestedEq 100
+
+#### Overload.stepLoop_injectable_load : theorem
+  ∀ {lam C A δ : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A),
+    0 < C → ∀ (hδ0 : 0 ≤ δ), (Overload.stepLoop (lam + δ) C A ⋯ hA).CongestedEq C ↔ C / A - lam ≤ δ
+
+#### Overload.stepLoop_injectable_load_pin : theorem
+  (Overload.stepLoop (1 + 1) 10 5 ⋯ ⋯).CongestedEq 10 ∧
+    ¬(Overload.stepLoop (1 + 1 / 2) 10 5 ⋯ ⋯).CongestedEq 10
+
+#### Overload.stepLoop_jump_down : theorem
+  ∀ {C A : ℝ} (hC : 0 < C) (hA : 1 < A),
+    C / A < C ∧
+      Overload.gfpIcc (Overload.stepLoop (C / A) C A ⋯ ⋯).F 0 (C / A * A) = C ∧
+        ∀ (lam : ℝ) (hlam : 0 ≤ lam),
+          lam * A < C → Overload.gfpIcc (Overload.stepLoop lam C A hlam ⋯).F 0 (lam * A) = lam
+
+#### Overload.stepLoop_jump_down_pin : theorem
+  5 / 4 < 5 ∧
+    Overload.gfpIcc (Overload.stepLoop (5 / 4) 5 4 ⋯ ⋯).F 0 (5 / 4 * 4) = 5 ∧
+      ∀ (lam : ℝ) (hlam : 0 ≤ lam),
+        lam * 4 < 5 → Overload.gfpIcc (Overload.stepLoop lam 5 4 hlam ⋯).F 0 (lam * 4) = lam
+
+#### Overload.stepLoop_jump_up : theorem
+  ∀ {C A : ℝ} (hC : 0 < C) (hA : 1 < A),
+    C < C * A ∧
+      (∀ (lam : ℝ) (hlam : 0 ≤ lam),
+          lam < C → Overload.lfpIcc (Overload.stepLoop lam C A hlam ⋯).F 0 (lam * A) = lam) ∧
+        Overload.lfpIcc (Overload.stepLoop C C A ⋯ ⋯).F 0 (C * A) = C * A
+
+#### Overload.stepLoop_jump_up_pin : theorem
+  5 < 5 * 4 ∧
+    (∀ (lam : ℝ) (hlam : 0 ≤ lam),
+        lam < 5 → Overload.lfpIcc (Overload.stepLoop lam 5 4 hlam ⋯).F 0 (lam * 4) = lam) ∧
+      Overload.lfpIcc (Overload.stepLoop 5 5 4 ⋯ ⋯).F 0 (5 * 4) = 5 * 4
+
+#### Overload.stepLoop_lfpIcc_of_ge : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    C ≤ lam → Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A
+
+#### Overload.stepLoop_lfpIcc_of_lt : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    lam < C → Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam
+
+#### Overload.stepLoop_sweep_down_ge : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    C ≤ lam * A → ∀ (n : ℕ), lam * A ≤ (Overload.stepLoop lam C A hlam hA).F^[n] (lam * A)
+
+#### Overload.stepLoop_sweep_pin : theorem
+  (Overload.stepLoop 2 5 4 ⋯ ⋯).F^[3] 0 ≤ 2 ∧ 2 * 4 ≤ (Overload.stepLoop 2 5 4 ⋯ ⋯).F^[3] (2 * 4)
+
+#### Overload.stepLoop_sweep_up_le : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    lam < C → ∀ (n : ℕ), (Overload.stepLoop lam C A hlam hA).F^[n] 0 ≤ lam
+
+#### Overload.stepLoop_two_fixedPts : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A),
+    C ≤ lam * A →
+      lam < C →
+        ∃ z₁ z₂,
+          Function.IsFixedPt (Overload.stepLoop lam C A ⋯ hA).F z₁ ∧
+            Function.IsFixedPt (Overload.stepLoop lam C A ⋯ hA).F z₂ ∧ z₁ ≤ lam ∧ C ≤ z₂ ∧ z₁ < z₂
+
+#### Overload.stepLoop_withKernel : theorem
+  ∀ {lam C C' A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
+    (Overload.stepLoop lam C A hlam hA).withKernel (Overload.stepKernel C') ⋯ ⋯ =
+      Overload.stepLoop lam C' A hlam hA
+
+#### Overload.stepLoop_withLam : theorem
+  ∀ {lam lam' C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) (hlam' : 0 ≤ lam'),
+    (Overload.stepLoop lam C A hlam hA).withLam lam' hlam' = Overload.stepLoop lam' C A hlam' hA
+
+#### Overload.strictDiscipline : def
+  (k : ℕ) → Overload.Discipline k
+  value-hash e91ac10ac337f0f7
+
+#### Overload.strictDiscipline_alloc_at_overload : theorem
+  (Overload.strictDiscipline 2).alloc ![3, 9] 4 0 = 3
+
+#### Overload.sum_attemptWeight : theorem
+  ∀ (p : ℝ) {n : ℕ}, 1 ≤ n → ∑ j ∈ Finset.range n, Overload.attemptWeight p n j = 1
+
+#### Overload.sum_extendDemand : theorem
+  ∀ {k : ℕ} (d : Fin k → ℝ), ∑ j ∈ Finset.range k, Overload.extendDemand d j = ∑ i, d i
+
+#### Overload.sum_mul_attemptWeight : theorem
+  ∀ (p : ℝ) {n : ℕ},
+    1 ≤ n → ∑ j ∈ Finset.range n, (↑j + 1) * Overload.attemptWeight p n j = Overload.expAttempts p n
+
+#### Overload.sum_range_add_one : theorem
+  ∀ (m : ℕ), ∑ j ∈ Finset.range m, (↑j + 1) = ↑m * (↑m + 1) / 2
+
+#### Overload.sum_range_indicator_lt : theorem
+  ∀ {c : ℝ} {k N : ℕ}, k ≤ N → (∑ j ∈ Finset.range N, if j < k then c else 0) = ↑k * c
+
+#### Overload.tendsto_expAttempts_geom_bound : theorem
+  ∀ {p : ℝ}, 0 ≤ p → p < 1 → Filter.Tendsto (Overload.expAttempts p) Filter.atTop (nhds (1 - p)⁻¹)
+
+#### Overload.tendsto_expAttempts_geom_bound_pin : theorem
+  Filter.Tendsto (Overload.expAttempts (1 / 2)) Filter.atTop (nhds 2)
+
+#### Overload.tendsto_meanQueue_atTop : theorem
+  Filter.Tendsto Overload.meanQueue (nhdsWithin 1 (Set.Iio 1)) Filter.atTop
+
+#### Overload.tendsto_pred_div : theorem
+  Filter.Tendsto (fun m => ↑(m - 1) / ↑m) Filter.atTop (nhds 1)
+
+#### Overload.tendsto_succ_div : theorem
+  Filter.Tendsto (fun m => ↑(m + 1) / ↑m) Filter.atTop (nhds 1)
+
+#### Overload.thrashingAcct : def
+  Overload.Accounting
+  value-hash ff8e28a9c728cda3
+
+#### Overload.thrashingLoop : def
+  Overload.ClosedLoop
+  value-hash 2394fc88992d4201
+
+#### Overload.thrashing_bistable : theorem
+  Overload.BistableOn Overload.thrashingLoop.F 0 24
+
+#### Overload.thrashing_congestedEq : theorem
+  Overload.thrashingLoop.CongestedEq 20
+
+#### Overload.thrashing_inflow : theorem
+  20 ≤ Overload.thrashingLoop.F 20
+
+#### Overload.thrashing_mpl_control : theorem
+  ¬(Overload.cappedLoop 3 20 4 ⋯ ⋯).CongestedEq 20
+
+#### Overload.thrashing_waste_caps_goodput : theorem
+  ∀ {G : ℝ},
+    G * Overload.thrashingAcct.time * 1 ≤ Overload.thrashingAcct.useful →
+      G * 1 ≤
+        (1 - 45 / 100) * Overload.thrashingAcct.capacity -
+          Overload.thrashingAcct.idle / Overload.thrashingAcct.time
+
+#### Overload.top_class_isolation : theorem
+  ∀ {demand : ℕ → ℝ} {C : ℝ}, 0 ≤ C → Overload.alloc demand C 0 = min (demand 0) C
+
+#### Overload.totalTime : def
+  (ℕ → ℝ) → (ℕ → ℝ) → ℕ → ℝ
+  value-hash 6351aa516c25b
+
+#### Overload.totalTime_const_succ : theorem
+  ∀ (t b : ℝ) (m : ℕ), Overload.totalTime (fun x => t) (fun x => b) (m + 1) = (↑m + 1) * t + ↑m * b
+
+#### Overload.totalTime_mono_T : theorem
+  ∀ {T T' : ℕ → ℝ},
+    (∀ (j : ℕ), T j ≤ T' j) →
+      ∀ (B : ℕ → ℝ) (k : ℕ), Overload.totalTime T B k ≤ Overload.totalTime T' B k
+
+#### Overload.totalTime_zero : theorem
+  ∀ (T B : ℕ → ℝ), Overload.totalTime T B 0 = 0
+
+#### Overload.tsum_stationaryWeight : theorem
+  ∀ {ρ : ℝ}, 0 ≤ ρ → ρ < 1 → ∑' (n : ℕ), Overload.stationaryWeight ρ n = 1
+
+#### Overload.tsum_stationaryWeight_half : theorem
+  ∑' (n : ℕ), Overload.stationaryWeight (1 / 2) n = 1
+
+#### Overload.twoLayerLoop : def
+  Overload.ClosedLoop
+  value-hash c79825834001f8fd
+
+#### Overload.twoLayer_cap : theorem
+  ∀ x ∈ [(1 / 2, 2), (1 / 2, 2)], 1 ≤ x.2
+
+#### Overload.twoLayer_inflow : theorem
+  24 ≤ Overload.twoLayerLoop.F 24
+
+#### Overload.twoLayer_mem : theorem
+  ∀ x ∈ [(1 / 2, 2), (1 / 2, 2)], x.1 ∈ Set.Icc 0 1
+
+#### Overload.twoReqTotal : def
+  (Fin 2 → ℕ) → ℕ
+  value-hash 1f46c10c5ef28cea
+
+#### Overload.twoReqTotal_indep : theorem
+  Overload.twoReqTotal ![1, 1] = 4
+
+#### Overload.two_le_neff_rearmed : theorem
+  ∀ {D : ℝ} {n : ℕ} {τ : ℝ},
+    0 < τ → 2 * τ ≤ D → 2 ≤ n → 2 ≤ Overload.neff (fun x => τ) (fun x => 0) D n
+
+#### Overload.two_site_certificate_iff : theorem
+  ∀ {γ₁ γ₂ ε₁₂ ε₂₁ : ℝ},
+    0 ≤ γ₁ →
+      0 ≤ γ₂ →
+        0 ≤ ε₁₂ →
+          0 ≤ ε₂₁ →
+            γ₁ < 1 →
+              γ₂ < 1 → (Overload.Certificate !![γ₁, ε₁₂; ε₂₁, γ₂] ↔ ε₁₂ * ε₂₁ < (1 - γ₁) * (1 - γ₂))
+
+#### Overload.two_site_equilibrium_exists : theorem
+  ∀ {γ₁ γ₂ ε₁₂ ε₂₁ c₀ c₁ : ℝ},
+    ε₁₂ * ε₂₁ < (1 - γ₁) * (1 - γ₂) → ∃ x, Overload.affine !![γ₁, ε₁₂; ε₂₁, γ₂] ![c₀, c₁] x = x
+
+#### Overload.two_site_equilibrium_exists_pin : theorem
+  ∃ x, Overload.affine !![1 / 2, 1 / 4; 1 / 4, 1 / 2] ![1, 1] x = x
+
+#### Overload.uniform_congested_closedForm : theorem
+  ∀ {lam C : ℝ} {n : ℕ},
+    0 < C →
+      C < lam →
+        n ≠ 0 →
+          0 < (1 - C / lam) ^ (↑n)⁻¹ ∧
+            (1 - C / lam) ^ (↑n)⁻¹ < 1 ∧ lam * (1 - ((1 - C / lam) ^ (↑n)⁻¹) ^ n) = C
+
+#### Overload.uniform_congested_closedForm_pin : theorem
+  0 < (1 - 3 / 4) ^ (↑2)⁻¹ ∧ (1 - 3 / 4) ^ (↑2)⁻¹ < 1 ∧ 4 * (1 - ((1 - 3 / 4) ^ (↑2)⁻¹) ^ 2) = 3
+
+#### Overload.uniform_wald_product_eq : theorem
+  (Overload.expOf 2 fun x => 1 / 3) *
+      Overload.expCostOf Finset.univ (fun x => 1 / 2) Overload.coupledX =
+    3 / 2
+
+#### Overload.unitPath : def
+  Overload.SamplePath
+  value-hash 89fd14821a976f12
+
+#### Overload.unitPath_H1 : theorem
+  Filter.Tendsto (fun n => Overload.unitPath.a n / ↑n) Filter.atTop (nhds 1)
+
+#### Overload.unitPath_H2 : theorem
+  Filter.Tendsto (fun n => Overload.unitPath.sojournSum n / ↑n) Filter.atTop (nhds 1)
+
+#### Overload.unitPath_H3 : theorem
+  Filter.Tendsto (fun n => Overload.unitPath.valueSum (fun x => 1) n / ↑n) Filter.atTop (nhds 1)
+
+#### Overload.unitPath_W_nonneg : theorem
+  0 ≤ Overload.unitPath.W 5 ∧ Overload.unitPath.W 5 = 1
+
+#### Overload.unitPath_brumelle : theorem
+  Filter.Tendsto (fun t => Overload.unitPath.valueArea (fun x => 1) t / t) Filter.atTop (nhds 1)
+
+#### Overload.unitPath_little : theorem
+  Filter.Tendsto (fun t => Overload.unitPath.area t / t) Filter.atTop (nhds 1)
+
+#### Overload.unitPath_sojournSum : theorem
+  ∀ (n : ℕ), Overload.unitPath.sojournSum n = ↑n
+
+#### Overload.vector_goodput_bound : theorem
+  ∀ {K : ℕ} {G : ℝ} {r C : Fin K → ℝ} (k : Fin K), 0 < r k → G * r k ≤ C k → G ≤ C k / r k
+
+#### Overload.vector_goodput_bound_at_hop : theorem
+  800 ≤ ![1000, 4000] 0 / ![1, 5] 0 ∧ 800 ≤ ![1000, 4000] 1 / ![1, 5] 1
+
+#### Overload.wald_bounded : theorem
+  ∀ (N : ℕ) (P : ℕ → ℝ) (μ : ℝ), ∑ k ∈ Finset.range (N + 1), P k * (↑k * μ) = Overload.expOf N P * μ
+
+#### Overload.wald_bounded_pin : theorem
+  ∑ k ∈ Finset.range (2 + 1), 1 / 3 * (↑k * 5) = 5
+
+#### Overload.witnessFacts : def
+  Overload.SystemFacts (Fin 1) (Fin 1) (Fin 2) (Fin 2)
+  value-hash 66ad35b84ebb4718
+
+#### Overload.witnessFacts_cliff_implies_wasted : theorem
+  0 < Overload.witnessFacts.acct.wasted
+
+#### Overload.witnessFacts_dual_total : theorem
+  ∑ o, Overload.witnessFacts.originCount o = ∑ w, Overload.witnessFacts.wireCount w ∧
+    ∑ o, Overload.witnessFacts.originCount o = 1
+
+#### Overload.witnessFacts_goodput_bound : theorem
+  Overload.witnessFacts.goodput ≤
+    min Overload.witnessFacts.offered
+      (Overload.witnessFacts.acct.capacity / Overload.witnessFacts.sbar)
+
+#### Overload.witnessSuite : theorem
+  Overload.VerificationSuite True Overload.witnessFacts

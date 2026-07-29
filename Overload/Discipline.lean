@@ -35,8 +35,9 @@ that grant, has no congested equilibrium there —
 
 Also here, because service *order* is a discipline too: the stale-first
 waste channel. `fifo_head_expired` — backlog beyond `D·C` puts the FIFO
-sojourn past the deadline, so the newly-served unit is expired on service
-(the per-unit reading lives in `fifoSojourn`'s definition);
+sojourn past the deadline, so a unit admitted there expires before
+service, and under sustained backlog the unit now served is already
+expired (the per-unit reading lives in `fifoSojourn`'s definition);
 `lifoSojourn`/`lifo_fresh` record the newest-first contrast (the model
 content is the definition; the inequality is bookkeeping). Adaptive LIFO
 and controlled-delay queueing are the practice counterparts.
@@ -183,8 +184,9 @@ theorem propDiscipline_alloc_eq_sharedGoodput {k : ℕ} (lam A : Fin k → ℝ)
 ## Service order: the stale-first waste channel
 -/
 
-/-- FIFO sojourn under backlog `Q`: a newly-served unit waited the whole
-queue through, `Q / C` time at drain rate `C`. -/
+/-- FIFO sojourn under backlog `Q`: the wait `Q / C` at drain rate `C` —
+the queue a unit admitted at backlog `Q` must wait through; under
+sustained backlog, equally the wait the unit now served has behind it. -/
 noncomputable def fifoSojourn (Q C : ℝ) : ℝ := Q / C
 
 /-- LIFO sojourn of the newest item: zero queueing wait — newest-first
@@ -193,9 +195,10 @@ modeling content is this definition; `lifo_fresh` is its bookkeeping. -/
 def lifoSojourn : ℝ := 0
 
 /-- **FIFO stale service**: whenever backlog exceeds `D·C`, the FIFO
-sojourn `Q/C` exceeds the deadline `D` — the newly-served unit, which per
-`fifoSojourn` waited the whole queue through, is already expired when
-served. The modeling content (the per-unit reading, the stale-first waste
+sojourn `Q/C` exceeds the deadline `D` — a unit admitted at such a
+backlog expires before it is served, and under sustained backlog the
+unit now served is already expired. The modeling content (the per-unit
+reading, the stale-first waste
 channel) is `fifoSojourn`'s definition; this inequality is its bookkeeping.
 (Practice counterparts: adaptive LIFO, controlled-delay queueing.) -/
 theorem fifo_head_expired {Q C D : ℝ} (hC : 0 < C) (h : D * C < Q) :

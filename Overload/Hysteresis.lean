@@ -403,7 +403,7 @@ theorem stepLoop_congestionEdge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A
       rw [stepLoop_withLam hlam hA hx0]
       exact stepLoop_congestedEq (hCA.trans_le hx) hA
         ((div_le_iff₀ hA0).mp hx) hC
-  show sInf {lam' | ∃ h : 0 ≤ lam',
+  change sInf {lam' | ∃ h : 0 ≤ lam',
       ((stepLoop lam C A hlam hA).withLam lam' h).CongestedEq C} = C / A
   rw [hedge, csInf_Ici]
 

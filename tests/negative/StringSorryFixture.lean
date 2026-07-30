@@ -13,7 +13,7 @@ this line.
 
 Like `ExampleSorryFixture.lean` this fixture **compiles** (an `example` with
 `sorry` only warns), so it is not an expected-elaboration-failure. What must
-reject it is `checks.py --scan`, exercised by `run.sh`.
+reject it is `checks.py --scan`, exercised by the test driver.
 -/
 
 namespace Overload

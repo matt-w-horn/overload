@@ -24,7 +24,7 @@ instantiate.
   one, realizing the `NoSustaining` hypothesis of the sustaining-mechanisms
   audit.
 * `unitPath` — the unit-spaced trace (`aₙ = n`, `dₙ = n + 1`) discharging the
-  whole sample-path bundle of `Little.lean` at `τ = W̄ = Ḡ = 1`: H1, H2, and
+  whole sample-path bundle of `Little.lean` at `τ = Wbar = Gbar = 1`: H1, H2, and
   H3 hold simultaneously, so `SamplePath.little` and `SamplePath.brumelle`
   are not vacuous.
 
@@ -157,7 +157,7 @@ theorem noRetryLoop_no_congestedEq :
     ¬(noRetryLoop 1 (by norm_num)).CongestedEq 2 :=
   (noRetryLoop 1 (by norm_num)).noSustaining_no_congestedEq
     (noRetryLoop_noSustaining 1 (by norm_num))
-    (by show (1 : ℝ) < 2; norm_num)
+    (by change (1 : ℝ) < 2; norm_num)
 
 /-- Numeric regression on the zero-budget reduction: the no-retry loop meets
 the response ceiling `h ≤ 1` on the nose, so load `3` under threshold `5`
@@ -165,7 +165,7 @@ leaves no congested equilibrium. -/
 theorem noRetryLoop_reduction_budget_zero :
     ¬(noRetryLoop 3 (by norm_num)).CongestedEq 5 :=
   reduction_budget_zero (noRetryLoop 3 (by norm_num)).toBoundedLoop
-    (fun _ _ => le_rfl) (by show (3 : ℝ) < 5; norm_num)
+    (fun _ _ => le_rfl) (by change (3 : ℝ) < 5; norm_num)
 
 /-- A `BoundedLoop` that is not a `ClosedLoop`: a backpressure client whose
 response *falls* with the failure level (`h p = 5·(1−p)`), violating the
@@ -183,7 +183,7 @@ noncomputable def backpressureLoop : BoundedLoop where
 /-- The backpressure loop violates the `ClosedLoop` response floor at
 saturation: `h 1 = 0 < 1`. -/
 theorem backpressureLoop_not_one_le : ¬(1 : ℝ) ≤ backpressureLoop.h 1 := by
-  show ¬(1 : ℝ) ≤ 5 * (1 - 1)
+  change ¬(1 : ℝ) ≤ 5 * (1 - 1)
   norm_num
 
 /-- The disclosed `CongestedEq` asymmetry, bounded side, kernel-checked: the
@@ -193,7 +193,7 @@ fails at *every* threshold — including `Θ ≤ 0`, where every `ClosedLoop`
 satisfies it (`ClosedLoop.congestedEq_of_nonpos_threshold`). -/
 theorem backpressureLoop_no_congestedEq (Θ : ℝ) :
     ¬backpressureLoop.CongestedEq Θ := by
-  rintro ⟨Λ, hΛ0, hfix, -⟩
+  rintro ⟨Λ, -, hfix, -⟩
   rw [show backpressureLoop.F Λ = 1 * (5 * (1 - stepKernel 1 Λ)) from rfl]
     at hfix
   rcases lt_or_ge Λ 1 with h | h
@@ -226,8 +226,8 @@ noncomputable def looseBudgetLoop : BoundedLoop where
 (`F_le` gives only `F ≤ 100`): no congested equilibrium at threshold 10. -/
 theorem looseBudgetLoop_safe : ¬looseBudgetLoop.CongestedEq 10 :=
   looseBudgetLoop.budget_no_congestedEq (β := 1)
-    (fun p hp => by show (1 : ℝ) + p ≤ 1 + 1; linarith [hp.2])
-    (by show (1 : ℝ) * (1 + 1) < 10; norm_num)
+    (fun p hp => by change (1 : ℝ) + p ≤ 1 + 1; linarith [hp.2])
+    (by change (1 : ℝ) * (1 + 1) < 10; norm_num)
 
 /-!
 ## The sample-path bundle
@@ -248,7 +248,7 @@ def unitPath : SamplePath where
 
 /-- On the unit-spaced trace the cumulative sojourn is the customer count. -/
 theorem unitPath_sojournSum (n : ℕ) : unitPath.sojournSum n = n := by
-  show ∑ k ∈ Finset.range n, (((k : ℝ) + 1) - (k : ℝ)) = n
+  change ∑ k ∈ Finset.range n, (((k : ℝ) + 1) - (k : ℝ)) = n
   rw [Finset.sum_congr rfl (fun k _ => by ring : ∀ k ∈ Finset.range n,
     ((k : ℝ) + 1) - (k : ℝ) = 1)]
   simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]
@@ -256,17 +256,17 @@ theorem unitPath_sojournSum (n : ℕ) : unitPath.sojournSum n = n := by
 /-- Numeric regression on the sojourn interface: the unit-spaced trace holds
 customer `5` for exactly `1`, which the nonnegativity pin bounds below. -/
 theorem unitPath_W_nonneg : 0 ≤ unitPath.W 5 ∧ unitPath.W 5 = 1 :=
-  ⟨unitPath.W_nonneg 5, by show ((5 : ℝ) + 1) - (5 : ℝ) = 1; norm_num⟩
+  ⟨unitPath.W_nonneg 5, by change ((5 : ℝ) + 1) - (5 : ℝ) = 1; norm_num⟩
 
 /-- **H1 on the unit-spaced trace**: arrivals have rate `1` (`τ = 1`). The
 shape all three hypotheses take here is `n / n → 1`, which is Mathlib's
 `tendsto_natCast_div_add_atTop` at `x = 0`. -/
 theorem unitPath_H1 :
     Filter.Tendsto (fun n : ℕ => unitPath.a n / n) Filter.atTop (nhds 1) := by
-  show Filter.Tendsto (fun n : ℕ => (n : ℝ) / n) Filter.atTop (nhds 1)
+  change Filter.Tendsto (fun n : ℕ => (n : ℝ) / n) Filter.atTop (nhds 1)
   simpa using tendsto_natCast_div_add_atTop (0 : ℝ)
 
-/-- **H2 on the unit-spaced trace**: the Cesàro sojourn mean is `W̄ = 1`. -/
+/-- **H2 on the unit-spaced trace**: the Cesàro sojourn mean is `Wbar = 1`. -/
 theorem unitPath_H2 :
     Filter.Tendsto (fun n : ℕ => unitPath.sojournSum n / n) Filter.atTop
       (nhds 1) := by
@@ -274,7 +274,7 @@ theorem unitPath_H2 :
     tendsto_natCast_div_add_atTop (0 : ℝ)
 
 /-- **H3 on the unit-spaced trace**, at unit weight: the Cesàro value mean is
-`Ḡ = 1`. -/
+`Gbar = 1`. -/
 theorem unitPath_H3 :
     Filter.Tendsto (fun n : ℕ => unitPath.valueSum (fun _ => 1) n / n)
       Filter.atTop (nhds 1) := by
@@ -282,14 +282,14 @@ theorem unitPath_H3 :
     tendsto_natCast_div_add_atTop (0 : ℝ)
 
 /-- The bundle discharged: `SamplePath.little` applies to the unit-spaced
-trace and returns the time-average number in system `λ·W̄ = 1`. H1 and H2 are
+trace and returns the time-average number in system `λ·Wbar = 1`. H1 and H2 are
 therefore jointly satisfiable. -/
 theorem unitPath_little :
     Filter.Tendsto (fun t => unitPath.area t / t) Filter.atTop (nhds 1) := by
   simpa using unitPath.little (one_pos : (0 : ℝ) < 1) unitPath_H1 unitPath_H2
 
 /-- The weighted bundle discharged: `SamplePath.brumelle` applies at unit
-weight and returns the time-average value in system `λ·Ḡ = 1`. H1, H2, and H3
+weight and returns the time-average value in system `λ·Gbar = 1`. H1, H2, and H3
 are jointly satisfiable. -/
 theorem unitPath_brumelle :
     Filter.Tendsto (fun t => unitPath.valueArea (fun _ => 1) t / t)

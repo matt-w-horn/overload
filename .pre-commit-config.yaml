@@ -12,6 +12,18 @@ repos:
       - id: gitleaks
   - repo: local
     hooks:
+      # Anti-silencing gate: a staged diff that adds a gate-silencing token
+      # (set_option linter./debug./maxHeartbeats, @[nolint, an axiom/unsafe/
+      # partial declaration, @[implemented_by, @[extern) or touches a linter
+      # line in lakefile.toml needs a deliberate sign-off — the linter
+      # configuration is only as strong as the review gate on changes to it.
+      # Sign off with SKIP=silencing-guard when the change is meant.
+      - id: silencing-guard
+        name: silencing-guard (no silent gate changes)
+        entry: make silencing-guard
+        language: system
+        pass_filenames: false
+        always_run: true
       # The zero-sorry claim, enforced on staged sources. `lake build`'s axiom
       # sweep cannot do this: Lean never adds an `example` to the environment,
       # so a `sorry` inside one builds green and the audit count does not move
@@ -26,15 +38,15 @@ repos:
         language: system
         files: \.lean$
         exclude: ^(tests/negative|OverloadTest)/
-      # The full verification ritual — build, lint, test, stamp — on every
-      # commit. Incremental `lake build` keeps it cheap when little changed.
-      # Escape hatches, in the open by design:
+      # The full verification ritual — build, lint, lint-style, test, stamp
+      # — on every commit. Incremental `lake build` keeps it cheap when
+      # little changed. Escape hatches, in the open by design:
       #   SKIP=verify git commit …    git commit --no-verify
-      # A skipped verify means run scripts/verify.sh afterwards, not shrink
-      # the escape hatch.
+      # A skipped verify means run `make verify` afterwards, not shrink the
+      # escape hatch.
       - id: verify
-        name: verify (lake build + lint + test)
-        entry: bash scripts/verify.sh
+        name: verify (make verify - build + lint + test)
+        entry: make verify
         language: system
         pass_filenames: false
         always_run: true

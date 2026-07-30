@@ -221,13 +221,13 @@ cell level retries up to 3 times. Whatever the per-attempt failure
 probabilities and whatever the load-coupled kernel, offered load 2 with
 composite amplification at most `4·3 = 12` gives `2·12 = 24 < 100`: the
 assembled two-layer cascade has no congested equilibrium. The certificate
-never inspects the kernel. -/
+never inspects the kernel — it asks for no monotonicity, only that its
+values stay in `[0, 1]`. -/
 theorem borg_cascade_certified (p₁ p₂ : ℝ) (h₁ : p₁ ∈ Set.Icc (0 : ℝ) 1)
     (h₂ : p₂ ∈ Set.Icc (0 : ℝ) 1) (g : ℝ → ℝ)
-    (hg_mem : ∀ x, 0 ≤ x → g x ∈ Set.Icc (0 : ℝ) 1)
-    (hg_mono : MonotoneOn g (Set.Ici (0 : ℝ))) :
+    (hg_mem : ∀ x, 0 ≤ x → g x ∈ Set.Icc (0 : ℝ) 1) :
     ¬(stackToLoop [⟨p₁, 4, h₁, by norm_num⟩, ⟨p₂, 3, h₂, by norm_num⟩]
-        2 g (by norm_num) hg_mem hg_mono).CongestedEq 100 := by
+        2 g (by norm_num) hg_mem).CongestedEq 100 := by
   apply stack_budget_no_congestedEq
   have hle := layersAmp_le_prod_cap
     [⟨p₁, 4, h₁, by norm_num⟩, ⟨p₂, 3, h₂, by norm_num⟩]

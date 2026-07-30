@@ -106,6 +106,7 @@ strict-priority allocation of `Overload/Priority.lean`. -/
 noncomputable def extendDemand {k : ℕ} (d : Fin k → ℝ) : ℕ → ℝ :=
   fun n => if h : n < k then d ⟨n, h⟩ else 0
 
+/-- The zero-extension of nonnegative demands is nonnegative. -/
 theorem extendDemand_nonneg {k : ℕ} {d : Fin k → ℝ} (hd : ∀ j, 0 ≤ d j)
     (n : ℕ) : 0 ≤ extendDemand d n := by
   unfold extendDemand
@@ -113,6 +114,8 @@ theorem extendDemand_nonneg {k : ℕ} {d : Fin k → ℝ} (hd : ∀ j, 0 ≤ d j
   · exact hd _
   · exact le_rfl
 
+/-- The `Finset.range k` sum of the zero-extension equals the `Fin k` sum of
+the original demands. -/
 theorem sum_extendDemand {k : ℕ} (d : Fin k → ℝ) :
     ∑ j ∈ Finset.range k, extendDemand d j = ∑ i, d i := by
   rw [← Fin.sum_univ_eq_sum_range (fun n => extendDemand d n) k]
@@ -126,7 +129,7 @@ noncomputable def strictDiscipline (k : ℕ) : Discipline k where
   alloc := fun d C i => alloc (extendDemand d) C i.val
   alloc_nonneg := fun d _C i hd _hC =>
     alloc_nonneg (extendDemand_nonneg hd) i.val
-  alloc_le_demand := fun d C i hd _hC => by
+  alloc_le_demand := fun d C i _hd _hC => by
     have h := alloc_le_demand (demand := extendDemand d) (C := C) (j := i.val)
     rwa [show extendDemand d i.val = d i from by simp [extendDemand]] at h
   sum_alloc := fun d C hd hC => by
@@ -176,7 +179,7 @@ theorem propDiscipline_alloc_eq_sharedGoodput {k : ℕ} (lam A : Fin k → ℝ)
     (C : ℝ) (i : Fin k) :
     (propDiscipline k).alloc (offeredAttempts lam A) C i
       = sharedGoodput lam A (min 1 (C / ∑ j, offeredAttempts lam A j)) i := by
-  show offeredAttempts lam A i * min 1 (C / ∑ j, offeredAttempts lam A j)
+  change offeredAttempts lam A i * min 1 (C / ∑ j, offeredAttempts lam A j)
     = min 1 (C / ∑ j, offeredAttempts lam A j) * offeredAttempts lam A i
   exact mul_comm _ _
 
@@ -251,11 +254,11 @@ theorem class_clamp_at_overload :
   (propDiscipline 2).class_clamp_no_congestedEq (Kc := 2)
     (stepLoop (1 / 4) 10 2 (by norm_num) (by norm_num)).toBoundedLoop
     (fun p hp => by
-      show (1 : ℝ) + p * (2 - 1) ≤ 2
+      change (1 : ℝ) + p * (2 - 1) ≤ 2
       linarith [hp.2])
     ![3, 9] 4 0
     (by
-      show (1 : ℝ) / 4 * 2 < (propDiscipline 2).alloc ![3, 9] 4 0
+      change (1 : ℝ) / 4 * 2 < (propDiscipline 2).alloc ![3, 9] 4 0
       rw [propDiscipline_alloc_at_overload]
       norm_num)
 
@@ -270,7 +273,7 @@ theorem service_order_at_backlog :
 `(3, 1)` — the languages differ, the interface holds for both. -/
 theorem strictDiscipline_alloc_at_overload :
     (strictDiscipline 2).alloc ![3, 9] 4 0 = 3 := by
-  show alloc (extendDemand ![3, 9]) 4 0 = 3
+  change alloc (extendDemand ![3, 9]) 4 0 = 3
   rw [top_class_isolation (by norm_num)]
   norm_num [extendDemand, min_def]
 

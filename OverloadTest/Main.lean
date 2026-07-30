@@ -37,7 +37,11 @@ open Lean System OverloadTest
 
 /-- One manifest row. `valueHash?` is set for definition kinds only: theorem
 proof bodies are deliberately free, definition bodies are part of the meaning
-(`Coupling.Certificate` once changed body with no header drift reported). -/
+(`Coupling.Certificate` once changed body with no header drift reported).
+`terminal` marks membership in `OverloadTest.terminalLedger` — the in-code
+record that a declaration is deliberately consumed by nothing; downstream
+prose checks read it from the manifest instead of treating a markdown
+mention as the record. -/
 structure Entry where
   name : String
   kind : String
@@ -45,6 +49,7 @@ structure Entry where
   type : String
   valueHash? : Option String
   doc? : Option String
+  terminal : Bool := false
 
 def Entry.toJson (e : Entry) : Json :=
   Json.mkObj <|
@@ -52,6 +57,7 @@ def Entry.toJson (e : Entry) : Json :=
      ("module", Json.str e.module), ("type", Json.str e.type)]
     ++ (match e.valueHash? with | some h => [("valueHash", Json.str h)] | none => [])
     ++ (match e.doc? with | some d => [("doc", Json.str d)] | none => [])
+    ++ (if e.terminal then [("terminal", Json.bool true)] else [])
 
 /-- The lock block for one declaration: a `#### ` header line, the printed
 type indented beneath it, and for definition kinds a value-hash line. -/
@@ -107,8 +113,9 @@ def manifestEntries (root : Name) : CoreM (Array Entry) := do
       | _ => pure none
     let doc? ← findDocString? env n
     let module := (moduleOf? env n).map (·.toString) |>.getD "<current>"
+    let terminal := OverloadTest.terminalLedger.any (·.1 == n)
     entries := entries.push
-      { name := n.toString, kind := kindOf env n ci, module, type, valueHash?, doc? }
+      { name := n.toString, kind := kindOf env n ci, module, type, valueHash?, doc?, terminal }
   return entries
 
 /-- Split a lock file into `name ↦ block` (blocks begin at `#### `). -/
@@ -149,8 +156,10 @@ def lockDiff (lock : Std.HashMap String String) (entries : Array Entry) :
 /-- The comparator must actually see removals, changes, and additions before
 it is trusted on the real tree: run it against doctored input every time. -/
 def selfTestLock : IO Unit := do
-  let a : Entry := { name := "T.a", kind := "theorem", module := "T", type := "1 = 1", valueHash? := none, doc? := none }
-  let b : Entry := { name := "T.b", kind := "def", module := "T", type := "Nat", valueHash? := some "ff", doc? := none }
+  let a : Entry := { name := "T.a", kind := "theorem", module := "T", type := "1 = 1",
+                     valueHash? := none, doc? := none }
+  let b : Entry := { name := "T.b", kind := "def", module := "T", type := "Nat",
+                     valueHash? := some "ff", doc? := none }
   let lock := parseLock (a.lockBlock ++ "\n" ++ b.lockBlock ++ "\n")
   unless (lockDiff lock #[a, b]).isEmpty do
     throw <| IO.userError "lock self-test: clean compare reported findings"
@@ -254,6 +263,35 @@ unsafe def main (args : List String) : IO UInt32 := do
       failures := failures.push ⟨"import-roots", s!"{m} not imported by Overload/AxiomAudit.lean"⟩
   IO.println s!"import-roots: {mods.size} modules checked against both roots"
 
+  -- [3b] linter coverage: syntax linters only run in modules that
+  -- transitively import them, so the lakefile's linter options are inert
+  -- in any module that does not reach the carrier import (demonstrated
+  -- 2026-07-29: `decide +native` in a slim-import module elaborated with
+  -- no warning). Every module must reach `Mathlib` wholesale or the
+  -- carrier directly, possibly through other Overload modules — the
+  -- downstream analogue of Mathlib's `linter.checkInitImports`.
+  let carrier := `Mathlib.Tactic.Linter.DeprecatedSyntaxLinter
+  let mut directImports : Array (Name × Array Name) := #[]
+  for m in mods do
+    let path := (System.mkFilePath (m.components.map (·.toString))).addExtension "lean"
+    directImports := directImports.push (m, ← importsOf path)
+  let mut covered : Std.HashSet Name := {}
+  for (m, is) in directImports do
+    if is.contains `Mathlib || is.contains carrier then
+      covered := covered.insert m
+  let mut changed := true
+  while changed do
+    changed := false
+    for (m, is) in directImports do
+      if !covered.contains m && is.any (covered.contains ·) then
+        covered := covered.insert m
+        changed := true
+  for m in mods do
+    unless covered.contains m do
+      failures := failures.push ⟨"linter-coverage",
+        s!"{m} does not (transitively) import {carrier}; the syntax linters never run there"⟩
+  IO.println s!"linter-coverage: {mods.size} modules checked against the syntax-linter carrier"
+
   -- [4] negative fixtures
   for (file, expected) in negativeFixtures do
     let (code, out) ← run "lean" #[s!"tests/negative/{file}"]
@@ -262,12 +300,23 @@ unsafe def main (args : List String) : IO UInt32 := do
     else if (out.splitOn expected).length > 1 then
       IO.println s!"negative: {file} rejected as expected"
     else
-      failures := failures.push ⟨"negative", s!"{file} failed without the expected message ({expected}):\n{out}"⟩
+      failures := failures.push
+        ⟨"negative", s!"{file} failed without the expected message ({expected}):\n{out}"⟩
   for file in scannerFixtures do
+    -- The scanner fixtures' argument rests on their compiling with at most
+    -- a warning — that is what makes them invisible to the elaboration
+    -- gates. Pin that property: ExampleSorryFixture silently stopped
+    -- elaborating once (2026-07-29, an import drift) and nothing noticed,
+    -- because only the scanner ever read it.
+    let (code, out) ← run "lean" #[s!"tests/negative/{file}"]
+    if code != 0 then
+      failures := failures.push ⟨"negative",
+        s!"{file} no longer elaborates; the scanner, not the elaborator, must reject it:\n{out}"⟩
     let (code, out) ← run "python3"
       #["scripts/checks.py", "--scan", s!"tests/negative/{file}"]
     if code == 0 then
-      failures := failures.push ⟨"negative", s!"{file} passed the proof-token scan; it must be rejected"⟩
+      failures := failures.push
+        ⟨"negative", s!"{file} passed the proof-token scan; it must be rejected"⟩
     else
       IO.println s!"negative: {file} rejected by proof-tokens: {out.trimAscii.toString}"
 

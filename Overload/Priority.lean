@@ -181,16 +181,21 @@ is smaller. -/
 def alloc (demand : ℕ → ℝ) (C : ℝ) (j : ℕ) : ℝ :=
   min (demand j) (residual demand C j)
 
+/-- The residual is nonnegative, by its clamp at zero. -/
 theorem residual_nonneg (demand : ℕ → ℝ) (C : ℝ) (m : ℕ) :
     0 ≤ residual demand C m := le_max_left _ _
 
+/-- The allocation is nonnegative on nonnegative demand. -/
 theorem alloc_nonneg {demand : ℕ → ℝ} {C : ℝ} (hd : ∀ j, 0 ≤ demand j)
     (j : ℕ) : 0 ≤ alloc demand C j :=
   le_min (hd j) (residual_nonneg demand C j)
 
+/-- Feasibility, demand side: no class receives beyond its demand. -/
 theorem alloc_le_demand {demand : ℕ → ℝ} {C : ℝ} (j : ℕ) :
     alloc demand C j ≤ demand j := min_le_left _ _
 
+/-- Feasibility, residual side: no class receives beyond the residual above
+it. -/
 theorem alloc_le_residual {demand : ℕ → ℝ} {C : ℝ} (j : ℕ) :
     alloc demand C j ≤ residual demand C j := min_le_right _ _
 

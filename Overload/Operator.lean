@@ -53,9 +53,11 @@ noncomputable def gfpIcc (F : ℝ → ℝ) (a b : ℝ) : ℝ := sSup (postfixedP
 
 variable {F : ℝ → ℝ} {a b x y : ℝ}
 
+/-- The prefixed points are bounded below by `a`. -/
 theorem bddBelow_prefixedPts : BddBelow (prefixedPts F a b) :=
   ⟨a, fun _x hx => hx.1.1⟩
 
+/-- The postfixed points are bounded above by `b`. -/
 theorem bddAbove_postfixedPts : BddAbove (postfixedPts F a b) :=
   ⟨b, fun _x hx => hx.1.2⟩
 
@@ -71,6 +73,8 @@ theorem le_gfpIcc_of_postfixed (hx : x ∈ Set.Icc a b) (hxF : x ≤ F x) :
     x ≤ gfpIcc F a b :=
   le_csSup bddAbove_postfixedPts ⟨hx, hxF⟩
 
+/-- `lfpIcc` lies in `[a, b]` once `a ≤ b` and `F` maps the interval into
+itself. No monotonicity needed. -/
 theorem lfpIcc_mem_Icc (hab : a ≤ b)
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
     lfpIcc F a b ∈ Set.Icc a b := by
@@ -79,6 +83,8 @@ theorem lfpIcc_mem_Icc (hab : a ≤ b)
   exact ⟨le_csInf ⟨b, hb⟩ fun x hx => hx.1.1,
     csInf_le bddBelow_prefixedPts hb⟩
 
+/-- `gfpIcc` lies in `[a, b]` once `a ≤ b` and `F` maps the interval into
+itself. No monotonicity needed. -/
 theorem gfpIcc_mem_Icc (hab : a ≤ b)
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
     gfpIcc F a b ∈ Set.Icc a b := by
@@ -184,10 +190,14 @@ theorem lfpIcc_le_isFixedPt (hx : x ∈ Set.Icc a b)
     (h : Function.IsFixedPt F x) : lfpIcc F a b ≤ x :=
   lfpIcc_le_of_prefixed hx h.le
 
+/-- The upper half of the bracket: a fixed point in `[a, b]` sits below
+`gfpIcc`. -/
 theorem isFixedPt_le_gfpIcc (hx : x ∈ Set.Icc a b)
     (h : Function.IsFixedPt F x) : x ≤ gfpIcc F a b :=
   le_gfpIcc_of_postfixed hx h.ge
 
+/-- For a monotone self-map of `[a, b]`, the healthy equilibrium sits below
+the congested one: `lfpIcc ≤ gfpIcc`. -/
 theorem lfpIcc_le_gfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
     lfpIcc F a b ≤ gfpIcc F a b :=

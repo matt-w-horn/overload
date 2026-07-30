@@ -71,16 +71,23 @@ structure BoundedLoop where
   h : ℝ → ℝ
   /-- Upper bound on the amplification response. -/
   Amax : ℝ
+  /-- The offered fresh-request rate is nonnegative. -/
   lam_nonneg : 0 ≤ lam
+  /-- The failure kernel lands in `[0, 1]` at every nonnegative attempt
+  rate. -/
   g_mem : ∀ x, 0 ≤ x → g x ∈ Set.Icc (0 : ℝ) 1
+  /-- The amplification response never exceeds `Amax` on `[0, 1]`. -/
   h_le_Amax : ∀ p ∈ Set.Icc (0 : ℝ) 1, h p ≤ Amax
 
 /-- A closed-loop demand model over a shared bottleneck: the boundedness
 core plus a monotone kernel, a monotone response, and the amplifying-client
 floor `1 ≤ h`. Demand balance is `Λ = lam · h (g Λ)`. -/
 structure ClosedLoop extends BoundedLoop where
+  /-- The failure kernel is monotone on nonnegative attempt rates. -/
   g_mono : MonotoneOn g (Set.Ici (0 : ℝ))
+  /-- The amplification response is monotone on `[0, 1]`. -/
   h_mono : MonotoneOn h (Set.Icc (0 : ℝ) 1)
+  /-- The amplifying-client floor: `1 ≤ h` on `[0, 1]`. -/
   h_one_le : ∀ p ∈ Set.Icc (0 : ℝ) 1, 1 ≤ h p
 
 namespace BoundedLoop
@@ -148,26 +155,36 @@ namespace ClosedLoop
 
 variable (L : ClosedLoop)
 
+/-- The bound on the amplification response is at least one:
+`1 ≤ h(0) ≤ Amax`, the floor `1 ≤ h` chained with `h_le_Amax` at `p = 0`. -/
 theorem one_le_Amax : 1 ≤ L.Amax :=
   le_trans (L.h_one_le 0 ⟨le_rfl, zero_le_one⟩)
     (L.h_le_Amax 0 ⟨le_rfl, zero_le_one⟩)
 
+/-- `F` is nonnegative on nonnegative demand: `0 ≤ λ` and `1 ≤ h`. -/
 theorem F_nonneg {x : ℝ} (hx : 0 ≤ x) : 0 ≤ L.F x :=
   mul_nonneg L.lam_nonneg
     (le_trans zero_le_one (L.h_one_le _ (L.g_mem x hx)))
 
+/-- The offered load is a lower bound on `F` on nonnegative demand: the
+floor `1 ≤ h` scaled by `λ ≥ 0`. -/
 theorem lam_le_F {x : ℝ} (hx : 0 ≤ x) : L.lam ≤ L.F x :=
   le_mul_of_one_le_right L.lam_nonneg (L.h_one_le _ (L.g_mem x hx))
 
+/-- `F` is monotone on `[0, ∞)`: the monotone kernel composed with the
+monotone response, scaled by `λ ≥ 0`. -/
 theorem F_monotoneOn : MonotoneOn L.F (Set.Ici (0 : ℝ)) :=
   fun x hx y hy hxy =>
     mul_le_mul_of_nonneg_left
       (L.h_mono (L.g_mem x hx) (L.g_mem y hy) (L.g_mono hx hy hxy))
       L.lam_nonneg
 
+/-- `F_monotoneOn` restricted to the envelope `[0, λ·Amax]`. -/
 theorem F_monotoneOn_Icc : MonotoneOn L.F (Set.Icc 0 (L.lam * L.Amax)) :=
   L.F_monotoneOn.mono fun _x hx => hx.1
 
+/-- `F` maps the envelope `[0, λ·Amax]` into itself: `F_nonneg` below,
+`F_le` above. -/
 theorem F_mapsTo :
     Set.MapsTo L.F (Set.Icc 0 (L.lam * L.Amax))
       (Set.Icc 0 (L.lam * L.Amax)) :=
@@ -231,6 +248,7 @@ theorem F_eq_lam_of_noSustaining (hns : L.NoSustaining) {Λ : ℝ}
   unfold BoundedLoop.F
   rw [hns _ (L.g_mem Λ hΛ), mul_one]
 
+variable {L} in
 /-- With no sustaining mechanism the equilibrium is unique — it is the
 offered load itself. -/
 theorem noSustaining_unique_eq (hns : L.NoSustaining) {Λ : ℝ} (hΛ : 0 ≤ Λ) :
@@ -246,9 +264,10 @@ amplification, re-armed timeouts, spill-in coupling, or supply degradation). -/
 theorem noSustaining_no_congestedEq (hns : L.NoSustaining) {C : ℝ}
     (hlt : L.lam < C) : ¬L.CongestedEq C := by
   rintro ⟨Λ, hΛ0, hfix, hCΛ⟩
-  rw [(L.noSustaining_unique_eq hns hΛ0).mp hfix] at hCΛ
+  rw [(noSustaining_unique_eq hns hΛ0).mp hfix] at hCΛ
   linarith
 
+variable {L} in
 /-- Retrying a load-*independent* failure channel ("blips") buys masking
 without bistability: the equilibrium is unique. Only channels that are both
 retry-eligible and load-coupled destabilize. -/
@@ -277,9 +296,9 @@ theorem not_bistableOn_of_const {p₀ : ℝ} (hg : ∀ x, 0 ≤ x → L.g x = p�
   have hgfix : L.F (gfpIcc L.F 0 (L.lam * L.Amax))
       = gfpIcc L.F 0 (L.lam * L.Amax) :=
     isFixedPt_gfpIcc hab L.F_monotoneOn_Icc L.F_mapsTo
-  have hl := (L.blip_unique_eq hg hlmem.1).mp hlfix
-  have hg' := (L.blip_unique_eq hg hgmem.1).mp hgfix
-  show ¬lfpIcc L.F 0 (L.lam * L.Amax) < gfpIcc L.F 0 (L.lam * L.Amax)
+  have hl := (blip_unique_eq hg hlmem.1).mp hlfix
+  have hg' := (blip_unique_eq hg hgmem.1).mp hgfix
+  change ¬lfpIcc L.F 0 (L.lam * L.Amax) < gfpIcc L.F 0 (L.lam * L.Amax)
   rw [hl, hg']
   exact lt_irrefl _
 
@@ -345,12 +364,16 @@ theorem stepKernel_of_lt {C Λ : ℝ} (h : Λ < C) : stepKernel C Λ = 0 :=
 theorem stepKernel_of_ge {C Λ : ℝ} (h : C ≤ Λ) : stepKernel C Λ = 1 :=
   if_neg (not_lt.mpr h)
 
+/-- The step kernel lands in `[0, 1]`. Supplies `g_mem` for `stepLoop` and
+`cappedLoop`. -/
 theorem stepKernel_mem (C : ℝ) :
     ∀ x, 0 ≤ x → stepKernel C x ∈ Set.Icc (0 : ℝ) 1 := by
   intro x _
   unfold stepKernel
   split <;> constructor <;> norm_num
 
+/-- The step kernel is monotone on `[0, ∞)`. Supplies `g_mono` for
+`stepLoop` and `cappedLoop`. -/
 theorem stepKernel_monoOn (C : ℝ) :
     MonotoneOn (stepKernel C) (Set.Ici (0 : ℝ)) := by
   intro x _hx y _hy hxy
@@ -418,14 +441,14 @@ noncomputable def cappedLoop (lam C : ℝ) (m : ℕ) (hlam : 0 ≤ lam)
 step kernel vanishes and a lone attempt is the whole response. -/
 theorem cappedLoop_F_of_lt {lam C : ℝ} {m : ℕ} {hlam : 0 ≤ lam} {hm : 1 ≤ m}
     {Λ : ℝ} (hΛ : Λ < C) : (cappedLoop lam C m hlam hm).F Λ = lam := by
-  show lam * expAttempts (stepKernel C Λ) m = lam
+  change lam * expAttempts (stepKernel C Λ) m = lam
   rw [stepKernel_of_lt hΛ, expAttempts_at_zero hm, mul_one]
 
 /-- At and above capacity the truncated-geometric loop is fully amplified:
 the kernel saturates and the whole cap is spent. -/
 theorem cappedLoop_F_of_ge {lam C : ℝ} {m : ℕ} {hlam : 0 ≤ lam} {hm : 1 ≤ m}
     {Λ : ℝ} (hΛ : C ≤ Λ) : (cappedLoop lam C m hlam hm).F Λ = lam * m := by
-  show lam * expAttempts (stepKernel C Λ) m = lam * m
+  change lam * expAttempts (stepKernel C Λ) m = lam * m
   rw [stepKernel_of_ge hΛ, expAttempts_def, one_geom_sum]
 
 /-- The attempt-cap corollary, discharged for the truncated-geometric
@@ -440,7 +463,7 @@ theorem cappedLoop_no_congestedEq {lam C : ℝ} {m : ℕ} {Θ : ℝ}
 /-- Below capacity the stylized loop is load-transparent: `F(Λ) = λ`. -/
 theorem stepLoop_F_of_lt {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) {Λ : ℝ}
     (hΛ : Λ < C) : (stepLoop lam C A hlam hA).F Λ = lam := by
-  show lam * (1 + stepKernel C Λ * (A - 1)) = lam
+  change lam * (1 + stepKernel C Λ * (A - 1)) = lam
   rw [stepKernel_of_lt hΛ]
   ring
 
@@ -448,7 +471,7 @@ theorem stepLoop_F_of_lt {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) {Λ :
 `F(Λ) = λ·A`. -/
 theorem stepLoop_F_of_ge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) {Λ : ℝ}
     (hΛ : C ≤ Λ) : (stepLoop lam C A hlam hA).F Λ = lam * A := by
-  show lam * (1 + stepKernel C Λ * (A - 1)) = lam * A
+  change lam * (1 + stepKernel C Λ * (A - 1)) = lam * A
   rw [stepKernel_of_ge hΛ]
   ring
 

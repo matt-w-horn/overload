@@ -150,7 +150,7 @@ variable {station req origin wire : Type*} [Fintype origin] [Fintype wire]
   {pastaFact : Prop} {F : SystemFacts station req origin wire}
 
 /-- A run satisfying the suite obeys the scheme-agnostic goodput bound
-`G ≤ min(λ, C/s̄)` — for every retry scheme, backoff policy, and topology,
+`G ≤ min(λ, C/sbar)` — for every retry scheme, backoff policy, and topology,
 because none appear in the hypotheses. -/
 theorem goodput_bound (S : VerificationSuite pastaFact F) (hs : 0 < F.sbar) :
     F.goodput ≤ min F.offered (F.acct.capacity / F.sbar) :=

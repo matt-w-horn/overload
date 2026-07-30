@@ -1,3 +1,9 @@
+-- The syntax-linter carrier (Mathlib's `Mathlib.Init` pattern): linters
+-- only run in modules that transitively import them, so every module must
+-- reach this import or the lakefile's linter options are silently inert
+-- there. The test driver's linter-coverage stage enforces the closure.
+import Mathlib.Tactic.Linter.DeprecatedSyntaxLinter -- shake: keep
+
 /-!
 # Overload — shared conventions
 

@@ -125,7 +125,7 @@ theorem sqs_dlq_band_residual :
   · rw [cappedLoop_F_of_lt (by norm_num)]
   · rw [cappedLoop_F_of_ge (by norm_num)]
     norm_num
-  · show (25 : ℝ) * ((5 : ℕ) : ℝ) ≤ 125
+  · change (25 : ℝ) * ((5 : ℕ) : ℝ) ≤ 125
     norm_num
 
 /-- The band's lower edge, from the clamp: any congested equilibrium under

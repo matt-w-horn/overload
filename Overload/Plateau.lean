@@ -59,12 +59,17 @@ theorem goodput_eq_one_sub_mul (s : Finset ι) (lam : ι → ℝ) (cap : ι → 
   rw [← mul_assoc, mul_comm (1 - p) (lam j), mul_assoc,
     one_sub_mul_expAttempts]
 
+/-- Goodput at loss level `0` is the total offered load `∑ lam`: with every
+cap in `s` at least `1`, each class's summand reduces to `lam j`. -/
 theorem goodput_at_zero (hcap : ∀ j ∈ s, 1 ≤ cap j) :
     goodput s lam cap 0 = ∑ j ∈ s, lam j := by
   unfold goodput
   refine Finset.sum_congr rfl fun j hj => ?_
   rw [zero_pow (by have := hcap j hj; omega), sub_zero, mul_one]
 
+/-- The attempt rate at loss level `0` is the total offered load `∑ lam`:
+with every cap in `s` at least `1`, each class's amplification
+`expAttempts 0 (cap j)` is `1`. -/
 theorem attemptRate_at_zero (hcap : ∀ j ∈ s, 1 ≤ cap j) :
     attemptRate s lam cap 0 = ∑ j ∈ s, lam j := by
   unfold attemptRate
@@ -78,7 +83,7 @@ always-useful processing, retries cannot dent throughput. -/
 theorem plateau (hcap : ∀ j ∈ s, 1 ≤ cap j) (hlam : ∀ j ∈ s, 0 ≤ lam j)
     {p : ℝ} (heq : UniformLossEq s lam cap C p) :
     goodput s lam cap p = min (∑ j ∈ s, lam j) C := by
-  rcases heq with ⟨rfl, hfit⟩ | ⟨hp0, hp1, hbal⟩
+  rcases heq with ⟨rfl, hfit⟩ | ⟨hp0, -, hbal⟩
   · rw [goodput_at_zero hcap, min_eq_left]
     rwa [attemptRate_at_zero hcap] at hfit
   · have hgC : goodput s lam cap p = C := by
@@ -147,9 +152,7 @@ theorem uniform_congested_closedForm {lam C : ℝ} {n : ℕ} (hC : 0 < C)
   have hbase1 : 1 - C / lam < 1 := by
     have h : 0 < C / lam := div_pos hC hlam
     linarith
-  have hinv : (0 : ℝ) < (n : ℝ)⁻¹ := by
-    have h : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    positivity
+  have hinv : (0 : ℝ) < (n : ℝ)⁻¹ := by positivity
   refine ⟨Real.rpow_pos_of_pos hbase0 _,
     Real.rpow_lt_one (le_of_lt hbase0) hbase1 hinv, ?_⟩
   have hpn : ((1 - C / lam) ^ ((n : ℝ)⁻¹)) ^ n = 1 - C / lam :=

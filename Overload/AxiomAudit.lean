@@ -36,6 +36,7 @@ import Overload.Examples.Thrashing
 import Overload.Examples.Pipeline
 import Overload.Examples.Deficit
 import Overload.Examples.Mesh
+import Overload.Lint
 
 /-!
 # Axiom audit
@@ -85,6 +86,7 @@ elab "#axiom_budget " id:ident : command => do
   for ax in axs do
     unless allowed.contains ax do
       throwError "axiom budget exceeded: {n} depends on {ax}"
+  logInfo m!"#axiom_budget: {n} is within the axiom budget"
 
 open Lean Elab Command in
 /-- `#axiom_budget_all Overload` runs the axiom-budget check on every

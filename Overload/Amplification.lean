@@ -30,6 +30,8 @@ that would unfold `expAttempts` library-wide. Name it at the site instead. -/
 theorem expAttempts_def (p : ℝ) (n : ℕ) :
     expAttempts p n = ∑ k ∈ Finset.range n, p ^ k := rfl
 
+/-- Raising the cap by one adds the next geometric term `pⁿ` (Mathlib's
+`Finset.sum_range_succ`, restated on `expAttempts`). -/
 theorem expAttempts_succ (p : ℝ) (n : ℕ) :
     expAttempts p (n + 1) = expAttempts p n + p ^ n :=
   Finset.sum_range_succ _ _
@@ -122,6 +124,8 @@ theorem sum_mul_attemptWeight (p : ℝ) {n : ℕ} (hn : 1 ≤ n) :
 ## Bounds, monotonicity, and the `p → 1` limit
 -/
 
+/-- Amplification is nonnegative once `0 ≤ p`: each term of the geometric
+sum is. -/
 theorem expAttempts_nonneg {p : ℝ} (hp : 0 ≤ p) (n : ℕ) :
     0 ≤ expAttempts p n :=
   Finset.sum_nonneg fun k _ => pow_nonneg hp k

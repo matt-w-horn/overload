@@ -248,7 +248,9 @@ theorem spill_floor_blocks_weights {γ₁ γ₂ ε₁₂ ε₂₁ : ℝ} (hε₁
   rintro ⟨w, hw, hJw⟩
   have hr0 := hJw 0
   have hr1 := hJw 1
-  simp [Matrix.vecHead, Matrix.vecTail] at hr0 hr1
+  simp only [Fin.isValue, cons_mulVec, cons_dotProduct, vecHead, vecTail, Nat.succ_eq_add_one,
+    Nat.reduceAdd, Function.comp_apply, Fin.succ_zero_eq_one, dotProduct_of_isEmpty, add_zero,
+    empty_mulVec, cons_val_zero, cons_val_one, cons_val_fin_one] at hr0 hr1
   have hw0 := hw 0
   have hw1 := hw 1
   have hkey : ε₁₂ * w 1 * (ε₂₁ * w 0)
@@ -284,12 +286,10 @@ theorem two_site_certificate_iff {γ₁ γ₂ ε₁₂ ε₂₁ : ℝ} (hγ₁ :
       have hmul := (div_le_iff₀ hpos2).mp (le_refl (ε₂₁ / (1 - γ₂)))
       linarith
     · -- ε₁₂ > 0: the midpoint weight
-      have hpos1 : (0 : ℝ) < 1 - γ₁ := by linarith
       have hpos2 : (0 : ℝ) < 1 - γ₂ := by linarith
       have hAB : ε₂₁ / (1 - γ₂) < (1 - γ₁) / ε₁₂ :=
         (div_lt_div_iff₀ hpos2 hpos).mpr (by linarith)
       have hA : 0 ≤ ε₂₁ / (1 - γ₂) := div_nonneg hε₂₁ (le_of_lt hpos2)
-      have hB : 0 < (1 - γ₁) / ε₁₂ := div_pos hpos1 hpos
       set t := (ε₂₁ / (1 - γ₂) + (1 - γ₁) / ε₁₂) / 2 with ht
       have htpos : 0 < t := by rw [ht]; linarith
       have htA : ε₂₁ / (1 - γ₂) < t := by rw [ht]; linarith
@@ -307,7 +307,7 @@ theorem two_site_equilibrium_exists {γ₁ γ₂ ε₁₂ ε₂₁ c₀ c₁ : �
     ∃ x : Fin 2 → ℝ, affine !![γ₁, ε₁₂; ε₂₁, γ₂] ![c₀, c₁] x = x := by
   have hΔpos : 0 < (1 - γ₁) * (1 - γ₂) - ε₁₂ * ε₂₁ := by linarith
   have hΔne : (1 - γ₁) * (1 - γ₂) - ε₁₂ * ε₂₁ ≠ 0 := ne_of_gt hΔpos
-  set Δ := (1 - γ₁) * (1 - γ₂) - ε₁₂ * ε₂₁ with hΔdef
+  set Δ := (1 - γ₁) * (1 - γ₂) - ε₁₂ * ε₂₁
   set x0 := ((1 - γ₂) * c₀ + ε₁₂ * c₁) / Δ with hx0
   set x1 := (ε₂₁ * c₀ + (1 - γ₁) * c₁) / Δ with hx1
   refine ⟨![x0, x1], funext (Fin.forall_fin_two.mpr ⟨?_, ?_⟩)⟩ <;>

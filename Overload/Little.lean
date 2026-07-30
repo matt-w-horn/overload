@@ -13,10 +13,10 @@ instants `d` — deliberately **not** assumed ordered, so overtaking
 disciplines (LIFO, priorities) are covered. Under
 
 * **H1** (arrival rate): `a n / n → τ` with `0 < τ` (so `λ = 1/τ`), and
-* **H2** (Cesàro sojourn mean): `(∑_{k<n} W k) / n → W̄`,
+* **H2** (Cesàro sojourn mean): `(∑_{k<n} W k) / n → Wbar`,
 
-the long-run time-average number in system exists and equals `λ·W̄`
-(`SamplePath.little`): `area t / t → W̄/τ`, where `area t` is cumulative
+the long-run time-average number in system exists and equals `λ·Wbar`
+(`SamplePath.little`): `area t / t → Wbar/τ`, where `area t` is cumulative
 occupancy before `t`, expressed customer-by-customer — each summand
 `timeIn t n` is the length of `[aₙ, dₙ) ∩ [0, t)`, so `area` is the area
 under the number-in-system step function with no integral required.
@@ -34,7 +34,7 @@ Byproducts stated separately: the Cesàro tail bound `W n / n → 0`
 Brumelle's generalization `H = λG` rides the same sandwich: give
 customer `n` a nonnegative weight `g n` — value accrued at constant
 rate while in system — and the weighted occupancy time-average
-equals `λ·Ḡ` (`SamplePath.brumelle`), with the value analogue of H2
+equals `λ·Gbar` (`SamplePath.brumelle`), with the value analogue of H2
 as the one extra hypothesis; `little` is recovered at unit weight
 (`little_of_brumelle`).
 
@@ -183,7 +183,7 @@ def sojournSum (n : ℕ) : ℝ := ∑ k ∈ Finset.range n, P.W k
 /-- One customer at a time: the sojourn sum steps by `W`. -/
 theorem sojournSum_succ_sub (n : ℕ) :
     P.sojournSum (n + 1) - P.sojournSum n = P.W n := by
-  show (∑ k ∈ Finset.range (n + 1), P.W k)
+  change (∑ k ∈ Finset.range (n + 1), P.W k)
       - ∑ k ∈ Finset.range n, P.W k = P.W n
   rw [Finset.sum_range_succ]
   ring
@@ -198,7 +198,7 @@ theorem timeIn_nonneg (t : ℝ) (n : ℕ) : 0 ≤ P.timeIn t n :=
 
 /-- Time in system before `t` never exceeds the full sojourn. -/
 theorem timeIn_le_W (t : ℝ) (n : ℕ) : P.timeIn t n ≤ P.W n := by
-  show min (P.d n) t - min (P.a n) t ≤ P.d n - P.a n
+  change min (P.d n) t - min (P.a n) t ≤ P.d n - P.a n
   rcases le_total (P.a n) t with h | h
   · rw [min_eq_left h]
     exact sub_le_sub_right (min_le_left _ _) _
@@ -208,13 +208,13 @@ theorem timeIn_le_W (t : ℝ) (n : ℕ) : P.timeIn t n ≤ P.W n := by
 /-- A customer departed by `t` has spent its full sojourn. -/
 theorem timeIn_eq_W_of_d_le {t : ℝ} {n : ℕ} (h : P.d n ≤ t) :
     P.timeIn t n = P.W n := by
-  show min (P.d n) t - min (P.a n) t = P.d n - P.a n
+  change min (P.d n) t - min (P.a n) t = P.d n - P.a n
   rw [min_eq_left h, min_eq_left ((P.a_le_d n).trans h)]
 
 /-- A customer not yet arrived by `t` has spent nothing. -/
 theorem timeIn_eq_zero_of_le_a {t : ℝ} {n : ℕ} (h : t ≤ P.a n) :
     P.timeIn t n = 0 := by
-  show min (P.d n) t - min (P.a n) t = 0
+  change min (P.d n) t - min (P.a n) t = 0
   rw [min_eq_right (h.trans (P.a_le_d n)), min_eq_right h, sub_self]
 
 /-- The index of the first arrival at or after `t` — with ordered
@@ -277,7 +277,7 @@ theorem sojournSum_departedPrefix_le {t : ℝ}
       (P.timeIn_eq_W_of_d_le
         (P.d_le_of_lt_departedPrefix (Finset.mem_range.mp hk))).symm
   rw [h1]
-  show _ ≤ ∑ k ∈ Finset.range (P.arrivals t), P.timeIn t k
+  change _ ≤ ∑ k ∈ Finset.range (P.arrivals t), P.timeIn t k
   rcases le_total (P.departedPrefix t) (P.arrivals t) with h | h
   · exact Finset.sum_le_sum_of_subset_of_nonneg
       (Finset.range_subset.mpr fun x hx =>
@@ -318,7 +318,7 @@ theorem tendsto_d_div {τ Wbar : ℝ}
   have h := hH1.add (P.tendsto_W_div hH2)
   rw [add_zero] at h
   refine h.congr fun n => ?_
-  show P.a n / n + (P.d n - P.a n) / n = P.d n / n
+  change P.a n / n + (P.d n - P.a n) / n = P.d n / n
   ring
 
 /-- H1 forces the arrival instants to infinity. -/
@@ -369,9 +369,9 @@ theorem count_asymptotics {τ Wbar : ℝ} (hτ : 0 < τ)
 
 /-- **Little's law, deterministic sample-path form (Stidham).** If the
 arrival instants have rate `1/τ` (H1: `a n / n → τ`, `τ > 0`) and the
-sojourns have a Cesàro mean (H2: `(∑_{k<n} W k)/n → W̄`), then the
-long-run time-average number in system exists and equals `λ·W̄` with
-`λ = 1/τ`: `area t / t → W̄/τ`. One deterministic trace, two rate
+sojourns have a Cesàro mean (H2: `(∑_{k<n} W k)/n → Wbar`), then the
+long-run time-average number in system exists and equals `λ·Wbar` with
+`λ = 1/τ`: `area t / t → Wbar/τ`. One deterministic trace, two rate
 hypotheses — no distributions, no independence, no ergodicity, and no
 order on departures (overtaking allowed). Identifying these time
 averages with stationary quantities (as `MM1.lean` does definitionally)
@@ -446,7 +446,7 @@ theorem valueSum_departedPrefix_le {g : ℕ → ℝ} (hg : ∀ n, 0 ≤ g n)
       rw [P.timeIn_eq_W_of_d_le
         (P.d_le_of_lt_departedPrefix (Finset.mem_range.mp hk))]
   rw [h1]
-  show _ ≤ ∑ k ∈ Finset.range (P.arrivals t), g k * P.timeIn t k
+  change _ ≤ ∑ k ∈ Finset.range (P.arrivals t), g k * P.timeIn t k
   rcases le_total (P.departedPrefix t) (P.arrivals t) with h | h
   · exact Finset.sum_le_sum_of_subset_of_nonneg
       (Finset.range_subset.mpr fun x hx =>
@@ -463,9 +463,9 @@ theorem valueSum_departedPrefix_le {g : ℕ → ℝ} (hg : ∀ n, 0 ≤ g n)
 Give customer `n` a nonnegative weight `g n`, so it accrues value at the
 constant rate `g n` while in system, `G n = g n·W n` in total. Under
 Little's hypotheses (H1: `a n / n → τ`, `τ > 0`; H2: Cesàro sojourn mean
-`W̄`) plus the value analogue of H2 (H3: `(∑_{k<n} g k·W k)/n → Ḡ`), the
-long-run time-average value in system exists and equals `λ·Ḡ` with
-`λ = 1/τ`: `valueArea g t / t → Ḡ/τ`. Same trace, same counts, same
+`Wbar`) plus the value analogue of H2 (H3: `(∑_{k<n} g k·W k)/n → Gbar`), the
+long-run time-average value in system exists and equals `λ·Gbar` with
+`λ = 1/τ`: `valueArea g t / t → Gbar/τ`. Same trace, same counts, same
 sandwich — no distributions, no order on departures. H2 is still needed
 on its own: it drives the departure rate (`tendsto_d_div`) behind the
 lower sandwich, which H3 alone does not supply. This is the
@@ -515,7 +515,7 @@ theorem valueSum_unitPath_weight_two :
         a_le_d := fun _ => by linarith,
         a_mono := fun _ _ h => Nat.cast_le.mpr h }
       (fun _ => 2) 3 = 6 := by
-  show ∑ k ∈ Finset.range 3, (2 : ℝ) * (((k : ℝ) + 1) - (k : ℝ)) = 6
+  change ∑ k ∈ Finset.range 3, (2 : ℝ) * (((k : ℝ) + 1) - (k : ℝ)) = 6
   norm_num [Finset.sum_range_succ]
 
 end SamplePath

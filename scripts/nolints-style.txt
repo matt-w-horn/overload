@@ -1,0 +1,5 @@
+-- Manual exceptions for the text-based linters (`lake exe lint-style`).
+-- Deliberately empty: a style error gets fixed at the source, not excepted
+-- here. In particular, characters outside the unicode allowlist are
+-- replaced (the barred means became `sbar`/`Wbar`/`Gbar`, 2026-07-29),
+-- never exempted.

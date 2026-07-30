@@ -38,6 +38,8 @@ def terminalLedger : List (Lean.Name × String) :=
     (`Overload.ClosedLoop.withLam_lam, "surgery pin: withLam sets exactly the offered load; rfl at the definition, so a consuming pin restates it"),
     (`Overload.Star.gain_unique_eq, "uniqueness leg of the star linearization; quantifies over the rank-one factors, and the numbers are already in starWitness"),
     (`Overload.coupledAmp_nil, "base-case eval pin of the load-coupled recursion; rfl at the definition, so a consuming pin restates it"),
+    (`Overload.docBlameThmEnabled, "enabled registration of Batteries' docBlameThm; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
+    (`Overload.explicitVarsOfIffEnabled, "enabled registration of Batteries' explicitVarsOfIff; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
     (`Overload.fluid_decay_witness, "satisfiability witness for fluid_decay_of_deriv_le's eight-hypothesis bundle, with the bound attained at F = 0; already a witness, nothing left to pin"),
     (`Overload.invokeFail_nil, "base-case eval pin of the load-coupled recursion; rfl at the definition, so a consuming pin restates it"),
     (`Overload.signature_gap_witnessed, "terminal deliverable; billed in README; quantifies over the certificate predicate, so a pin supplies a predicate rather than numbers"),

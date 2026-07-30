@@ -5,7 +5,7 @@ import Mathlib
 
 The accounting frame: over an observation window, capacity·time splits
 exactly into useful, wasted, and idle work — no mechanism manufactures
-capacity. The scheme-agnostic goodput bound `G ≤ min(λ, C/s̄)` follows from
+capacity. The scheme-agnostic goodput bound `G ≤ min(λ, C/sbar)` follows from
 the accounting alone: it holds for *every* retry scheme, backoff policy, and
 topology, because none of them appear in the hypotheses.
 
@@ -34,10 +34,15 @@ structure Accounting where
   wasted : ℝ
   /-- Capacity left unused. -/
   idle : ℝ
+  /-- Capacity is positive. -/
   capacity_pos : 0 < capacity
+  /-- The observation window has positive length. -/
   time_pos : 0 < time
+  /-- Useful work is nonnegative. -/
   useful_nonneg : 0 ≤ useful
+  /-- Wasted work is nonnegative. -/
   wasted_nonneg : 0 ≤ wasted
+  /-- Idle work is nonnegative. -/
   idle_nonneg : 0 ≤ idle
   /-- Conservation: the bottleneck neither manufactures nor destroys capacity. -/
   conserve : useful + wasted + idle = capacity * time
@@ -46,10 +51,12 @@ namespace Accounting
 
 variable (A : Accounting)
 
+/-- Useful work is at most capacity·time: conservation with the nonnegative
+`wasted` and `idle` terms dropped. -/
 theorem useful_le : A.useful ≤ A.capacity * A.time := by
   linarith [A.conserve, A.wasted_nonneg, A.idle_nonneg]
 
-/-- **The scheme-agnostic goodput bound** `G ≤ min(λ, C/s̄)`: goodput `G` is
+/-- **The scheme-agnostic goodput bound** `G ≤ min(λ, C/sbar)`: goodput `G` is
 bounded by offered load and by capacity over per-request service demand. The
 hypotheses mention no retry scheme, no backoff, no topology — the bound holds
 for all of them. -/
@@ -61,11 +68,11 @@ theorem goodput_le {G sbar lam : ℝ} (hs : 0 < sbar)
   nlinarith [A.useful_le, A.time_pos]
 
 /-- Waste and idleness together cap goodput: if a fraction `w` of
-capacity·time is wasted, then `G·s̄ ≤ (1-w)·C - I/T`. Both subtractions are
+capacity·time is wasted, then `G·sbar ≤ (1-w)·C - I/T`. Both subtractions are
 sharp — the conclusion is the useful-work hypothesis re-expressed through
 conservation, with `wasted` and `idle` named instead of `useful`. That is
 the whole content: the waste fraction relabels the ceiling, it does not
-tighten it, so a statement dropping the idle term (`G·s̄ ≤ (1-w)·C`) would
+tighten it, so a statement dropping the idle term (`G·sbar ≤ (1-w)·C`) would
 be strictly weaker than its own hypothesis. The point of the decomposition
 is that `w` is separately measurable channel by channel, which `useful`
 is not. -/

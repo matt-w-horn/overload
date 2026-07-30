@@ -232,7 +232,7 @@ at unit load blocks half the traffic. Since `erlangB_eq_closed` matches the
 recursion to the closed form at every point, this constant also certifies
 the closed form's value. -/
 theorem erlangB_one_one : erlangB 1 1 = 1 / 2 := by
-  show erlangB 1 (0 + 1) = 1 / 2
+  change erlangB 1 (0 + 1) = 1 / 2
   rw [erlangB_succ]
   norm_num
 
@@ -254,7 +254,7 @@ theorem erlangLoop_no_congestedEq_pin :
 /-- Numeric regression, doubling as the textbook sanity check: two servers
 at offered load `2` block `2/5`, certifying the closed form there too. -/
 theorem erlangB_two_two : erlangB 2 2 = 2 / 5 := by
-  show erlangB 2 (0 + 1 + 1) = 2 / 5
+  change erlangB 2 (0 + 1 + 1) = 2 / 5
   rw [erlangB_succ, erlangB_succ]
   norm_num
 

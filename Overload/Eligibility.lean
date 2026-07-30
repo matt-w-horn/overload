@@ -128,7 +128,7 @@ theorem eligibleLoop_zero_noSustaining :
     (eligibleLoop lam g m 0 hlam hm hg_mem hg_mono
       ⟨le_rfl, zero_le_one⟩).NoSustaining := by
   intro p _hp
-  show expAttempts (0 * p) m = 1
+  change expAttempts (0 * p) m = 1
   rw [zero_mul, expAttempts_at_zero hm]
 
 /-- **The miscoding corollary.** Same offered load, kernel, and retry
@@ -141,7 +141,7 @@ theorem miscoding_opens_amplification (he0 : 0 < e) (hm2 : 2 ≤ m) :
         ⟨le_rfl, zero_le_one⟩).NoSustaining ∧
       1 < (eligibleLoop lam g m e hlam hm hg_mem hg_mono he).h 1 := by
   refine ⟨eligibleLoop_zero_noSustaining, ?_⟩
-  show 1 < expAttempts (e * 1) m
+  change 1 < expAttempts (e * 1) m
   have h1 := one_add_le_expAttempts (mul_nonneg he.1 zero_le_one) hm2
   linarith
 
@@ -167,7 +167,7 @@ theorem demoEligibleLoop_one_congestedEq :
   refine eligibleLoop_congestedEq_mono_mass (e := 1 / 2)
     (he := by constructor <;> norm_num) (by norm_num) ?_
   refine ClosedLoop.congestedEq_of_inflow _ (by norm_num) ?_
-  show (3 : ℝ) ≤ 2 * expAttempts (1 / 2 * stepKernel 3 3) 5
+  change (3 : ℝ) ≤ 2 * expAttempts (1 / 2 * stepKernel 3 3) 5
   rw [stepKernel_of_ge le_rfl, mul_one]
   norm_num [expAttempts, Finset.sum_range_succ]
 

@@ -73,12 +73,22 @@ theorem phase_trichotomy_pin :
   ⟨phase_trichotomy 3 (1 / 2) 2, by unfold HealthyOnly; norm_num,
     by unfold CongestedOnly; norm_num⟩
 
+/-- Healthy-only is disjoint from the bistable band, with no physical-region
+hypothesis: amplified demand cannot both fit under capacity (`λ·A < C`) and
+meet or exceed it (`C ≤ λ·A`). -/
 theorem healthyOnly_not_bistable {lam A C : ℝ} (h : HealthyOnly lam A C) :
     ¬BistableBand lam A C := fun hb => absurd h (not_lt.mpr hb.2)
 
+/-- The bistable band is disjoint from congested-only, with no
+physical-region hypothesis: fresh demand cannot both fit under capacity
+(`λ < C`) and meet or exceed it (`C ≤ λ`). -/
 theorem bistable_not_congestedOnly {lam A C : ℝ} (h : BistableBand lam A C) :
     ¬CongestedOnly lam C := not_le.mpr h.1
 
+/-- Healthy-only is disjoint from congested-only on the physical region
+`0 ≤ λ`, `1 ≤ A`: there `λ ≤ λ·A`, so `λ·A < C` and `C ≤ λ` cannot both
+hold. For `A < 1` the two regions can overlap; `phase_trichotomy_pin`
+exhibits the overlap at `A = 1/2`. -/
 theorem healthyOnly_not_congestedOnly {lam A C : ℝ} (hlam : 0 ≤ lam)
     (hA : 1 ≤ A) (h : HealthyOnly lam A C) : ¬CongestedOnly lam C :=
   fun hc => absurd (lt_of_lt_of_le h hc)
@@ -200,18 +210,21 @@ theorem bistableBand_realized_pin :
 ## Scale invariance: the phase is a function of the groups alone
 -/
 
+/-- Healthy-only is invariant under `(λ, C) ↦ (cλ, cC)` for `0 < c`. -/
 theorem healthyOnly_scale {lam A C c : ℝ} (hc : 0 < c) :
     HealthyOnly (c * lam) A (c * C) ↔ HealthyOnly lam A C := by
   unfold HealthyOnly
   rw [mul_assoc]
   exact mul_lt_mul_iff_right₀ hc
 
+/-- The bistable band is invariant under `(λ, C) ↦ (cλ, cC)` for `0 < c`. -/
 theorem bistableBand_scale {lam A C c : ℝ} (hc : 0 < c) :
     BistableBand (c * lam) A (c * C) ↔ BistableBand lam A C := by
   unfold BistableBand
   rw [mul_assoc]
   exact and_congr (mul_lt_mul_iff_right₀ hc) (mul_le_mul_iff_right₀ hc)
 
+/-- Congested-only is invariant under `(λ, C) ↦ (cλ, cC)` for `0 < c`. -/
 theorem congestedOnly_scale {lam C c : ℝ} (hc : 0 < c) :
     CongestedOnly (c * lam) (c * C) ↔ CongestedOnly lam C := by
   unfold CongestedOnly

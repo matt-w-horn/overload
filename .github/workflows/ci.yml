@@ -14,6 +14,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # CI mirror of the pre-commit silencing-guard: a PR diff that adds a
+  # gate-silencing token or touches a linter line in lakefile.toml fails
+  # here even if the local hook was bypassed. No Lean needed.
+  silencing-guard:
+    name: silencing-guard
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: guard the PR diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: make silencing-guard GUARD_DIFF="$BASE...HEAD"
+
   build:
     name: lake build
     runs-on: ubuntu-latest
@@ -22,8 +38,11 @@ jobs:
       # Builds the library with the pinned toolchain; restores the Mathlib
       # olean cache automatically. Overload/AxiomAudit.lean is part of the
       # default target, so a `sorry` or stray axiom in any NAMED declaration
-      # fails this job.
+      # fails this job — and --wfail turns every syntax-linter warning
+      # (the lakefile's mathlibStandardSet and core linters) into a failure.
       - uses: leanprover/lean-action@v1
+        with:
+          build-args: "--wfail"
       # The test driver (OverloadTest/Main.lean). Building it elaborates the
       # compile-time gates (axiom audit, coverage report); running it checks
       # the statement lock, the import roots, the negative fixtures, the
@@ -31,6 +50,12 @@ jobs:
       - name: test
         run: lake test
       # Batteries' environment linters (simp normal form, unused arguments,
-      # missing docstrings, ...) over every declaration in the library.
+      # missing docstrings, explicit iff variables, ...) over every
+      # declaration in the library.
       - name: lint
         run: lake lint
+      # Mathlib's text-based linters (unicode allowlist, trailing
+      # whitespace, ...) over the default target's sources. Exceptions
+      # would live in scripts/nolints-style.txt, which stays empty.
+      - name: lint-style
+        run: lake exe lint-style

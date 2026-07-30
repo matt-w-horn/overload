@@ -203,7 +203,7 @@ theorem ClosedLoop.not_bistableOn_of_gain_lt_one (L : ClosedLoop)
       (lfpIcc_mem_Icc hab L.F_mapsTo) (gfpIcc_mem_Icc hab L.F_mapsTo)
       (isFixedPt_lfpIcc hab L.F_monotoneOn_Icc L.F_mapsTo)
       (isFixedPt_gfpIcc hab L.F_monotoneOn_Icc L.F_mapsTo)
-  show ¬lfpIcc L.F 0 (L.lam * L.Amax) < gfpIcc L.F 0 (L.lam * L.Amax)
+  change ¬lfpIcc L.F 0 (L.lam * L.Amax) < gfpIcc L.F 0 (L.lam * L.Amax)
   rw [heq]
   exact lt_irrefl _
 
@@ -229,7 +229,7 @@ noncomputable def smoothLoop (lam C A : ℝ) (hlam : 0 ≤ lam) (hC : 0 < C)
     have hxC : 0 < x + C := by linarith
     exact ⟨div_nonneg hx hxC.le, by rw [div_le_one hxC]; linarith⟩
   g_mono := by
-    intro x hx y hy hxy
+    intro x hx y _ hxy
     have hx0 : (0 : ℝ) ≤ x := hx
     have hxC : 0 < x + C := by linarith
     have hyC : 0 < y + C := by linarith [le_trans hx0 hxy]
@@ -275,7 +275,6 @@ theorem smoothLoop_deriv_lt_one {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C)
     (hA : 1 ≤ A) (hgain : lam * (A - 1) < C) {Λ : ℝ} (hΛ : 0 ≤ Λ) :
     deriv (smoothLoop lam C A hlam hC hA).F Λ < 1 := by
   rw [(hasDerivAt_smoothLoop_F hlam hC hA hΛ).deriv]
-  have hΛC : 0 < Λ + C := by linarith
   have hdiv : C / (Λ + C) ^ 2 ≤ 1 / C := by
     rw [div_le_div_iff₀ (by positivity) hC]
     nlinarith
@@ -409,8 +408,6 @@ theorem mm1BandLoop_gain_lt_one : deriv mm1BandLoop.F 31 < 1 := by
   have step : (1 + 2 * Real.exp (-69) + 3 * Real.exp (-69) ^ 2) *
       Real.exp (-69) ≤ (1 + 2 * (1 / 70) + 3 * (1 / 70) ^ 2) * (1 / 70) :=
     mul_le_mul (by linarith) hp70 hp0.le (by norm_num)
-  have hnum : (30 : ℝ) * ((1 + 2 * (1 / 70) + 3 * (1 / 70) ^ 2) * (1 / 70))
-      < 1 := by norm_num
   nlinarith [step]
 
 /-- The streamlined check, risky side, on the same instance: near capacity
@@ -484,13 +481,13 @@ theorem clamp_fluid_strictAnti_pin :
   refine (stepLoop 0 5 2 (by norm_num)
     (by norm_num)).toBoundedLoop.clamp_fluid_strictAnti (K := 2) (Θ := 1)
     (fun p hp => by
-      show (1 : ℝ) + p * (2 - 1) ≤ 2
+      change (1 : ℝ) + p * (2 - 1) ≤ 2
       linarith [hp.2])
     (show (0 : ℝ) * 2 < 1 by norm_num) zero_le_one (fun t _ => ?_)
     (fun t ht => ?_)
   · have hexp : HasDerivAt (fun s : ℝ => Real.exp (-s)) (-Real.exp (-t)) t := by
       simpa using (hasDerivAt_neg t).exp
-    show HasDerivAt (fun s : ℝ => 100 * Real.exp (-s))
+    change HasDerivAt (fun s : ℝ => 100 * Real.exp (-s))
       ((0 : ℝ) * (1 + stepKernel 5 (100 * Real.exp (-t)) * (2 - 1))
         - 100 * Real.exp (-t)) t
     rw [show (0 : ℝ) * (1 + stepKernel 5 (100 * Real.exp (-t)) * (2 - 1))
@@ -652,7 +649,7 @@ theorem fluid_recovery_within_half : Real.exp (-1 : ℝ) - 0 ≤ 1 / 2 := by
     (by norm_num) (by norm_num) (fun t _ => by norm_num)
     (fun t _ => ?_) 1 (by norm_num) ?_
   · have h := ((hasDerivAt_id t).neg).exp
-    show HasDerivAt (fun s : ℝ => Real.exp (-s)) (0 - Real.exp (-t)) t
+    change HasDerivAt (fun s : ℝ => Real.exp (-s)) (0 - Real.exp (-t)) t
     have hval : (0 : ℝ) - Real.exp (-t) = Real.exp (-t) * (-1) := by ring
     rw [hval]
     exact h

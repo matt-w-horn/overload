@@ -126,12 +126,12 @@ theorem burst_safe_stepLoop_five :
     (stepLoop 1 2 3 (by norm_num) (by norm_num)).F^[5] (1/2 + 1/4) ≤ 1 := by
   have hfz : Function.IsFixedPt (stepLoop 1 2 3 (by norm_num)
       (by norm_num)).F 1 := by
-    show (1 : ℝ) * (1 + stepKernel 2 1 * (3 - 1)) = 1
+    change (1 : ℝ) * (1 + stepKernel 2 1 * (3 - 1)) = 1
     rw [stepKernel_of_lt (by norm_num)]
     norm_num
   have h := (stepLoop 1 2 3 (by norm_num) (by norm_num)).burst_safe
     (z := 1) (Λ₀ := 1/2) (B := 1) (w := 4)
-    ⟨by norm_num, by show (1 : ℝ) ≤ 1 * 3; norm_num⟩ hfz (by norm_num)
+    ⟨by norm_num, by change (1 : ℝ) ≤ 1 * 3; norm_num⟩ hfz (by norm_num)
     (by norm_num)
     (by norm_num) (by norm_num) 5
   simpa using h
@@ -154,7 +154,7 @@ theorem burst_tips_stepLoop_two :
       ≤ (stepLoop 1 2 3 (by norm_num) (by norm_num)).F^[3 + 1] (1 / 2 + 6 / 4) :=
   (stepLoop 1 2 3 (by norm_num) (by norm_num)).burst_tips (by norm_num)
     (by
-      show (1 / 2 + 6 / 4 : ℝ) ≤ 1 * (1 + stepKernel 2 (1 / 2 + 6 / 4) * (3 - 1))
+      change (1 / 2 + 6 / 4 : ℝ) ≤ 1 * (1 + stepKernel 2 (1 / 2 + 6 / 4) * (3 - 1))
       rw [stepKernel_of_ge (by norm_num)]
       norm_num) 3
 

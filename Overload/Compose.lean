@@ -25,6 +25,7 @@ namespace Overload
 /-- One-layer downward failure composition. -/
 def composeFail (ℓ f : ℝ) (m : ℕ) : ℝ := 1 - (1 - ℓ) * (1 - f ^ m)
 
+/-- Failure probabilities stay probabilities through one layer. -/
 theorem composeFail_mem_Icc {ℓ f : ℝ} (hℓ : ℓ ∈ Set.Icc (0 : ℝ) 1)
     (hf : f ∈ Set.Icc (0 : ℝ) 1) (m : ℕ) :
     composeFail ℓ f m ∈ Set.Icc (0 : ℝ) 1 := by
@@ -71,8 +72,11 @@ def stackFail : List (ℝ × ℕ) → ℝ → ℝ
   | [], base => base
   | (ℓ, m) :: rest, base => composeFail ℓ (stackFail rest base) m
 
+/-- The empty stack leaves the base failure probability unchanged. -/
 @[simp] theorem stackFail_nil (base : ℝ) : stackFail [] base = base := rfl
 
+/-- Prepending a layer is one-layer downward composition over the rest of
+the stack. -/
 @[simp] theorem stackFail_cons (ℓ : ℝ) (m : ℕ) (rest : List (ℝ × ℕ))
     (base : ℝ) :
     stackFail ((ℓ, m) :: rest) base = composeFail ℓ (stackFail rest base) m :=

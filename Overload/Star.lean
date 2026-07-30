@@ -118,7 +118,7 @@ theorem isVectorEq {y : ℝ} (hfix : S.F y = y) :
   have hsum : (∑ j, S.r j * (S.lam j * S.h j (S.gD y))) = y :=
     (Finset.sum_congr rfl fun j _ => (mul_assoc _ _ _).symm).trans hfix
   refine ⟨fun i => S.lam i * S.h i (S.gD y), hsum, fun i => ?_⟩
-  show S.lam i * S.h i (S.gD y)
+  change S.lam i * S.h i (S.gD y)
       = S.lam i * S.h i (S.gD (∑ j, S.r j * (S.lam j * S.h j (S.gD y))))
   rw [hsum]
 
@@ -143,7 +143,7 @@ theorem aggResponse_le {K : Fin k → ℝ} (hK : S.Contract K) :
         mul_le_mul_of_nonneg_left (hK i p hp)
           (mul_nonneg (S.r_nonneg i) (S.lam_nonneg i))
     _ = S.signature K i := by
-        show _ = S.lam i * K i * S.r i
+        change _ = S.lam i * K i * S.r i
         ring
 
 /-- **The flow-equivalent server**: the star collapsed to a single
@@ -160,6 +160,7 @@ def toLoop (A : ℝ)
   g_mem := S.gD_mem
   h_le_Amax := hA
 
+variable {S} in
 /-- The star and its flow-equivalent server have the same congested
 equilibria at the sink. -/
 theorem congestedEq_iff {A Θ : ℝ}
@@ -180,8 +181,8 @@ theorem no_congestedEq_of_signatures {K : Fin k → ℝ} {Θ : ℝ}
   intro hcong
   refine (S.toLoop (∑ i, S.signature K i)
       (S.aggResponse_le hK)).clamp_no_congestedEq (S.aggResponse_le hK)
-    ?_ ((S.congestedEq_iff (S.aggResponse_le hK)).mpr hcong)
-  show (1 : ℝ) * (∑ i, S.signature K i) < Θ
+    ?_ ((congestedEq_iff (S.aggResponse_le hK)).mpr hcong)
+  change (1 : ℝ) * (∑ i, S.signature K i) < Θ
   linarith
 
 end Star
@@ -211,7 +212,7 @@ theorem rankOne_certificate_of_pairing_lt {k : ℕ} {a b : Fin k → ℝ}
     rw [mulVec_apply']
     have hz : ∑ j, (Matrix.of fun i j => a i * b j) i j * 1 = 0 :=
       Finset.sum_eq_zero fun j hj => by
-        show a i * b j * 1 = 0
+        change a i * b j * 1 = 0
         rw [hb0 j hj]
         ring
     rw [hz]
@@ -228,7 +229,7 @@ theorem rankOne_certificate_of_pairing_lt {k : ℕ} {a b : Fin k → ℝ}
       rw [hs_def, hB_def, Finset.mul_sum, Finset.mul_sum,
         ← Finset.sum_add_distrib]
       exact Finset.sum_congr rfl fun j _ => by
-        show a i * b j * (a j + ε) = _
+        change a i * b j * (a j + ε) = _
         ring
     rw [hexpand]
     have hεB : ε * B = (1 - s) / 2 := by
@@ -265,7 +266,7 @@ theorem pairing_lt_of_rankOne_certificate {k : ℕ} {a b : Fin k → ℝ}
       rw [mulVec_apply', Finset.mul_sum, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro j _
-      show b i * ((a i * b j) * w j) = b i * a i * (b j * w j)
+      change b i * ((a i * b j) * w j) = b i * a i * (b j * w j)
       ring
     have hbw : 0 < ∑ j, b j * w j := by
       apply Finset.sum_pos'
@@ -303,6 +304,7 @@ def gainMatrix (L : Fin k → ℝ) (ℓD : ℝ) : Matrix (Fin k) (Fin k) ℝ :=
 def gain (L : Fin k → ℝ) (ℓD : ℝ) : ℝ :=
   ∑ j, S.r j * (S.lam j * L j * ℓD)
 
+variable {S} in
 /-- **The star gain criterion**: the linearized star admits a weight
 certificate **iff** its scalar gain is below one — the flow-equivalent
 server's stability condition, with no eigenvalue computed. -/
@@ -321,7 +323,7 @@ theorem gain_unique_eq [NeZero k] {L : Fin k → ℝ} {ℓD : ℝ}
     {c x y : Fin k → ℝ} (hx : affine (S.gainMatrix L ℓD) c x = x)
     (hy : affine (S.gainMatrix L ℓD) c y = y) : x = y :=
   certificate_fixedPoint_unique
-    ((S.gainMatrix_certificate_iff hL hℓD).mpr hgain) hx hy
+    ((gainMatrix_certificate_iff hL hℓD).mpr hgain) hx hy
 
 end Star
 
@@ -350,10 +352,10 @@ noncomputable abbrev starWitness : Star 2 where
 kernel-scaled amplification headroom. -/
 theorem starWitness_F (y : ℝ) :
     starWitness.F y = 8 + 16 * stepKernel 10 y := by
-  show (∑ i : Fin 2, starWitness.r i * starWitness.lam i
+  change (∑ i : Fin 2, starWitness.r i * starWitness.lam i
       * starWitness.h i (stepKernel 10 y)) = 8 + 16 * stepKernel 10 y
   rw [Fin.sum_univ_two]
-  show (1 : ℝ) * 4 * (1 + stepKernel 10 y)
+  change (1 : ℝ) * 4 * (1 + stepKernel 10 y)
       + 1 * 4 * (1 + 3 * stepKernel 10 y) = 8 + 16 * stepKernel 10 y
   ring
 
@@ -398,10 +400,10 @@ theorem starWitnessLight_no_congestedEq :
   refine starWitnessLight.no_congestedEq_of_signatures
     (K := ![2, 4]) ?_ ?_
   · exact Fin.forall_fin_two.mpr
-      ⟨fun p hp => by show 1 + p ≤ 2; linarith [hp.2],
-        fun p hp => by show 1 + 3 * p ≤ 4; linarith [hp.2]⟩
+      ⟨fun p hp => by change 1 + p ≤ 2; linarith [hp.2],
+        fun p hp => by change 1 + 3 * p ≤ 4; linarith [hp.2]⟩
   · rw [Fin.sum_univ_two]
-    show (1 : ℝ) * 2 * 1 + 1 * 4 * 1 < 10
+    change (1 : ℝ) * 2 * 1 + 1 * 4 * 1 < 10
     norm_num
 
 /-!
@@ -434,13 +436,13 @@ noncomputable def toStar (L : ClosedLoop) : Star 1 where
 /-- The embedding preserves congestion: the one-server star has a congested
 equilibrium at the sink exactly when the loop it wraps has one, both sides
 reading fixed points of the same operator. -/
-theorem toStar_congestedEq_iff (L : ClosedLoop) (Θ : ℝ) :
+theorem toStar_congestedEq_iff {L : ClosedLoop} {Θ : ℝ} :
     L.toStar.CongestedEq Θ ↔ L.CongestedEq Θ := by
   have hF : ∀ y, L.toStar.F y = L.F y := fun y => by
-    show (∑ i : Fin 1, L.toStar.r i * L.toStar.lam i * L.toStar.h i (L.g y))
+    change (∑ i : Fin 1, L.toStar.r i * L.toStar.lam i * L.toStar.h i (L.g y))
         = L.F y
     rw [Fin.sum_univ_one]
-    show (1 : ℝ) * L.lam * L.h (L.g y) = L.lam * L.h (L.g y)
+    change (1 : ℝ) * L.lam * L.h (L.g y) = L.lam * L.h (L.g y)
     ring
   unfold Star.CongestedEq BoundedLoop.CongestedEq
   exact exists_congr fun y => by rw [hF]
@@ -451,7 +453,7 @@ single-loop scalar of `Signature.lean` are the same number here. -/
 theorem toStar_signature (L : ClosedLoop) :
     ∑ i, L.toStar.signature ![L.Amax] i = L.signature := by
   rw [Fin.sum_univ_one]
-  show L.lam * L.Amax * 1 = L.lam * L.Amax
+  change L.lam * L.Amax * 1 = L.lam * L.Amax
   ring
 
 end ClosedLoop
@@ -509,8 +511,8 @@ theorem star_signature_not_decide_congestedEq :
   · rw [ClosedLoop.toStar_signature, ClosedLoop.toStar_signature]
     exact headroomLoop_signature_eq_flatLoop
   · exact fun hc =>
-      headroomLoop_no_congestedEq ((headroomLoop.toStar_congestedEq_iff 3).mp hc)
+      headroomLoop_no_congestedEq (ClosedLoop.toStar_congestedEq_iff.mp hc)
   · exact not_not_intro
-      ((flatLoop.toStar_congestedEq_iff 3).mpr flatLoop_congestedEq)
+      (ClosedLoop.toStar_congestedEq_iff.mpr flatLoop_congestedEq)
 
 end Overload

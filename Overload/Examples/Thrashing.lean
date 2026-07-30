@@ -56,7 +56,7 @@ theorem thrashing_bistable : BistableOn thrashingLoop.F 0 24 := by
   refine thrashingLoop.bistableOn_of_two_points (x := 6) (y := 20)
     (by norm_num) ?_ thrashing_inflow (by norm_num) ?_
   · rw [cappedLoop_F_of_lt (by norm_num)]
-  · show (6 : ℝ) * ((4 : ℕ) : ℝ) ≤ 24
+  · change (6 : ℝ) * ((4 : ℕ) : ℝ) ≤ 24
     norm_num
 
 /-- The congested (thrashing) state is a genuine equilibrium — a fixed

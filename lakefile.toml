@@ -1,9 +1,30 @@
 name = "Overload"
 defaultTargets = ["Overload"]
-leanOptions = { autoImplicit = false, relaxedAutoImplicit = false }
 testDriver = "overloadTest"
 lintDriver = "batteries/runLinter"
 lintDriverArgs = ["Overload"]
+
+# Syntax linters, applied to every Lean target in this package. Mathlib's
+# standard set is `weak.`-prefixed because its options only exist once
+# Mathlib is imported; the four exclusions are its layout-specific
+# formatting linters (copyright headers, whitespace shape, file length).
+# `linter.style.longFile` is Nat-valued and read directly, so disabling it
+# means setting 0, not false. `style.admit` is a Mathlib linter the
+# standard set omits. The last four are core linters that ship disabled;
+# they are builtin options, so no `weak.` prefix.
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+weak.linter.style.admit = true
+weak.linter.style.header = false
+weak.linter.style.emptyLine = false
+weak.linter.style.whitespace = false
+weak.linter.style.longFile = 0
+linter.loopingSimpArgs = true
+linter.omit = true
+linter.redundantVisibility = true
+linter.unusedVariables.analyzeTactics = true
 
 [[require]]
 name = "mathlib"

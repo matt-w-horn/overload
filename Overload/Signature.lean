@@ -85,7 +85,7 @@ def FactorsThroughSignature (P : ClosedLoop → Prop) : Prop :=
 the form `Q ∘ signature` for some `Q : ℝ → Prop` iff loops of equal
 signature receive the same verdict. The bridge between the definitional
 form and the "reads only the exported number" reading. -/
-theorem factorsThroughSignature_iff (P : ClosedLoop → Prop) :
+theorem factorsThroughSignature_iff {P : ClosedLoop → Prop} :
     FactorsThroughSignature P ↔
       ∃ Q : ℝ → Prop, ∀ L : ClosedLoop, P L ↔ Q L.signature := by
   constructor
@@ -129,7 +129,7 @@ theorem signature_not_decide_congestedEq {lam A C Θ : ℝ}
   refine no_signature_cert_of_separating_pair
     (L₁ := stepLoop lam C A hlam' hA)
     (L₂ := stepLoop (lam * A) C 1 hlamA le_rfl) ?_ ?_ ?_
-  · show lam * A = lam * A * 1
+  · change lam * A = lam * A * 1
     ring
   · rintro ⟨Λ, _, hfix, hΘΛ⟩
     rcases lt_or_ge Λ C with hΛC | hΛC
@@ -215,7 +215,7 @@ theorem signature_not_decide_two_fixedPts {lam A C : ℝ}
   refine no_signature_cert_of_separating_pair
     (L₁ := stepLoop lam C A hlam' hA)
     (L₂ := stepLoop (lam * A) C 1 hlamA le_rfl) ?_ hpair.1 hpair.2
-  show lam * A = lam * A * 1
+  change lam * A = lam * A * 1
   ring
 
 /-!
@@ -237,7 +237,7 @@ noncomputable abbrev flatLoop : ClosedLoop :=
 /-- The pair carries one signature: `σ = 4` on both sides. -/
 theorem headroomLoop_signature_eq_flatLoop :
     headroomLoop.signature = flatLoop.signature := by
-  show (1 : ℝ) * 4 = 4 * 1
+  change (1 : ℝ) * 4 = 4 * 1
   norm_num
 
 /-- The headroom side is safe at threshold `3`: below capacity its demand

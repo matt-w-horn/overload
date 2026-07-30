@@ -1,4 +1,6 @@
 import Mathlib.Tactic.TypeStar
+-- The syntax-linter carrier; see the note in `Overload/Basic.lean`.
+import Mathlib.Tactic.Linter.DeprecatedSyntaxLinter -- shake: keep
 
 /-!
 # Signal fidelity: why a mislabeled instrument hides real harm

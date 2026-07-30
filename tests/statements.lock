@@ -100,7 +100,7 @@
     0 ≤ Θ → Θ ≤ L.lam * L.h p₀ → (L.constLoop p₀ hp₀).CongestedEq Θ
 
 #### Overload.BoundedLoop.forall_kernel_no_congestedEq_iff : theorem
-  ∀ (L : Overload.BoundedLoop) {Θ : ℝ},
+  ∀ {L : Overload.BoundedLoop} {Θ : ℝ},
     0 ≤ Θ →
       ((∀ (g : ℝ → ℝ) (hg : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
           ¬(L.withKernel g hg).CongestedEq Θ) ↔
@@ -206,7 +206,7 @@
     0 ≤ x → L.F x ≤ x → y ≤ L.F y → x < y → L.lam * L.Amax ≤ b → Overload.BistableOn L.F 0 b
 
 #### Overload.ClosedLoop.blip_unique_eq : theorem
-  ∀ (L : Overload.ClosedLoop) {p₀ : ℝ},
+  ∀ {L : Overload.ClosedLoop} {p₀ : ℝ},
     (∀ (x : ℝ), 0 ≤ x → L.g x = p₀) → ∀ {Λ : ℝ}, 0 ≤ Λ → (L.F Λ = Λ ↔ Λ = L.lam * L.h p₀)
 
 #### Overload.ClosedLoop.burst_crosses : theorem
@@ -277,7 +277,7 @@
       ∀ {Θ Θ' : ℝ}, Θ ≤ Θ' → ¬L.CongestedEq Θ → ¬(L.withKernel g' hg'_mem hg'_mono).CongestedEq Θ'
 
 #### Overload.ClosedLoop.forall_kernel_no_congestedEq_iff : theorem
-  ∀ (L : Overload.ClosedLoop) {Θ : ℝ},
+  ∀ {L : Overload.ClosedLoop} {Θ : ℝ},
     0 ≤ Θ →
       ((∀ (g : ℝ → ℝ) (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1)
           (hg_mono : MonotoneOn g (Set.Ici 0)), ¬(L.withKernel g hg_mem hg_mono).CongestedEq Θ) ↔
@@ -322,7 +322,7 @@
   ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {C : ℝ}, L.lam < C → ¬L.CongestedEq C
 
 #### Overload.ClosedLoop.noSustaining_unique_eq : theorem
-  ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {Λ : ℝ}, 0 ≤ Λ → (L.F Λ = Λ ↔ Λ = L.lam)
+  ∀ {L : Overload.ClosedLoop}, L.NoSustaining → ∀ {Λ : ℝ}, 0 ≤ Λ → (L.F Λ = Λ ↔ Λ = L.lam)
 
 #### Overload.ClosedLoop.not_bistableOn_of_const : theorem
   ∀ (L : Overload.ClosedLoop) {p₀ : ℝ},
@@ -347,7 +347,7 @@
   value-hash 416d5ae377e4d0e9
 
 #### Overload.ClosedLoop.toStar_congestedEq_iff : theorem
-  ∀ (L : Overload.ClosedLoop) (Θ : ℝ), L.toStar.CongestedEq Θ ↔ L.CongestedEq Θ
+  ∀ {L : Overload.ClosedLoop} {Θ : ℝ}, L.toStar.CongestedEq Θ ↔ L.CongestedEq Θ
 
 #### Overload.ClosedLoop.toStar_signature : theorem
   ∀ (L : Overload.ClosedLoop), ∑ i, L.toStar.signature ![L.Amax] i = L.signature
@@ -642,7 +642,7 @@
     S.Contract K → ∀ p ∈ Set.Icc 0 1, S.aggResponse p ≤ ∑ i, S.signature K i
 
 #### Overload.Star.congestedEq_iff : theorem
-  ∀ {k : ℕ} (S : Overload.Star k) {A Θ : ℝ} (hA : ∀ p ∈ Set.Icc 0 1, S.aggResponse p ≤ A),
+  ∀ {k : ℕ} {S : Overload.Star k} {A Θ : ℝ} (hA : ∀ p ∈ Set.Icc 0 1, S.aggResponse p ≤ A),
     (S.toLoop A hA).CongestedEq Θ ↔ S.CongestedEq Θ
 
 #### Overload.Star.gain : def
@@ -654,7 +654,7 @@
   value-hash 5a151f6f43d68129
 
 #### Overload.Star.gainMatrix_certificate_iff : theorem
-  ∀ {k : ℕ} (S : Overload.Star k) {L : Fin k → ℝ} {ℓD : ℝ},
+  ∀ {k : ℕ} {S : Overload.Star k} {L : Fin k → ℝ} {ℓD : ℝ},
     (∀ (i : Fin k), 0 ≤ L i) → 0 ≤ ℓD → (Overload.Certificate (S.gainMatrix L ℓD) ↔ S.gain L ℓD < 1)
 
 #### Overload.Star.gain_unique_eq : theorem
@@ -947,11 +947,11 @@
 
 #### Overload.borg_cascade_certified : theorem
   ∀ (p₁ p₂ : ℝ) (h₁ : p₁ ∈ Set.Icc 0 1) (h₂ : p₂ ∈ Set.Icc 0 1) (g : ℝ → ℝ)
-    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)),
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
     ¬(Overload.stackToLoop
             [{ p := p₁, cap := 4, p_mem := h₁, cap_pos := ⋯ },
               { p := p₂, cap := 3, p_mem := h₂, cap_pos := ⋯ }]
-            2 g ⋯ hg_mem hg_mono).CongestedEq
+            2 g ⋯ hg_mem).CongestedEq
         100
 
 #### Overload.borg_cliff_needs_waste : theorem
@@ -1384,6 +1384,10 @@
   (lam : ℝ) → ℝ → (m : ℕ) → 0 ≤ lam → 1 ≤ m → Overload.ClosedLoop
   value-hash 6a45d3452f723f07
 
+#### Overload.docBlameThmEnabled : def
+  Batteries.Tactic.Lint.Linter
+  value-hash 61d1b116eb14b88a
+
 #### Overload.doomedAmp : def
   ℝ → ℝ → ℝ → ℝ
   value-hash f2227ee0329b3105
@@ -1604,6 +1608,10 @@
 #### Overload.exp_neg_le_inv_one_add : theorem
   ∀ {x : ℝ}, 0 ≤ x → Real.exp (-x) ≤ (1 + x)⁻¹
 
+#### Overload.explicitVarsOfIffEnabled : def
+  Batteries.Tactic.Lint.Linter
+  value-hash 3deaf6c01b1ffda0
+
 #### Overload.extendDemand : def
   {k : ℕ} → (Fin k → ℝ) → ℕ → ℝ
   value-hash 3ecf961edb678baf
@@ -1612,7 +1620,7 @@
   ∀ {k : ℕ} {d : Fin k → ℝ}, (∀ (j : Fin k), 0 ≤ d j) → ∀ (n : ℕ), 0 ≤ Overload.extendDemand d n
 
 #### Overload.factorsThroughSignature_iff : theorem
-  ∀ (P : Overload.ClosedLoop → Prop),
+  ∀ {P : Overload.ClosedLoop → Prop},
     Overload.FactorsThroughSignature P ↔ ∃ Q, ∀ (L : Overload.ClosedLoop), P L ↔ Q L.signature
 
 #### Overload.fifoSojourn : def
@@ -1750,7 +1758,7 @@
             mu * Overload.stationaryWeight (lam / mu) (n + 2)
 
 #### Overload.global_balance_iff_cutFlow_succ : theorem
-  ∀ (lam mu : ℝ) (f : ℕ → ℝ) (n : ℕ),
+  ∀ {lam mu : ℝ} {f : ℕ → ℝ} {n : ℕ},
     (lam + mu) * f (n + 1) = lam * f n + mu * f (n + 2) ↔
       Overload.cutFlow lam mu f (n + 1) = Overload.cutFlow lam mu f n
 
@@ -2670,31 +2678,28 @@
 
 #### Overload.stackToLoop : def
   List Overload.Layer →
-    (lam : ℝ) →
-      (g : ℝ → ℝ) →
-        0 ≤ lam →
-          (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → MonotoneOn g (Set.Ici 0) → Overload.ClosedLoop
-  value-hash d164f8ada5089901
+    (lam : ℝ) → (g : ℝ → ℝ) → 0 ≤ lam → (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → Overload.BoundedLoop
+  value-hash ceaea2e706492bc7
 
 #### Overload.stackToLoop_F : theorem
   ∀ (S : List Overload.Layer) (lam : ℝ) (g : ℝ → ℝ) (hlam : 0 ≤ lam)
-    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)) (Λ : ℝ),
-    (Overload.stackToLoop S lam g hlam hg_mem hg_mono).F Λ = lam * Overload.layersAmp S
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (Λ : ℝ),
+    (Overload.stackToLoop S lam g hlam hg_mem).F Λ = lam * Overload.layersAmp S
 
 #### Overload.stackToLoop_F_at_demo : theorem
   (Overload.stackToLoop [{ p := 1 / 2, cap := 2, p_mem := ⋯, cap_pos := ⋯ }] 2
-            (Overload.stepKernel 10) ⋯ ⋯ ⋯).F
+            (Overload.stepKernel 10) ⋯ ⋯).F
         5 =
       3 ∧
     (Overload.stackToLoop [{ p := 1 / 2, cap := 2, p_mem := ⋯, cap_pos := ⋯ }] 2
-            (Overload.stepKernel 10) ⋯ ⋯ ⋯).F
+            (Overload.stepKernel 10) ⋯ ⋯).F
         100 =
       3
 
 #### Overload.stack_budget_no_congestedEq : theorem
   ∀ (S : List Overload.Layer) {lam C : ℝ} (g : ℝ → ℝ) (hlam : 0 ≤ lam)
-    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) (hg_mono : MonotoneOn g (Set.Ici 0)),
-    lam * Overload.layersAmp S < C → ¬(Overload.stackToLoop S lam g hlam hg_mem hg_mono).CongestedEq C
+    (hg_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1),
+    lam * Overload.layersAmp S < C → ¬(Overload.stackToLoop S lam g hlam hg_mem).CongestedEq C
 
 #### Overload.starWitness : def
   Overload.Star 2

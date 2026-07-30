@@ -54,9 +54,11 @@ noncomputable def neff (T B : ℕ → ℝ) (D : ℝ) (n : ℕ) : ℕ :=
 
 variable {T T' B B' : ℕ → ℝ} {D D' t b : ℝ} {k n : ℕ}
 
+/-- Zero attempts consume zero time. -/
 @[simp] theorem totalTime_zero (T B : ℕ → ℝ) : totalTime T B 0 = 0 := by
   simp [totalTime]
 
+/-- Zero attempts fit within any nonnegative deadline. -/
 theorem fitsIn_zero (T B : ℕ → ℝ) (hD : 0 ≤ D) : fitsIn T B D 0 := by
   simp [fitsIn, hD]
 
@@ -72,6 +74,7 @@ theorem fitsIn_neff (hD : 0 ≤ D) : fitsIn T B D (neff T B D n) := by
   unfold neff
   exact Nat.findGreatest_spec (Nat.zero_le n) (fitsIn_zero T B hD)
 
+/-- Any feasible count within the cap is a lower bound on `neff`. -/
 theorem le_neff (hk : k ≤ n) (h : fitsIn T B D k) : k ≤ neff T B D n := by
   classical
   unfold neff
@@ -81,6 +84,9 @@ theorem le_neff (hk : k ≤ n) (h : fitsIn T B D k) : k ≤ neff T B D n := by
 ## Monotonicity: the latency-ordering proposition and friends
 -/
 
+/-- `totalTime` is monotone in the failure latencies: pointwise-slower
+failures consume at least as much time, for any backoff schedule and any
+attempt count. -/
 theorem totalTime_mono_T (h : ∀ j, T j ≤ T' j) (B : ℕ → ℝ) (k : ℕ) :
     totalTime T B k ≤ totalTime T' B k :=
   add_le_add (Finset.sum_le_sum fun j _ => h j) le_rfl
@@ -99,6 +105,9 @@ theorem neff_antitone_latency (h : ∀ j, T j ≤ T' j) :
 ## The constant-backoff closed form and re-armed timeouts
 -/
 
+/-- `totalTime` at constant latency `t` and constant wait `b`: `m + 1`
+attempts consume `(m + 1)·t + m·b`. Stated at a successor count so the
+ℕ-subtraction `(m + 1) - 1` reduces to `m`. -/
 theorem totalTime_const_succ (t b : ℝ) (m : ℕ) :
     totalTime (fun _ => t) (fun _ => b) (m + 1)
       = (m + 1 : ℝ) * t + (m : ℝ) * b := by
@@ -361,7 +370,6 @@ theorem neff_geom_backoff_le {r : ℝ} (hr : 1 < r) (hb : 0 < b)
       linarith
     have hgeom := one_sub_mul_expAttempts r m
     have hrm : r ^ m ≤ 1 + D * (r - 1) / b := by
-      have h1 : r ^ m = 1 + (r - 1) * expAttempts r m := by linarith
       have h2 : (r - 1) * expAttempts r m ≤ (r - 1) * (D / b) :=
         mul_le_mul_of_nonneg_left hE (by linarith)
       have h3 : (r - 1) * (D / b) = D * (r - 1) / b := by ring

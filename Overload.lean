@@ -36,4 +36,5 @@ import Overload.Examples.Thrashing
 import Overload.Examples.Pipeline
 import Overload.Examples.Deficit
 import Overload.Examples.Mesh
+import Overload.Lint
 import Overload.AxiomAudit

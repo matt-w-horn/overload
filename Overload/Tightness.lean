@@ -91,6 +91,7 @@ theorem pointwise_no_congestedEq {Θ : ℝ}
   rw [hfix] at h
   linarith
 
+variable {L} in
 /-- **Clamp completeness.** Over the kernel-quantified family — the same
 demand profile `(λ, h, Amax)`, every admissible kernel — safety is
 *equivalent* to the pointwise clamp condition: no kernel can congest the
@@ -124,12 +125,12 @@ theorem forall_kernel_no_congestedEq_iff_pin :
       ¬∀ (g : ℝ → ℝ) (hg : ∀ x, 0 ≤ x → g x ∈ Set.Icc (0 : ℝ) 1),
         ¬((stepLoop 1 5 4 (by norm_num)
           (by norm_num)).toBoundedLoop.withKernel g hg).CongestedEq 4 := by
-  refine ⟨(forall_kernel_no_congestedEq_iff _ (by norm_num)).mpr
+  refine ⟨(forall_kernel_no_congestedEq_iff (by norm_num)).mpr
     (fun p hp => ?_), fun hsafe => ?_⟩
-  · show (1 : ℝ) * (1 + p * (4 - 1)) < 5
+  · change (1 : ℝ) * (1 + p * (4 - 1)) < 5
     linarith [hp.2]
   · have h1 : (1 : ℝ) * (1 + 1 * (4 - 1)) < 4 :=
-      (forall_kernel_no_congestedEq_iff _ (by norm_num)).mp hsafe 1
+      (forall_kernel_no_congestedEq_iff (by norm_num)).mp hsafe 1
         ⟨zero_le_one, le_rfl⟩
     norm_num at h1
 
@@ -154,6 +155,7 @@ adversarial instrument survives the monotone restriction. -/
 def constLoop (p₀ : ℝ) (hp₀ : p₀ ∈ Set.Icc (0 : ℝ) 1) : ClosedLoop :=
   L.withKernel (fun _ => p₀) (fun _ _ => hp₀) monotoneOn_const
 
+variable {L} in
 /-- **Clamp completeness, monotone class.** Restricting the adversary to
 monotone kernels does not weaken it: the worst kernel is constant, hence
 monotone, so safety across the monotone-kernel family is still equivalent to
@@ -184,12 +186,12 @@ theorem forall_kernel_no_congestedEq_iff_pin :
         (hg_mono : MonotoneOn g (Set.Ici (0 : ℝ))),
         ¬((stepLoop 1 5 4 (by norm_num)
           (by norm_num)).withKernel g hg_mem hg_mono).CongestedEq 4 := by
-  refine ⟨(forall_kernel_no_congestedEq_iff _ (by norm_num)).mpr
+  refine ⟨(forall_kernel_no_congestedEq_iff (by norm_num)).mpr
     (fun p hp => ?_), fun hsafe => ?_⟩
-  · show (1 : ℝ) * (1 + p * (4 - 1)) < 5
+  · change (1 : ℝ) * (1 + p * (4 - 1)) < 5
     linarith [hp.2]
   · have h1 : (1 : ℝ) * (1 + 1 * (4 - 1)) < 4 :=
-      (forall_kernel_no_congestedEq_iff _ (by norm_num)).mp hsafe 1
+      (forall_kernel_no_congestedEq_iff (by norm_num)).mp hsafe 1
         ⟨zero_le_one, le_rfl⟩
     norm_num at h1
 
@@ -208,7 +210,7 @@ theorem coupled_budget_tight (lam : ℝ) (layers : List (ℝ × ℕ))
         (fun _ _ => ⟨zero_le_one, le_rfl⟩) monotoneOn_const hℓ
         hcap).CongestedEq C :=
   ⟨lam * capProd layers, hC0.trans hC, by
-    show lam * coupledAmp layers 1 = lam * capProd layers
+    change lam * coupledAmp layers 1 = lam * capProd layers
     rw [coupledAmp_at_one], hC⟩
 
 /-- Pin of stack tightness at the two-layer composite's own numbers: offered
@@ -245,7 +247,8 @@ where the response spikes, so the only equilibrium is the offered load
 `1 < 3`. -/
 theorem spikeLoop_no_congestedEq : ¬spikeLoop.CongestedEq 3 := by
   rintro ⟨Λ, hΛ0, hfix, hΘΛ⟩
-  rw [(spikeLoop.blip_unique_eq (p₀ := 0) (fun _ _ => rfl) hΛ0).mp hfix,
+  rw [(ClosedLoop.blip_unique_eq (L := spikeLoop) (p₀ := 0) (fun _ _ => rfl)
+    hΛ0).mp hfix,
     show spikeLoop.lam * spikeLoop.h 0 = (1 : ℝ) * (1 + 0 * (4 - 1)) from rfl]
     at hΘΛ
   norm_num at hΘΛ
@@ -267,7 +270,7 @@ theorem spikeLoop_sibling_congestedEq :
     (spikeLoop.toBoundedLoop.constLoop 1
       ⟨zero_le_one, le_rfl⟩).CongestedEq 3 := by
   refine spikeLoop.toBoundedLoop.constLoop_congestedEq _ (by norm_num) ?_
-  show (3 : ℝ) ≤ 1 * (1 + 1 * (4 - 1))
+  change (3 : ℝ) ≤ 1 * (1 + 1 * (4 - 1))
   norm_num
 
 end Overload

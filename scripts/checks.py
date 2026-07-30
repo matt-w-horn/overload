@@ -23,6 +23,16 @@ from pathlib import Path
 # first — the tokens appear legitimately in prose (Basic.lean's "Zero
 # `sorry`", Deadline's English "admit").
 #
+# The 2026-07-29 linter campaign (`--wfail` build, mathlibStandardSet) covers
+# most of these tokens redundantly, and this scan survives it for two
+# calibrated reasons. First, `linter.style.nativeDecide` only runs in modules
+# that (transitively) import it: `decide +native` inside an `example` in a
+# slim-import module (`Basic`, `Observability`) elaborates with no warning,
+# no linter, and no audit entry — demonstrated 2026-07-29; this scan is the
+# only gate that sees it. Second, the pre-commit `proof-tokens` hook runs
+# this scan on staged sources even when the verify hook is skipped, so a
+# `SKIP=verify` commit keeps one fast proof-token gate.
+#
 # String literals are consumed whole before any comment test: `--` and `/-`
 # inside a literal are content, not comment openers. Treating them as openers
 # stripped the rest of the line and hid any proof token after a string such as

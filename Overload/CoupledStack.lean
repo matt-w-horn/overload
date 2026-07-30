@@ -48,8 +48,11 @@ forced-failure envelope of the stack. -/
 def capProd (layers : List (ℝ × ℕ)) : ℝ :=
   (layers.map fun x => (x.2 : ℝ)).prod
 
+/-- The empty stack's cap product is `1`. -/
 @[simp] theorem capProd_nil : capProd [] = 1 := rfl
 
+/-- The cap product of a cons: the head's cap times the tail's cap
+product. -/
 @[simp] theorem capProd_cons (x : ℝ × ℕ) (rest : List (ℝ × ℕ)) :
     capProd (x :: rest) = (x.2 : ℝ) * capProd rest := by
   simp [capProd]
@@ -60,8 +63,12 @@ def invokeFail : List (ℝ × ℕ) → ℝ → ℝ
   | [], p => p
   | (ℓ, n) :: rest, p => (composeFail ℓ (invokeFail rest p) 1) ^ n
 
+/-- The empty stack's invocation failure is the raw bottom per-attempt
+failure `p`. -/
 @[simp] theorem invokeFail_nil (p : ℝ) : invokeFail [] p = p := rfl
 
+/-- The invocation failure of a cons: the head's per-attempt failure
+`composeFail ℓ (invokeFail rest p) 1`, raised to its cap `n`. -/
 @[simp] theorem invokeFail_cons (ℓ : ℝ) (n : ℕ) (rest : List (ℝ × ℕ))
     (p : ℝ) :
     invokeFail ((ℓ, n) :: rest) p
@@ -74,14 +81,20 @@ def coupledAmp : List (ℝ × ℕ) → ℝ → ℝ
   | (ℓ, n) :: rest, p =>
       expAttempts (composeFail ℓ (invokeFail rest p) 1) n * coupledAmp rest p
 
+/-- The empty stack's load-coupled amplification is `1`: one bottom attempt
+per top-level request. -/
 @[simp] theorem coupledAmp_nil (p : ℝ) : coupledAmp [] p = 1 := rfl
 
+/-- The load-coupled amplification of a cons: the head's expected attempts
+against the composed failure below it, times the load-coupled amplification
+of the tail. -/
 @[simp] theorem coupledAmp_cons (ℓ : ℝ) (n : ℕ) (rest : List (ℝ × ℕ))
     (p : ℝ) :
     coupledAmp ((ℓ, n) :: rest) p
       = expAttempts (composeFail ℓ (invokeFail rest p) 1) n
           * coupledAmp rest p := rfl
 
+/-- Failure probabilities stay probabilities through the whole stack. -/
 theorem invokeFail_mem_Icc (layers : List (ℝ × ℕ)) {p : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1)
     (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :
@@ -95,6 +108,7 @@ theorem invokeFail_mem_Icc (layers : List (ℝ × ℕ)) {p : ℝ}
     have hc := composeFail_mem_Icc hhd htl 1
     exact ⟨pow_nonneg hc.1 n, pow_le_one₀ hc.1 hc.2⟩
 
+/-- A worse bottom raises the invocation failure of the whole stack. -/
 theorem invokeFail_mono_base (layers : List (ℝ × ℕ)) {p q : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1) (hpq : p ≤ q)
     (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :
@@ -125,6 +139,8 @@ theorem invokeFail_at_one (layers : List (ℝ × ℕ)) :
     rw [invokeFail_cons, ih]
     simp [composeFail]
 
+/-- The load-coupled amplification is nonnegative: each per-layer factor
+is. -/
 theorem coupledAmp_nonneg (layers : List (ℝ × ℕ)) {p : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1)
     (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :
@@ -140,6 +156,8 @@ theorem coupledAmp_nonneg (layers : List (ℝ × ℕ)) {p : ℝ}
     have hrec : 0 ≤ coupledAmp tl p := ih hℓtl
     exact mul_nonneg (expAttempts_nonneg hc.1 n) hrec
 
+/-- The load-coupled amplification is at least `1` once every layer's cap
+is. -/
 theorem one_le_coupledAmp (layers : List (ℝ × ℕ)) {p : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1)
     (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1)
@@ -159,6 +177,8 @@ theorem one_le_coupledAmp (layers : List (ℝ × ℕ)) {p : ℝ}
     rw [coupledAmp_cons]
     exact hhead.trans (le_mul_of_one_le_right (zero_le_one.trans hhead) hrec)
 
+/-- The load-coupled amplification never exceeds the cap product, the
+forced-failure envelope of the stack. -/
 theorem coupledAmp_le_capProd (layers : List (ℝ × ℕ)) {p : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1)
     (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :
@@ -302,7 +322,7 @@ noncomputable abbrev twoLayerLoop : ClosedLoop :=
 /-- The congested-side inflow at saturation, shared by the bistability and
 equilibrium certificates: `F(24) = 8·capProd = 32 ≥ 24`. -/
 theorem twoLayer_inflow : (24 : ℝ) ≤ twoLayerLoop.F 24 := by
-  show (24 : ℝ) ≤ 8 * coupledAmp [((1/2 : ℝ), 2), ((1/2 : ℝ), 2)]
+  change (24 : ℝ) ≤ 8 * coupledAmp [((1/2 : ℝ), 2), ((1/2 : ℝ), 2)]
     (stepKernel 24 24)
   rw [stepKernel_of_ge (by norm_num), coupledAmp_at_one]
   norm_num [capProd_cons, capProd_nil]
@@ -315,12 +335,12 @@ the constant-envelope `stackToLoop` structurally cannot state. -/
 theorem coupled_two_layer_bistable : BistableOn twoLayerLoop.F 0 32 := by
   refine twoLayerLoop.bistableOn_of_two_points (x := 39/2) (y := 24)
     (by norm_num) ?_ twoLayer_inflow (by norm_num) ?_
-  · show (8 : ℝ) * coupledAmp [((1/2 : ℝ), 2), ((1/2 : ℝ), 2)]
+  · change (8 : ℝ) * coupledAmp [((1/2 : ℝ), 2), ((1/2 : ℝ), 2)]
       (stepKernel 24 (39/2)) ≤ 39/2
     rw [stepKernel_of_lt (by norm_num)]
     norm_num [coupledAmp_cons, coupledAmp_nil, invokeFail_cons,
       invokeFail_nil, composeFail, expAttempts_def]
-  · show (8 : ℝ) * capProd [((1/2 : ℝ), 2), ((1/2 : ℝ), 2)] ≤ 32
+  · change (8 : ℝ) * capProd [((1/2 : ℝ), 2), ((1/2 : ℝ), 2)] ≤ 32
     norm_num [capProd_cons, capProd_nil]
 
 /-- The congested state of the two-layer composite is a genuine

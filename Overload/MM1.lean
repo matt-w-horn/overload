@@ -58,10 +58,13 @@ namespace Overload
 `0 ≤ ρ < 1`, stated on the lemmas that use it. -/
 def stationaryWeight (ρ : ℝ) (n : ℕ) : ℝ := (1 - ρ) * ρ ^ n
 
+/-- Definitional unfolding at `n = 0`: the empty-queue weight is `1 - ρ`. -/
 @[simp] theorem stationaryWeight_zero (ρ : ℝ) :
     stationaryWeight ρ 0 = 1 - ρ := by
   simp [stationaryWeight]
 
+/-- For `0 ≤ ρ ≤ 1` the weights are nonnegative: both factors of
+`(1-ρ)·ρⁿ` are. -/
 theorem stationaryWeight_nonneg {ρ : ℝ} (h0 : 0 ≤ ρ) (h1 : ρ ≤ 1) (n : ℕ) :
     0 ≤ stationaryWeight ρ n :=
   mul_nonneg (by linarith) (pow_nonneg h0 n)
@@ -109,6 +112,8 @@ theorem hasSum_stationaryWeight {ρ : ℝ} (h0 : 0 ≤ ρ) (h1 : ρ < 1) :
   rw [mul_inv_cancel₀ hne] at h
   exact h
 
+/-- Normalization in `tsum` form: `hasSum_stationaryWeight` read off as
+`∑' n, π(n) = 1`. -/
 theorem tsum_stationaryWeight {ρ : ℝ} (h0 : 0 ≤ ρ) (h1 : ρ < 1) :
     ∑' n, stationaryWeight ρ n = 1 :=
   (hasSum_stationaryWeight h0 h1).tsum_eq
@@ -119,9 +124,12 @@ theorem stationaryWeight_zero_half : stationaryWeight (1 / 2) 0 = 1 / 2 := by
   rw [stationaryWeight_zero]
   norm_num
 
+/-- Closed-numeral regression pin of `stationaryWeight_nonneg` at
+`ρ = 1/2`, `n = 3`. -/
 theorem stationaryWeight_nonneg_pin : (0 : ℝ) ≤ stationaryWeight (1 / 2) 3 :=
   stationaryWeight_nonneg (by norm_num) (by norm_num) 3
 
+/-- Closed-numeral regression pin of `tsum_stationaryWeight` at `ρ = 1/2`. -/
 theorem tsum_stationaryWeight_half : ∑' n, stationaryWeight (1 / 2 : ℝ) n = 1 :=
   tsum_stationaryWeight (by norm_num) (by norm_num)
 
@@ -156,7 +164,7 @@ at `n` holds precisely when the cut flow across `n+1` equals the cut flow
 across `n` — a rearrangement, needing no hypotheses. This is why the
 second-order birth–death recurrence pins only the *differences* of the cut
 flows and leaves a one-parameter family: the constant branch. -/
-theorem global_balance_iff_cutFlow_succ (lam mu : ℝ) (f : ℕ → ℝ) (n : ℕ) :
+theorem global_balance_iff_cutFlow_succ {lam mu : ℝ} {f : ℕ → ℝ} {n : ℕ} :
     (lam + mu) * f (n + 1) = lam * f n + mu * f (n + 2)
       ↔ cutFlow lam mu f (n + 1) = cutFlow lam mu f n := by
   unfold cutFlow
@@ -170,7 +178,7 @@ theorem cutFlow_const_of_global_balance {lam mu : ℝ} {f : ℕ → ℝ}
   induction n with
   | zero => rfl
   | succ n ih =>
-      rw [(global_balance_iff_cutFlow_succ lam mu f n).mp (hbal n), ih]
+      rw [global_balance_iff_cutFlow_succ.mp (hbal n), ih]
 
 open Filter Topology in
 /-- **Summability kills the constant branch.** A summable solution of the
@@ -185,7 +193,7 @@ theorem cutFlow_eq_zero_of_summable {lam mu : ℝ} {f : ℕ → ℝ}
   have h1 : Tendsto (fun n => f (n + 1)) atTop (𝓝 0) :=
     h0.comp (tendsto_add_atTop_nat 1)
   have hcut : Tendsto (cutFlow lam mu f) atTop (𝓝 0) := by
-    show Tendsto (fun n => mu * f (n + 1) - lam * f n) atTop (𝓝 0)
+    change Tendsto (fun n => mu * f (n + 1) - lam * f n) atTop (𝓝 0)
     simpa using (h1.const_mul mu).sub (h0.const_mul lam)
   have hconst : cutFlow lam mu f = fun _ => cutFlow lam mu f 0 :=
     funext (cutFlow_const_of_global_balance hbal)
@@ -357,6 +365,9 @@ theorem meanWait_saturation_junk : meanWait 1 1 = ((1 : ℝ) - 1)⁻¹ := by
   unfold meanWait meanQueue
   simp [stationaryWeight]
 
+/-- The refutation half of the two-sided boundary: at `λ = 2, μ = 1` the
+delay-law identity is genuinely false, so `λ < μ` in `meanWait_eq` is
+load-bearing there. A counterexample, not a general theorem. -/
 theorem meanWait_false_above_saturation : meanWait 2 1 ≠ ((1 : ℝ) - 2)⁻¹ := by
   unfold meanWait
   rw [show (2 : ℝ) / 1 = 2 by norm_num, meanQueue_two]
@@ -458,6 +469,8 @@ theorem mm1Kernel_zero_tau (C Λ : ℝ) : mm1Kernel C 0 Λ = 1 := by
   unfold mm1Kernel
   split_ifs <;> simp
 
+/-- For `0 ≤ τ` the kernel lands in `[0, 1]`. Supplies `g_mem` for
+`mm1Loop`. -/
 theorem mm1Kernel_mem {C τ : ℝ} (hτ : 0 ≤ τ) :
     ∀ x, 0 ≤ x → mm1Kernel C τ x ∈ Set.Icc (0 : ℝ) 1 := by
   intro x _
@@ -469,6 +482,8 @@ theorem mm1Kernel_mem {C τ : ℝ} (hτ : 0 ≤ τ) :
     linarith
   · exact ⟨by norm_num, le_rfl⟩
 
+/-- For `0 ≤ τ` the kernel is monotone on `[0, ∞)`: shrinking headroom
+raises the exponential sojourn tail. Supplies `g_mono` for `mm1Loop`. -/
 theorem mm1Kernel_monoOn {C τ : ℝ} (hτ : 0 ≤ τ) :
     MonotoneOn (mm1Kernel C τ) (Set.Ici (0 : ℝ)) := by
   intro x _hx y _hy hxy
@@ -507,7 +522,6 @@ theorem exp_neg_le_inv_one_add {x : ℝ} (hx : 0 ≤ x) :
   rw [Real.exp_neg]
   have h1 : 1 + x ≤ Real.exp x := by
     linarith [Real.add_one_le_exp x]
-  have hpos : (0 : ℝ) < 1 + x := by linarith
   gcongr
 
 /-- The M/M/1 loop: truncated-geometric retries (cap `m`) against the
@@ -529,29 +543,26 @@ noncomputable abbrev mm1BandLoop : ClosedLoop :=
 is at most `e^{-69} ≤ 1/70`, so amplification is at most `70/69` and
 `F(31) ≤ 30·70/69 < 31` — inflow falls back. -/
 theorem mm1BandLoop_healthy : mm1BandLoop.F 31 ≤ 31 := by
-  show (30 : ℝ) * expAttempts (mm1Kernel 100 1 31) 4 ≤ 31
+  change (30 : ℝ) * expAttempts (mm1Kernel 100 1 31) 4 ≤ 31
   have hp : mm1Kernel 100 1 31 ≤ (1 / 70 : ℝ) := by
     rw [mm1Kernel_of_lt (by norm_num)]
     have heq : -((100 - 31 : ℝ) * 1) = -(69 : ℝ) := by norm_num
     rw [heq]
     have h := exp_neg_le_inv_one_add (x := (69 : ℝ)) (by norm_num)
-    have h70 : ((1 : ℝ) + 69)⁻¹ = (1 / 70 : ℝ) := by norm_num
     linarith
   have hp0 : 0 ≤ mm1Kernel 100 1 31 :=
     (mm1Kernel_mem (by norm_num) 31 (by norm_num)).1
   have hp1 : mm1Kernel 100 1 31 < 1 := lt_of_le_of_lt hp (by norm_num)
   have hgeo := expAttempts_le_geom_bound hp0 hp1 4
   have hden : (69 / 70 : ℝ) ≤ 1 - mm1Kernel 100 1 31 := by linarith
-  have hpos : (0 : ℝ) < 1 - mm1Kernel 100 1 31 := by linarith
   have hinv : 1 / (1 - mm1Kernel 100 1 31) ≤ 1 / (69 / 70 : ℝ) := by
     gcongr
-  have h3 : (1 : ℝ) / (69 / 70) = 70 / 69 := by norm_num
   linarith
 
 /-- The congested leg of the M/M/1 band: at demand 100 the kernel saturates,
 so `F(100) = 30·4 = 120 ≥ 100` — inflow at capacity already sustains it. -/
 theorem mm1BandLoop_inflow : (100 : ℝ) ≤ mm1BandLoop.F 100 := by
-  show (100 : ℝ) ≤ 30 * expAttempts (mm1Kernel 100 1 100) 4
+  change (100 : ℝ) ≤ 30 * expAttempts (mm1Kernel 100 1 100) 4
   rw [mm1Kernel_of_ge (by norm_num), expAttempts_def, one_geom_sum]
   norm_num
 
@@ -567,7 +578,7 @@ theorem mm1Loop_bistable :
       (by norm_num)).F 0 120 := by
   refine mm1BandLoop.bistableOn_of_two_points (by norm_num) mm1BandLoop_healthy
     mm1BandLoop_inflow (by norm_num) ?_
-  show (30 : ℝ) * ((4 : ℕ) : ℝ) ≤ 120
+  change (30 : ℝ) * ((4 : ℕ) : ℝ) ≤ 120
   norm_num
 
 /-- **The queueing-derived loop has a genuine congested equilibrium**: a
@@ -621,7 +632,7 @@ bistable at `τ = 1` (`mm1Loop_bistable`) are provably monostable at `τ = 0`,
 by `not_bistableOn_of_const` over the constant kernel. -/
 theorem mm1FlatLoop_not_bistable : ¬BistableOn mm1FlatLoop.F 0 120 := by
   have h : mm1FlatLoop.lam * mm1FlatLoop.Amax = 120 := by
-    show (30 : ℝ) * ((4 : ℕ) : ℝ) = 120
+    change (30 : ℝ) * ((4 : ℕ) : ℝ) = 120
     norm_num
   rw [← h]
   exact mm1FlatLoop.not_bistableOn_of_const fun x _ => mm1Kernel_zero_tau 100 x

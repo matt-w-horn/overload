@@ -160,7 +160,8 @@ theorem jitter_window_avoids_three :
 
 /-- Numeric regression on the safe side: `stepLoop 1 2 3` has the healthy
 fixed point `1`; a burst of `1` over a window of `4` on baseline `1/2`
-spikes demand to `3/4 ≤ 1`, and no number of iterations crosses `1`. -/
+spikes demand to `3/4 ≤ 1`, and the fifth iterate still sits at or below
+`1` (`burst_safe` gives the same at every iterate). -/
 theorem burst_safe_stepLoop_five :
     (stepLoop 1 2 3 (by norm_num) (by norm_num)).F^[5] (1/2 + 1/4) ≤ 1 := by
   have hfz : Function.IsFixedPt (stepLoop 1 2 3 (by norm_num)

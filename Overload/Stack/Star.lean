@@ -400,16 +400,24 @@ theorem starWitness_F (y : ℝ) :
   ring
 
 /-- **A bistable fan-in star**: the healthy aggregate `8` and the
-congested aggregate `24` are both exact fixed points — heterogeneous
-servers, one shared sink, two coexisting sink states. -/
-theorem starWitness_bistable : BistableOn starWitness.F 0 24 := by
-  refine bistableOn_of_certificate (x := 8) (y := 24)
-    ⟨by norm_num, by norm_num⟩ ?_ ⟨by norm_num, by norm_num⟩ ?_
-    (by norm_num)
+congested aggregate `24` are both exact fixed points of the sink operator,
+and the star is bistable on `[0, 24]` — heterogeneous servers, one shared
+sink, two coexisting sink states. -/
+theorem starWitness_bistable :
+    starWitness.F 8 = 8 ∧ starWitness.F 24 = 24 ∧
+      BistableOn starWitness.F 0 24 := by
+  refine ⟨?_, ?_, ?_⟩
   · rw [starWitness_F, stepKernel_of_lt (by norm_num)]
     norm_num
   · rw [starWitness_F, stepKernel_of_ge (by norm_num)]
     norm_num
+  · refine bistableOn_of_certificate (x := 8) (y := 24)
+      ⟨by norm_num, by norm_num⟩ ?_ ⟨by norm_num, by norm_num⟩ ?_
+      (by norm_num)
+    · rw [starWitness_F, stepKernel_of_lt (by norm_num)]
+      norm_num
+    · rw [starWitness_F, stepKernel_of_ge (by norm_num)]
+      norm_num
 
 /-- The congested state is a genuine sink equilibrium at capacity. -/
 theorem starWitness_congestedEq : starWitness.CongestedEq 10 :=

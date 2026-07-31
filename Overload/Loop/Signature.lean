@@ -303,8 +303,11 @@ theorem signature_gap_witnessed :
   no_signature_cert_of_separating_pair headroomLoop_signature_eq_flatLoop
     headroomLoop_no_congestedEq (not_not_intro flatLoop_congestedEq)
 
-/-- Numeric regression: the congestion form is inhabited above the envelope
-at `λ = 1`, `A = 4`, `C = 5`, `Θ = 3`. -/
+/-- Numeric regression: `signature_not_decide_congestedEq` instantiated at
+`λ = 1`, `A = 4`, `C = 5`, `Θ = 3` (`1 < 3 ≤ 4 < 5`) — no
+signature-factoring certificate decides safety at threshold `3` here. The
+loop at these parameters is the safe leg; the congested witness inside the
+proof is its equal-signature twin with `λ = 4`, `A = 1`. -/
 theorem signature_not_decide_congestedEq_three :
     ∀ P : ClosedLoop → Prop, FactorsThroughSignature P →
     ¬∀ L : ClosedLoop, (P L ↔ ¬L.CongestedEq 3) :=

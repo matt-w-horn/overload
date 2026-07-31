@@ -384,10 +384,13 @@ theorem smoothLoop_fixedPt_unique {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C
     hx hy hfx hfy
 
 /-- **Stability by slope, no band**: the same slope check in the phase
-language — the smooth loop with `λ(A−1) < C` is not bistable on its
-envelope. Also the satisfiability witness for
-`not_bistableOn_of_gain_lt_one`'s hypothesis bundle, with a genuinely
-load-coupled `F`. -/
+language — under the gain condition `λ(A−1) < C` the smooth loop is not
+bistable on its envelope, proved through `not_bistableOn_of_gain_lt_one`;
+this is the satisfiability witness for that lemma's hypothesis bundle,
+with a genuinely load-coupled `F`. The gain condition marks where the
+slope certificate applies, not the boundary of the conclusion — the
+smooth kernel admits at most one envelope fixed point at any admissible
+parameters, so non-bistability holds beyond the hypothesis. -/
 theorem smoothLoop_not_bistableOn {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C)
     (hA : 1 ≤ A) (hgain : lam * (A - 1) < C) :
     ¬BistableOn (smoothLoop lam C A hlam hC hA).F 0 (lam * A) :=

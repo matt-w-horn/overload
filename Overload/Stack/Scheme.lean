@@ -132,8 +132,9 @@ theorem layersAmp_pos (S : List Layer) : 0 < layersAmp S :=
   lt_of_lt_of_le zero_lt_one (one_le_layersAmp S)
 
 /-- The composite amplification is bounded by the product of the caps — the
-forced-failure envelope: if every attempt at every layer fails, the request
-makes exactly `∏ capᵢ` bottom attempts. -/
+forced-failure envelope, the ceiling reached when every attempt at every
+layer fails. The statement carries the bound; the all-fail equality case is
+not separately stated. -/
 theorem layersAmp_le_prod_cap (S : List Layer) :
     layersAmp S ≤ (S.map (fun ℓ => (ℓ.cap : ℝ))).prod := by
   induction S with

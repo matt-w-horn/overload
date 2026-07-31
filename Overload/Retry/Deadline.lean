@@ -156,8 +156,9 @@ theorem totalTime_const_succ (t b : ℝ) (m : ℕ) :
   push_cast
   ring
 
-/-- **Constant backoff, exact**: with per-attempt latency `t > 0` and constant
-wait `b`, the deadline admits exactly `min n ⌊(D+b)/(t+b)⌋` attempts. -/
+/-- **Constant backoff, exact**: with per-attempt latency `t > 0` and
+nonnegative constant wait `b`, a nonnegative deadline admits exactly
+`min n ⌊(D+b)/(t+b)⌋` attempts. -/
 theorem neff_const (ht : 0 < t) (hb : 0 ≤ b) (hD : 0 ≤ D) (n : ℕ) :
     neff (fun _ => t) (fun _ => b) D n = min n ⌊(D + b) / (t + b)⌋₊ := by
   have htb : 0 < t + b := by linarith
@@ -240,8 +241,9 @@ theorem neff_le_one_of_slow (hT0 : D ≤ T 0) (hTpos : ∀ j, 0 < T j)
   linarith
 
 /-- **Remaining-deadline apportionment stops a slow failure at one attempt**:
-if the first attempt consumes exactly the whole budget (`T 0 = D`) and every
-attempt takes positive time, exactly one attempt fits. Slow failures cannot
+if the first attempt consumes exactly the whole budget (`T 0 = D`), every
+attempt takes positive time, backoffs are nonnegative, and at least one
+attempt is available (`1 ≤ n`), exactly one attempt fits. Slow failures cannot
 amplify under remaining-deadline propagation.
 
 This is the boundary case of the semantics: `fitsIn` counts attempts that

@@ -381,8 +381,8 @@ theorem stepLoop_jump_down {C A : ℝ} (hC : 0 < C) (hA : 1 < A) :
   · exact fun _lam _hlam h => stepLoop_gfpIcc_of_healthyOnly _ hA.le h
 
 /-- Ramp-up safety below the band's upper edge: iterating demand from empty
-never overshoots the healthy equilibrium `λ` — the upward sweep tracks the
-healthy branch until the edge. Sweep *dynamics* (rates, jitter,
+never overshoots the healthy equilibrium `λ` — the upward sweep stays at or
+below the healthy branch until the edge. Sweep *dynamics* (rates, jitter,
 trajectories) remain simulator territory; this is the order-theoretic
 endpoint any sweep must respect. -/
 theorem stepLoop_sweep_up_le {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A)

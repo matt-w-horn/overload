@@ -2596,7 +2596,8 @@
   ∀ (y : ℝ), Overload.starWitness.F y = 8 + 16 * Overload.stepKernel 10 y
 
 #### Overload.starWitness_bistable : theorem
-  Overload.BistableOn Overload.starWitness.F 0 24
+  Overload.starWitness.F 8 = 8 ∧
+    Overload.starWitness.F 24 = 24 ∧ Overload.BistableOn Overload.starWitness.F 0 24
 
 #### Overload.starWitness_congestedEq : theorem
   Overload.starWitness.CongestedEq 10

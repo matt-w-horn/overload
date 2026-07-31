@@ -58,9 +58,9 @@ Headline results:
   amplification clamp `h ≤ K` with `λ·K < Θ` removes every congested
   equilibrium. *No timing, backoff, latency, kernel-shape, or monotonicity
   hypotheses.* Budget (`K = 1+β`) and attempt-cap (`K = n`) corollaries.
-* `congestedEq_of_inflow` — the one-inequality **inflow certificate**:
-  `Θ ≤ F(Θ)` (attempt inflow at the threshold exceeds it) produces a genuine
-  congested equilibrium by Knaster–Tarski.
+* `congestedEq_of_inflow` — the **inflow certificate**: a nonnegative
+  threshold with `Θ ≤ F(Θ)` (attempt inflow at the threshold meets it)
+  produces a genuine congested equilibrium by Knaster–Tarski.
 * `noSustaining_no_congestedEq` — **the sustaining-mechanisms audit**: if the
   amplification response is trivial (`h ≡ 1` — discharged for slow failures
   under remaining-deadline apportionment by `Deadline.neff_slow_remaining`),
@@ -226,12 +226,13 @@ theorem F_mapsTo :
       (Set.Icc 0 (L.lam * L.Amax)) :=
   fun _x hx => ⟨L.F_nonneg hx.1, L.F_le hx.1⟩
 
-/-- **The two-point band certificate, at loop level.** One demand level
-pushed down (`F x ≤ x`), a strictly larger one pushed up (`y ≤ F y`), and
-any ceiling `b` at or above the demand envelope `λ·Amax`: the loop is
-bistable on `[0, b]`. The memberships of `bistableOn_of_certificate` are
-derived once here — `0 ≤ y` from `x < y`, both upper bounds from `F_le`
-through `hb` — so an instance checks two point evaluations of `F` and one
+/-- **The two-point band certificate, at loop level.** One nonnegative
+demand level pushed down (`0 ≤ x`, `F x ≤ x`), a strictly larger one pushed
+up (`y ≤ F y`), and any ceiling `b` at or above the demand envelope
+`λ·Amax`: the loop is bistable on `[0, b]`. The memberships of
+`bistableOn_of_certificate` are derived once here — `0 ≤ y` from
+`0 ≤ x < y`, `y ≤ b` from `F_le` through `hb`, `x ≤ b` from `x < y` — so an
+instance checks a sign condition, two point evaluations of `F`, and one
 envelope inequality. -/
 theorem bistableOn_of_two_points {x y b : ℝ} (hx0 : 0 ≤ x)
     (hFx : L.F x ≤ x) (hyF : y ≤ L.F y) (hxy : x < y)
@@ -253,9 +254,9 @@ theorem two_fixedPts_of_two_points {x y : ℝ} (hx0 : 0 ≤ x)
   exact exists_two_fixedPts_of_certificate L.F_monotoneOn_Icc L.F_mapsTo
     ⟨hx0, hxy.le.trans hyb⟩ hFx ⟨hy0, hyb⟩ hyF hxy
 
-/-- **The inflow certificate**: if attempt inflow at the threshold already
-meets the threshold (`Θ ≤ F Θ`), a genuine congested equilibrium exists (by
-Knaster–Tarski above `Θ`). One inequality to check. -/
+/-- **The inflow certificate**: if a nonnegative threshold's attempt inflow
+already meets it (`0 ≤ Θ`, `Θ ≤ F Θ`), a genuine congested equilibrium
+exists (by Knaster–Tarski above `Θ`). Two inequalities to check. -/
 theorem congestedEq_of_inflow {Θ : ℝ} (hΘ0 : 0 ≤ Θ) (hΘ : Θ ≤ L.F Θ) :
     L.CongestedEq Θ := by
   have hΘM : Θ ≤ L.lam * L.Amax := le_trans hΘ (L.F_le hΘ0)

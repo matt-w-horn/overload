@@ -46,14 +46,11 @@ layer's retries (probability `fᵢ₊₁^{nᵢ₊₁}`):
 
 `fᵢ = 1 - (1 - ℓᵢ)(1 - fᵢ₊₁^{nᵢ₊₁})`.
 
-The retry cap in the exponent belongs to the layer *below*, so the stack is a
-list of pairs `(ℓᵢ, nᵢ₊₁)` folded over a base failure probability — the
-reference presentation, kept as stated. `Overload/Stack/CoupledStack.lean`
-consumes the one-layer `composeFail` (with its `Icc` and monotonicity
-lemmas), building its own recursions over own-cap pairs `(ℓᵢ, nᵢ)` (the
-power applied on invocation exit) — the shape that makes the amplification
-inductions clean. The `stackFail` fold itself has no downstream consumers and stays as
-the reference presentation.
+`composeFail` is that one-layer law; the retry cap in its exponent belongs
+to the layer *below*. `Overload/Stack/CoupledStack.lean` consumes it (with
+its `Icc` and monotonicity lemmas), building its recursions over own-cap
+pairs `(ℓᵢ, nᵢ)` (the power applied on invocation exit) — the shape that
+makes the amplification inductions clean.
 -/
 
 @[expose] public section
@@ -102,61 +99,5 @@ theorem composeFail_antitone_cap_pin :
   ⟨composeFail_antitone_cap (by norm_num) (by norm_num) (by norm_num)
       (by norm_num),
     by norm_num [composeFail], by norm_num [composeFail]⟩
-
-/-- A layered stack, top-down: each element `(ℓᵢ, nᵢ₊₁)` pairs layer `i`'s
-local failure probability with the retry cap applied to the next layer down,
-folded over the bottom layer's failure probability. -/
-def stackFail : List (ℝ × ℕ) → ℝ → ℝ
-  | [], base => base
-  | (ℓ, m) :: rest, base => composeFail ℓ (stackFail rest base) m
-
-/-- The empty stack leaves the base failure probability unchanged. -/
-@[simp] theorem stackFail_nil (base : ℝ) : stackFail [] base = base := rfl
-
-/-- Prepending a layer is one-layer downward composition over the rest of
-the stack. -/
-@[simp] theorem stackFail_cons (ℓ : ℝ) (m : ℕ) (rest : List (ℝ × ℕ))
-    (base : ℝ) :
-    stackFail ((ℓ, m) :: rest) base = composeFail ℓ (stackFail rest base) m :=
-  rfl
-
-/-- Failure probabilities stay probabilities through the stack. -/
-theorem stackFail_mem_Icc (layers : List (ℝ × ℕ)) {base : ℝ}
-    (hbase : base ∈ Set.Icc (0 : ℝ) 1)
-    (hlayers : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :
-    stackFail layers base ∈ Set.Icc (0 : ℝ) 1 := by
-  induction layers with
-  | nil => simpa using hbase
-  | cons hd tl ih =>
-    obtain ⟨ℓ, m⟩ := hd
-    obtain ⟨hℓ, htl'⟩ := List.forall_mem_cons.mp hlayers
-    have htl : stackFail tl base ∈ Set.Icc (0 : ℝ) 1 := ih htl'
-    simpa using composeFail_mem_Icc hℓ htl m
-
-/-- The stack is monotone in the bottom layer's failure probability: worse
-bottom conditions are visible (weakly) all the way up. -/
-theorem stackFail_mono_base (layers : List (ℝ × ℕ)) {b b' : ℝ}
-    (hb : b ∈ Set.Icc (0 : ℝ) 1) (h : b ≤ b')
-    (hlayers : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :
-    stackFail layers b ≤ stackFail layers b' := by
-  induction layers with
-  | nil => simpa using h
-  | cons hd tl ih =>
-    obtain ⟨ℓ, m⟩ := hd
-    obtain ⟨hℓ, htl'⟩ := List.forall_mem_cons.mp hlayers
-    have htl : stackFail tl b ∈ Set.Icc (0 : ℝ) 1 :=
-      stackFail_mem_Icc tl hb htl'
-    have hrec : stackFail tl b ≤ stackFail tl b' := ih htl'
-    simpa using composeFail_mono_down hℓ.2 htl.1 hrec m
-
-/-- Pin of bottom-layer monotonicity through one layer of local failure `1/2`
-at a unit downstream cap: a bottom that never fails shows `1/2` at the top, a
-bottom that always fails shows `1`. -/
-theorem stackFail_mono_base_pin :
-    stackFail [(1 / 2, 1)] 0 ≤ stackFail [(1 / 2, 1)] 1 ∧
-      stackFail [(1 / 2, 1)] 0 = 1 / 2 ∧ stackFail [(1 / 2, 1)] 1 = 1 :=
-  ⟨stackFail_mono_base _ ⟨le_rfl, zero_le_one⟩ zero_le_one (by norm_num),
-    by rw [stackFail_cons, stackFail_nil]; norm_num [composeFail],
-    by rw [stackFail_cons, stackFail_nil]; norm_num [composeFail]⟩
 
 end Overload

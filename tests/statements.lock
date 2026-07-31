@@ -846,9 +846,6 @@
 #### Overload.bottom_binds_at_amp_one : theorem
   1000 / 1 ≤ 4000 / (1 * 1)
 
-#### Overload.bottom_binds_of_provisioned : theorem
-  ∀ {s Cbot rk Ck : ℝ}, Cbot / s ≤ Ck / rk → Cbot / s ≤ Ck / (1 * rk)
-
 #### Overload.branching_wald : theorem
   ∀ {ι : Type u_1} (N : ℕ) (s : Finset ι) (P : ℕ → ℝ) (Q x : ι → ℝ) (w : ℕ → ℕ → ι → ℝ),
     (∀ j ∈ Finset.range N, ∀ k ∈ Finset.range (N + 1), ∀ i ∈ s, w j k i = P k * Q i) →
@@ -1353,9 +1350,6 @@
 
 #### Overload.erlangB_nonneg : theorem
   ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), 0 ≤ Overload.erlangB a c
-
-#### Overload.erlangB_one_one : theorem
-  Overload.erlangB 1 1 = 1 / 2
 
 #### Overload.erlangB_succ : theorem
   ∀ (a : ℝ) (c : ℕ),
@@ -1961,9 +1955,6 @@
 #### Overload.meanWait_false_above_saturation : theorem
   Overload.meanWait 2 1 ≠ (1 - 2)⁻¹
 
-#### Overload.meanWait_fifty_hundred : theorem
-  Overload.meanWait 50 100 = 50⁻¹
-
 #### Overload.meanWait_one_two : theorem
   Overload.meanWait 1 2 = 1
 
@@ -2515,32 +2506,6 @@
   (1 ≤ Overload.stackAmp Finset.univ (fun x => 1 / 2) fun x => 2) ∧
     (Overload.stackAmp Finset.univ (fun x => 1 / 2) fun x => 2) ≤ 4
 
-#### Overload.stackFail : def
-  List (ℝ × ℕ) → ℝ → ℝ
-  value-hash 9e1d92bd0189ae12
-
-#### Overload.stackFail_cons : theorem
-  ∀ (ℓ : ℝ) (m : ℕ) (rest : List (ℝ × ℕ)) (base : ℝ),
-    Overload.stackFail ((ℓ, m) :: rest) base = Overload.composeFail ℓ (Overload.stackFail rest base) m
-
-#### Overload.stackFail_mem_Icc : theorem
-  ∀ (layers : List (ℝ × ℕ)) {base : ℝ},
-    base ∈ Set.Icc 0 1 →
-      (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → Overload.stackFail layers base ∈ Set.Icc 0 1
-
-#### Overload.stackFail_mono_base : theorem
-  ∀ (layers : List (ℝ × ℕ)) {b b' : ℝ},
-    b ∈ Set.Icc 0 1 →
-      b ≤ b' →
-        (∀ x ∈ layers, x.1 ∈ Set.Icc 0 1) → Overload.stackFail layers b ≤ Overload.stackFail layers b'
-
-#### Overload.stackFail_mono_base_pin : theorem
-  Overload.stackFail [(1 / 2, 1)] 0 ≤ Overload.stackFail [(1 / 2, 1)] 1 ∧
-    Overload.stackFail [(1 / 2, 1)] 0 = 1 / 2 ∧ Overload.stackFail [(1 / 2, 1)] 1 = 1
-
-#### Overload.stackFail_nil : theorem
-  ∀ (base : ℝ), Overload.stackFail [] base = base
-
 #### Overload.stackToLoop : def
   List Overload.Layer →
     (lam : ℝ) → (g : ℝ → ℝ) → 0 ≤ lam → (∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1) → Overload.BoundedLoop
@@ -2603,11 +2568,12 @@
   ℝ → ℕ → ℝ
   value-hash 675823351d1c37c8
 
+#### Overload.stationaryWeight_half_pin : theorem
+  Overload.stationaryWeight (1 / 2) 0 = 1 / 2 ∧
+    0 ≤ Overload.stationaryWeight (1 / 2) 3 ∧ ∑' (n : ℕ), Overload.stationaryWeight (1 / 2) n = 1
+
 #### Overload.stationaryWeight_nonneg : theorem
   ∀ {ρ : ℝ}, 0 ≤ ρ → ρ ≤ 1 → ∀ (n : ℕ), 0 ≤ Overload.stationaryWeight ρ n
-
-#### Overload.stationaryWeight_nonneg_pin : theorem
-  0 ≤ Overload.stationaryWeight (1 / 2) 3
 
 #### Overload.stationaryWeight_succ : theorem
   ∀ (ρ : ℝ) (n : ℕ), Overload.stationaryWeight ρ (n + 1) = ρ * Overload.stationaryWeight ρ n
@@ -2630,9 +2596,6 @@
 
 #### Overload.stationaryWeight_zero : theorem
   ∀ (ρ : ℝ), Overload.stationaryWeight ρ 0 = 1 - ρ
-
-#### Overload.stationaryWeight_zero_half : theorem
-  Overload.stationaryWeight (1 / 2) 0 = 1 / 2
 
 #### Overload.stepKernel : def
   ℝ → ℝ → ℝ
@@ -2889,9 +2852,6 @@
 
 #### Overload.tsum_stationaryWeight : theorem
   ∀ {ρ : ℝ}, 0 ≤ ρ → ρ < 1 → ∑' (n : ℕ), Overload.stationaryWeight ρ n = 1
-
-#### Overload.tsum_stationaryWeight_half : theorem
-  ∑' (n : ℕ), Overload.stationaryWeight (1 / 2) n = 1
 
 #### Overload.twoLayerLoop : def
   Overload.ClosedLoop

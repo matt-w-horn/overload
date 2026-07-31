@@ -71,9 +71,9 @@ hop's memory or bandwidth, denominated in attempts against it. Because the
 response is genuinely load-coupled, both phase directions are expressible:
 `coupled_budget_no_congestedEq` certifies collapse-freedom with one product
 inequality, and `coupled_two_layer_bistable` exhibits a bistable two-layer
-composite over the step kernel. `Compose.stackFail` (the reference
-presentation with the shifted `(ℓᵢ, nᵢ₊₁)` pairing) remains as-is;
-this file is the pairing that makes the inductions clean.
+composite over the step kernel. `composeFail`'s exponent is the cap of the
+layer *below*; the recursions here pair each layer with its own cap
+instead — the pairing that makes the inductions clean.
 -/
 
 @[expose] public section

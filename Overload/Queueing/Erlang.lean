@@ -266,15 +266,6 @@ theorem erlangLoop_no_congestedEq {lam μ : ℝ} {c m : ℕ} {Θ : ℝ}
   (erlangLoop lam μ c m hlam hμ hm).cap_no_congestedEq
     (fun _p _hp => rfl) hK
 
-/-- Numeric regression, doubling as the textbook sanity check: one server
-at unit load blocks half the traffic. Since `erlangB_eq_closed` matches the
-recursion to the closed form at every point, this constant also certifies
-the closed form's value. -/
-theorem erlangB_one_one : erlangB 1 1 = 1 / 2 := by
-  change erlangB 1 (0 + 1) = 1 / 2
-  rw [erlangB_succ]
-  norm_num
-
 /-- Numeric regression on monotonicity in the server count: at unit load one
 server blocks no more than none does, and `erlangB_zero` says none blocks
 everything. -/
@@ -291,7 +282,10 @@ theorem erlangLoop_no_congestedEq_pin :
   erlangLoop_no_congestedEq (by norm_num)
 
 /-- Numeric regression, doubling as the textbook sanity check: two servers
-at offered load `2` block `2/5`, certifying the closed form there too. -/
+at offered load `2` block `2/5`. The proof unwinds `erlangB_succ` twice —
+the only pin exercising the recursion past its first step. Since
+`erlangB_eq_closed` matches the recursion to the closed form at every
+point, this constant also certifies the closed form's value. -/
 theorem erlangB_two_two : erlangB 2 2 = 2 / 5 := by
   change erlangB 2 (0 + 1 + 1) = 2 / 5
   rw [erlangB_succ, erlangB_succ]

@@ -157,20 +157,17 @@ theorem tsum_stationaryWeight {ρ : ℝ} (h0 : 0 ≤ ρ) (h1 : ρ < 1) :
     ∑' n, stationaryWeight ρ n = 1 :=
   (hasSum_stationaryWeight h0 h1).tsum_eq
 
-/-- Pins of the distribution facts at `ρ = 1/2`: the empty-queue weight is
-`1/2`, the weights are nonnegative, and they normalize to one. -/
-theorem stationaryWeight_zero_half : stationaryWeight (1 / 2) 0 = 1 / 2 := by
-  rw [stationaryWeight_zero]
-  norm_num
-
-/-- Closed-numeral regression pin of `stationaryWeight_nonneg` at
-`ρ = 1/2`, `n = 3`. -/
-theorem stationaryWeight_nonneg_pin : (0 : ℝ) ≤ stationaryWeight (1 / 2) 3 :=
-  stationaryWeight_nonneg (by norm_num) (by norm_num) 3
-
-/-- Closed-numeral regression pin of `tsum_stationaryWeight` at `ρ = 1/2`. -/
-theorem tsum_stationaryWeight_half : ∑' n, stationaryWeight (1 / 2 : ℝ) n = 1 :=
-  tsum_stationaryWeight (by norm_num) (by norm_num)
+/-- Pins of the distribution facts at `ρ = 1/2`, one leg per fact: the
+empty-queue weight is `1/2` (`stationaryWeight_zero`), the weight at `n = 3`
+is nonnegative (`stationaryWeight_nonneg`), and the weights normalize to one
+(`tsum_stationaryWeight`). -/
+theorem stationaryWeight_half_pin :
+    stationaryWeight (1 / 2) 0 = 1 / 2 ∧
+      (0 : ℝ) ≤ stationaryWeight (1 / 2) 3 ∧
+      ∑' n, stationaryWeight (1 / 2 : ℝ) n = 1 :=
+  ⟨by rw [stationaryWeight_zero]; norm_num,
+    stationaryWeight_nonneg (by norm_num) (by norm_num) 3,
+    tsum_stationaryWeight (by norm_num) (by norm_num)⟩
 
 /-- **The balance equations force the geometric solution**: any solution of
 the recurrence `f (n+1) = ρ·f n` that sums to one is `stationaryWeight ρ`.
@@ -457,12 +454,6 @@ theorem meanQueue_three_quarters : meanQueue (3 / 4) = 3 := by
 
 /-- Numeric regression: 1 req/s against capacity 2 waits one time unit. -/
 theorem meanWait_one_two : meanWait 1 2 = 1 := by
-  rw [meanWait_eq (by norm_num) (by norm_num)]
-  norm_num
-
-/-- Numeric regression: 50 req/s against capacity 100 waits `1/50` time
-units. -/
-theorem meanWait_fifty_hundred : meanWait 50 100 = (50 : ℝ)⁻¹ := by
   rw [meanWait_eq (by norm_num) (by norm_num)]
   norm_num
 

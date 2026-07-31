@@ -100,15 +100,6 @@ theorem binding_shift {A s Cbot rk Ck : ℝ} (hr : 0 < rk) (hs : 0 < s)
   rw [div_lt_div_iff₀ (mul_pos hA hr) hs, div_lt_iff₀ (mul_pos hCbot hr)]
   constructor <;> intro h <;> linarith
 
-/-- Sanity anchor: with no amplification (`A = 1`) and the hop provisioned
-for accepted work (`Cbot/s ≤ Ck/rk`), the bottom binds. Immediate by
-`one_mul` — at `A = 1` the hop bound `Ck / (1 * rk)` is definitionally the
-provisioning hypothesis; the statement only pins `binding_shift`'s `A · rk`
-shape at its no-amplification endpoint. -/
-theorem bottom_binds_of_provisioned {s Cbot rk Ck : ℝ}
-    (hprov : Cbot / s ≤ Ck / rk) : Cbot / s ≤ Ck / (1 * rk) := by
-  rwa [one_mul]
-
 /-- Numeric regression on the threshold: `binding_shift` at `A = 5` for a hop
 provisioned 4× the bottom (4000 vs 1000, unit costs). Both sides are closed
 numerals here; the *exactly when* reading is `binding_shift`'s. -/
@@ -124,8 +115,8 @@ theorem hop_binds_at_amp_five : (4000 : ℝ) / (5 * 1) < 1000 / 1 := by norm_num
 `hop_binds_at_amp_five`: with the same provisioning and `A = 1`, the bottom's
 `1000` is the binding limit. The inequality is immediate; what the theorem
 pins is the `A · rk` shape at `A = 1`. -/
-theorem bottom_binds_at_amp_one : (1000 : ℝ) / 1 ≤ 4000 / (1 * 1) :=
-  bottom_binds_of_provisioned (by norm_num)
+theorem bottom_binds_at_amp_one : (1000 : ℝ) / 1 ≤ 4000 / (1 * 1) := by
+  norm_num
 
 /-- Numeric regression on the per-resource bound at those numbers: goodput
 `800` costs `1` unit at the bottom, leaving its capacity `1000` slack, and `5`

@@ -1,4 +1,6 @@
-import Lean
+module
+
+public import Lean
 
 /-!
 # Coverage ledgers
@@ -9,6 +11,8 @@ the report throws when an entry goes stale (a terminal entry that gains a
 consumer, witness, or pin; a name that no longer exists; a bridge whose theorem
 does not depend on its target), so the ledgers cannot silently rot.
 -/
+
+@[expose] public section
 
 namespace OverloadTest
 

@@ -1,4 +1,4 @@
-import OverloadTest.Coverage
+import OverloadTest.Gate
 
 /-! Expected-failure fixture for the coverage gate: a general theorem that is
 consumed by nothing, witnessed by nothing, and ledgered nowhere must be

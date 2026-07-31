@@ -49,7 +49,7 @@ scope:
 	echo "verify: PASS — stamped $$snap"; \
 	echo "verify: mechanical stages green; run the two semantic passes in scripts/CLAUDE.md over .verify/changed_lean.txt"
 
-# Anti-silencing gate, run on every commit before the ritual: a staged diff
+# Anti-silencing gate, run on every commit before the ritual: a diff
 # that adds a gate-silencing token to the library needs a deliberate
 # sign-off (SKIP=silencing-guard), never a silent landing — the linter
 # configuration is only as strong as the review gate on changes to it.
@@ -63,13 +63,13 @@ silencing-guard:
 	  | grep -E 'set_option +(linter|debug)\.|set_option +[A-Za-z.]*maxHeartbeats|@\[nolint|@\[implemented_by|@\[extern|^\+ *((private|protected|public|noncomputable) +)*(axiom|unsafe|partial) '; true); \
 	tomlhits=$$(git diff $(GUARD_DIFF) -U0 -- lakefile.toml | grep -E '^[-+].*linter\.'; true); \
 	if [ -n "$$hits$$tomlhits" ]; then \
-	  echo "silencing-guard: the staged diff touches gate-silencing tokens;" >&2; \
+	  echo "silencing-guard: diff $(GUARD_DIFF) touches gate-silencing tokens;" >&2; \
 	  echo "sign off with SKIP=silencing-guard if deliberate" >&2; \
 	  if [ -n "$$hits" ]; then echo "$$hits" >&2; fi; \
 	  if [ -n "$$tomlhits" ]; then echo "lakefile.toml linter lines:" >&2; echo "$$tomlhits" >&2; fi; \
 	  exit 1; \
 	fi; \
-	echo "silencing-guard: no gate-silencing tokens in the staged diff"
+	echo "silencing-guard: no gate-silencing tokens in diff $(GUARD_DIFF)"
 
 # Kernel re-check: leanchecker (shipped with the toolchain since v4.28.0)
 # replays each Overload module's .olean through the kernel, imports

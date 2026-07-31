@@ -1,6 +1,9 @@
-import Batteries.Tactic.Lint
+module
+
 -- The syntax-linter carrier; see the note in `Overload/Basic.lean`.
-import Mathlib.Tactic.Linter.DeprecatedSyntaxLinter -- shake: keep
+public import Mathlib.Tactic.Linter.DeprecatedSyntaxLinter -- shake: keep
+public import Batteries.Tactic.Lint.Basic
+public import Batteries.Tactic.Lint.Misc
 
 /-!
 # Enabled registrations of default-disabled Batteries linters
@@ -12,6 +15,13 @@ here are those enabled registrations, picked up by this repo's lint driver
 (`lake lint`): every theorem must carry a docstring, and no `↔` statement
 may bind a variable explicitly when it appears on both sides.
 -/
+
+@[expose] public section
+
+-- Linter registrations run at elaboration time, so under the module system
+-- both the import and the declarations are `meta`; the `env_linter`
+-- attribute rejects a non-`meta` declaration outright.
+meta section
 
 namespace Overload
 

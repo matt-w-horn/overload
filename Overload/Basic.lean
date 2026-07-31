@@ -1,8 +1,10 @@
+module
+
 -- The syntax-linter carrier (Mathlib's `Mathlib.Init` pattern): linters
 -- only run in modules that transitively import them, so every module must
 -- reach this import or the lakefile's linter options are silently inert
 -- there. The test driver's linter-coverage stage enforces the closure.
-import Mathlib.Tactic.Linter.DeprecatedSyntaxLinter -- shake: keep
+public import Mathlib.Tactic.Linter.DeprecatedSyntaxLinter -- shake: keep
 
 /-!
 # Overload — shared conventions
@@ -23,6 +25,8 @@ Conventions used throughout the library:
   analysis (fluid limits, bifurcation geometry, exit times) are omitted, not
   axiomatized; `Overload/AxiomAudit.lean` enforces the axiom budget.
 -/
+
+@[expose] public section
 
 namespace Overload
 

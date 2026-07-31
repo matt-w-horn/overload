@@ -344,7 +344,7 @@
 
 #### Overload.ClosedLoop.toStar : def
   Overload.ClosedLoop → Overload.Star 1
-  value-hash 416d5ae377e4d0e9
+  value-hash 8403f8b1baedba6c
 
 #### Overload.ClosedLoop.toStar_congestedEq_iff : theorem
   ∀ {L : Overload.ClosedLoop} {Θ : ℝ}, L.toStar.CongestedEq Θ ↔ L.CongestedEq Θ
@@ -850,7 +850,7 @@
 
 #### Overload.backpressureLoop : def
   Overload.BoundedLoop
-  value-hash 72a90098ca28aaff
+  value-hash 6923dfdfc13893f6
 
 #### Overload.backpressureLoop_no_congestedEq : theorem
   ∀ (Θ : ℝ), ¬Overload.backpressureLoop.CongestedEq Θ
@@ -920,7 +920,7 @@
 
 #### Overload.borgAcct : def
   Overload.Accounting
-  value-hash 6ecfee0f2c5550a
+  value-hash fca7bb25876cfada
 
 #### Overload.borgDemand : def
   ℝ → ℕ → ℝ
@@ -1009,7 +1009,7 @@
 
 #### Overload.breakerDemoLoop : def
   Overload.ClosedLoop
-  value-hash 10d5b33c7c77d665
+  value-hash b5c2ef6751cb1b33
 
 #### Overload.breakerDemoLoop_attempt_admission_no_congestedEq : theorem
   ¬(Overload.breakerDemoLoop.breakerLoop (9 / 3)).CongestedEq 10
@@ -1362,7 +1362,7 @@
 
 #### Overload.demoEligibleLoop : def
   (e : ℝ) → e ∈ Set.Icc 0 1 → Overload.ClosedLoop
-  value-hash 9fe243371c0fac8a
+  value-hash 6775f497da06c6d9
 
 #### Overload.demoEligibleLoop_miscoding_opens_amplification : theorem
   (Overload.demoEligibleLoop 0 ⋯).NoSustaining ∧ 1 < (Overload.demoEligibleLoop 1 ⋯).h 1
@@ -1655,7 +1655,7 @@
 
 #### Overload.flatLoop : def
   Overload.ClosedLoop
-  value-hash edc8c5e355a69c52
+  value-hash 81f6feaadd6b3994
 
 #### Overload.flatLoop_congestedEq : theorem
   Overload.flatLoop.CongestedEq 3
@@ -1802,7 +1802,7 @@
 
 #### Overload.headroomLoop : def
   Overload.ClosedLoop
-  value-hash 4e158701552d927f
+  value-hash 3e061fa5bbed73e4
 
 #### Overload.headroomLoop_no_congestedEq : theorem
   ¬Overload.headroomLoop.CongestedEq 3
@@ -2028,7 +2028,7 @@
 
 #### Overload.looseBudgetLoop : def
   Overload.BoundedLoop
-  value-hash 41204baf03a7a96b
+  value-hash ac2e129df36a36f
 
 #### Overload.looseBudgetLoop_safe : theorem
   ¬Overload.looseBudgetLoop.CongestedEq 10
@@ -2128,7 +2128,7 @@
 
 #### Overload.mm1BandLoop : def
   Overload.ClosedLoop
-  value-hash b7c7a643790ee4d8
+  value-hash 46a6a1e53d091138
 
 #### Overload.mm1BandLoop_gain_lt_one : theorem
   deriv Overload.mm1BandLoop.F 31 < 1
@@ -2141,7 +2141,7 @@
 
 #### Overload.mm1FlatLoop : def
   Overload.ClosedLoop
-  value-hash 80f0e8a7621c1ec1
+  value-hash 2e0c870b1615888e
 
 #### Overload.mm1FlatLoop_not_bistable : theorem
   ¬Overload.BistableOn Overload.mm1FlatLoop.F 0 120
@@ -2268,7 +2268,7 @@
 
 #### Overload.noRetryLoop : def
   (lam : ℝ) → 0 ≤ lam → Overload.ClosedLoop
-  value-hash 6eb485dc26728246
+  value-hash 34d77a170f4aa958
 
 #### Overload.noRetryLoop_noSustaining : theorem
   ∀ (lam : ℝ) (hlam : 0 ≤ lam), (Overload.noRetryLoop lam hlam).NoSustaining
@@ -2394,7 +2394,7 @@
 
 #### Overload.pipelineAcct : def
   Overload.Accounting
-  value-hash a791bf0766c04be6
+  value-hash a0b7ee2655661f44
 
 #### Overload.pipeline_replay_envelope : theorem
   ∀ {lam : ℝ}, lam * 2 * 1 ≤ 8 → lam ≤ 8 / (2 * 1)
@@ -2485,11 +2485,11 @@
 
 #### Overload.region1Stack : def
   List Overload.Layer
-  value-hash 82192d7b66681556
+  value-hash b9b23dfed254bad2
 
 #### Overload.region2Stack : def
   List Overload.Layer
-  value-hash 48cf709feda40146
+  value-hash cde9851e29391c28
 
 #### Overload.residual : def
   (ℕ → ℝ) → ℝ → ℕ → ℝ
@@ -2584,7 +2584,7 @@
 
 #### Overload.spikeLoop : def
   Overload.ClosedLoop
-  value-hash a0517218d05e9b3d
+  value-hash 4cd02c1f938a9217
 
 #### Overload.spikeLoop_no_congestedEq : theorem
   ¬Overload.spikeLoop.CongestedEq 3
@@ -2610,7 +2610,7 @@
 
 #### Overload.sqsUnclampedLoop : def
   Overload.ClosedLoop
-  value-hash 4a5d3ae02ace534d
+  value-hash 72fa20fc97f17de4
 
 #### Overload.sqs_bulk_outranks : theorem
   ∀ {ρ : ℝ},
@@ -2703,11 +2703,11 @@
 
 #### Overload.starWitness : def
   Overload.Star 2
-  value-hash b9579c40e9075950
+  value-hash e5fd3495343b9b02
 
 #### Overload.starWitnessLight : def
   Overload.Star 2
-  value-hash 8d3bdbcbfcef867
+  value-hash 6d7735836551fcb4
 
 #### Overload.starWitnessLight_no_congestedEq : theorem
   ¬Overload.starWitnessLight.CongestedEq 10
@@ -2979,11 +2979,11 @@
 
 #### Overload.thrashingAcct : def
   Overload.Accounting
-  value-hash ff8e28a9c728cda3
+  value-hash acdfa9a84b4dd81a
 
 #### Overload.thrashingLoop : def
   Overload.ClosedLoop
-  value-hash 2394fc88992d4201
+  value-hash a5fd67823e77f58f
 
 #### Overload.thrashing_bistable : theorem
   Overload.BistableOn Overload.thrashingLoop.F 0 24
@@ -3030,7 +3030,7 @@
 
 #### Overload.twoLayerLoop : def
   Overload.ClosedLoop
-  value-hash c79825834001f8fd
+  value-hash 4af614fab0a2d854
 
 #### Overload.twoLayer_cap : theorem
   ∀ x ∈ [(1 / 2, 2), (1 / 2, 2)], 1 ≤ x.2
@@ -3086,7 +3086,7 @@
 
 #### Overload.unitPath : def
   Overload.SamplePath
-  value-hash 89fd14821a976f12
+  value-hash 44b0ca6e5e44c0b0
 
 #### Overload.unitPath_H1 : theorem
   Filter.Tendsto (fun n => Overload.unitPath.a n / ↑n) Filter.atTop (nhds 1)
@@ -3123,7 +3123,7 @@
 
 #### Overload.witnessFacts : def
   Overload.SystemFacts (Fin 1) (Fin 1) (Fin 2) (Fin 2)
-  value-hash 66ad35b84ebb4718
+  value-hash f86657833c46c678
 
 #### Overload.witnessFacts_cliff_implies_wasted : theorem
   0 < Overload.witnessFacts.acct.wasted

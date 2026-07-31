@@ -13,10 +13,10 @@ SHELL := /bin/bash
 #   make silencing-guard GUARD_DIFF="<base-sha>...HEAD"
 GUARD_DIFF ?= --cached
 
-.PHONY: verify build lint lint-style test scope silencing-guard \
+.PHONY: verify build lint lint-style test tally-sync scope silencing-guard \
 	leanchecker simp-audit
 
-verify: build lint lint-style test scope
+verify: build lint lint-style test tally-sync scope
 
 build:
 	@mkdir -p .verify
@@ -33,6 +33,25 @@ lint-style:
 
 test:
 	@set -o pipefail; lake test 2>&1 | tee .verify/test.log
+
+# The class tally is printed twice from two differently-built
+# environments: the build-time gate (#coverage_report, from Gate.lean's
+# import-all list, replayed into the lake test log) and the runtime driver
+# (manifest-tally, from importModules). Two printed totals with no
+# comparison between them are two unchecked numbers — the 914-vs-919
+# lesson — so compare the suffixes character-for-character.
+tally-sync:
+	@gate=$$(grep '#coverage_report: ' .verify/test.log | tail -1 | sed 's/.*#coverage_report: //'); \
+	driver=$$(grep 'manifest-tally: ' .verify/test.log | tail -1 | sed 's/.*manifest-tally: //'); \
+	if [ -z "$$gate" ]; then echo "tally-sync: no #coverage_report line in .verify/test.log" >&2; exit 1; fi; \
+	if [ -z "$$driver" ]; then echo "tally-sync: no manifest-tally line in .verify/test.log" >&2; exit 1; fi; \
+	if [ "$$gate" != "$$driver" ]; then \
+	  echo "tally-sync: build-time gate and runtime driver tallies disagree:" >&2; \
+	  echo "  gate:   $$gate" >&2; \
+	  echo "  driver: $$driver" >&2; \
+	  exit 1; \
+	fi; \
+	echo "tally-sync: gate and driver agree — $$driver"
 
 # Stamp the verified tree and scope the semantic passes. `git stash create`
 # snapshots tracked+staged content without touching anything; at a clean

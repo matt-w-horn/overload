@@ -16,22 +16,6 @@
     G * A.time * sbar ≤ A.useful →
       A.wasted = w * (A.capacity * A.time) → G * sbar ≤ (1 - w) * A.capacity - A.idle / A.time
 
-#### Overload.Accounting.mk.inj : theorem
-  ∀ {capacity time useful wasted idle : ℝ} {capacity_pos : 0 < capacity} {time_pos : 0 < time}
-    {useful_nonneg : 0 ≤ useful} {wasted_nonneg : 0 ≤ wasted} {idle_nonneg : 0 ≤ idle}
-    {conserve : useful + wasted + idle = capacity * time}
-    {capacity_1 time_1 useful_1 wasted_1 idle_1 : ℝ} {capacity_pos_1 : 0 < capacity_1}
-    {time_pos_1 : 0 < time_1} {useful_nonneg_1 : 0 ≤ useful_1} {wasted_nonneg_1 : 0 ≤ wasted_1}
-    {idle_nonneg_1 : 0 ≤ idle_1} {conserve_1 : useful_1 + wasted_1 + idle_1 = capacity_1 * time_1},
-    { capacity := capacity, time := time, useful := useful, wasted := wasted, idle := idle,
-          capacity_pos := capacity_pos, time_pos := time_pos, useful_nonneg := useful_nonneg,
-          wasted_nonneg := wasted_nonneg, idle_nonneg := idle_nonneg, conserve := conserve } =
-        { capacity := capacity_1, time := time_1, useful := useful_1, wasted := wasted_1,
-          idle := idle_1, capacity_pos := capacity_pos_1, time_pos := time_pos_1,
-          useful_nonneg := useful_nonneg_1, wasted_nonneg := wasted_nonneg_1,
-          idle_nonneg := idle_nonneg_1, conserve := conserve_1 } →
-      capacity = capacity_1 ∧ time = time_1 ∧ useful = useful_1 ∧ wasted = wasted_1 ∧ idle = idle_1
-
 #### Overload.Accounting.useful_le : theorem
   ∀ (A : Overload.Accounting), A.useful ≤ A.capacity * A.time
 
@@ -115,18 +99,6 @@
 #### Overload.BoundedLoop.hasDerivAt_F : theorem
   ∀ (L : Overload.BoundedLoop) {Λ g' h' : ℝ},
     HasDerivAt L.g g' Λ → HasDerivAt L.h h' (L.g Λ) → HasDerivAt L.F (L.lam * (h' * g')) Λ
-
-#### Overload.BoundedLoop.mk.inj : theorem
-  ∀ {lam : ℝ} {g h : ℝ → ℝ} {Amax : ℝ} {lam_nonneg : 0 ≤ lam}
-    {g_mem : ∀ (x : ℝ), 0 ≤ x → g x ∈ Set.Icc 0 1} {h_le_Amax : ∀ p ∈ Set.Icc 0 1, h p ≤ Amax}
-    {lam_1 : ℝ} {g_1 h_1 : ℝ → ℝ} {Amax_1 : ℝ} {lam_nonneg_1 : 0 ≤ lam_1}
-    {g_mem_1 : ∀ (x : ℝ), 0 ≤ x → g_1 x ∈ Set.Icc 0 1}
-    {h_le_Amax_1 : ∀ p ∈ Set.Icc 0 1, h_1 p ≤ Amax_1},
-    { lam := lam, g := g, h := h, Amax := Amax, lam_nonneg := lam_nonneg, g_mem := g_mem,
-          h_le_Amax := h_le_Amax } =
-        { lam := lam_1, g := g_1, h := h_1, Amax := Amax_1, lam_nonneg := lam_nonneg_1,
-          g_mem := g_mem_1, h_le_Amax := h_le_Amax_1 } →
-      lam = lam_1 ∧ g = g_1 ∧ h = h_1 ∧ Amax = Amax_1
 
 #### Overload.BoundedLoop.no_congestedEq_of_light : theorem
   ∀ (L : Overload.BoundedLoop) {Θ : ℝ}, Overload.HealthyOnly L.lam L.Amax Θ → ¬L.CongestedEq Θ
@@ -306,18 +278,6 @@
     L.lam ≤ lam' →
       lam' * L.Amax ≤ b → Overload.lfpIcc L.F 0 b ≤ Overload.lfpIcc (L.withLam lam' hlam').F 0 b
 
-#### Overload.ClosedLoop.mk.inj : theorem
-  ∀ {toBoundedLoop : Overload.BoundedLoop} {g_mono : MonotoneOn toBoundedLoop.g (Set.Ici 0)}
-    {h_mono : MonotoneOn toBoundedLoop.h (Set.Icc 0 1)}
-    {h_one_le : ∀ p ∈ Set.Icc 0 1, 1 ≤ toBoundedLoop.h p} {toBoundedLoop_1 : Overload.BoundedLoop}
-    {g_mono_1 : MonotoneOn toBoundedLoop_1.g (Set.Ici 0)}
-    {h_mono_1 : MonotoneOn toBoundedLoop_1.h (Set.Icc 0 1)}
-    {h_one_le_1 : ∀ p ∈ Set.Icc 0 1, 1 ≤ toBoundedLoop_1.h p},
-    { toBoundedLoop := toBoundedLoop, g_mono := g_mono, h_mono := h_mono, h_one_le := h_one_le } =
-        { toBoundedLoop := toBoundedLoop_1, g_mono := g_mono_1, h_mono := h_mono_1,
-          h_one_le := h_one_le_1 } →
-      toBoundedLoop = toBoundedLoop_1
-
 #### Overload.ClosedLoop.noSustaining_no_congestedEq : theorem
   ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {C : ℝ}, L.lam < C → ¬L.CongestedEq C
 
@@ -399,29 +359,6 @@
       ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k),
         L.lam * Kc < D.alloc d C i → ¬L.CongestedEq (D.alloc d C i)
 
-#### Overload.Discipline.mk.inj : theorem
-  ∀ {k : ℕ} {alloc : (Fin k → ℝ) → ℝ → Fin k → ℝ}
-    {alloc_nonneg :
-      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → 0 ≤ alloc d C i}
-    {alloc_le_demand :
-      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → alloc d C i ≤ d i}
-    {sum_alloc :
-      ∀ (d : Fin k → ℝ) (C : ℝ),
-        (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → ∑ i, alloc d C i = min (∑ i, d i) C}
-    {alloc_1 : (Fin k → ℝ) → ℝ → Fin k → ℝ}
-    {alloc_nonneg_1 :
-      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → 0 ≤ alloc_1 d C i}
-    {alloc_le_demand_1 :
-      ∀ (d : Fin k → ℝ) (C : ℝ) (i : Fin k), (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → alloc_1 d C i ≤ d i}
-    {sum_alloc_1 :
-      ∀ (d : Fin k → ℝ) (C : ℝ),
-        (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → ∑ i, alloc_1 d C i = min (∑ i, d i) C},
-    { alloc := alloc, alloc_nonneg := alloc_nonneg, alloc_le_demand := alloc_le_demand,
-          sum_alloc := sum_alloc } =
-        { alloc := alloc_1, alloc_nonneg := alloc_nonneg_1, alloc_le_demand := alloc_le_demand_1,
-          sum_alloc := sum_alloc_1 } →
-      alloc = alloc_1
-
 #### Overload.Discipline.sum_alloc_le : theorem
   ∀ {k : ℕ} (D : Overload.Discipline k) (d : Fin k → ℝ) (C : ℝ),
     (∀ (j : Fin k), 0 ≤ d j) → 0 ≤ C → ∑ i, D.alloc d C i ≤ C
@@ -455,13 +392,6 @@
 
 #### Overload.Layer.amp_pos : theorem
   ∀ (ℓ : Overload.Layer), 0 < ℓ.amp
-
-#### Overload.Layer.mk.inj : theorem
-  ∀ {p : ℝ} {cap : ℕ} {p_mem : p ∈ Set.Icc 0 1} {cap_pos : 1 ≤ cap} {p_1 : ℝ} {cap_1 : ℕ}
-    {p_mem_1 : p_1 ∈ Set.Icc 0 1} {cap_pos_1 : 1 ≤ cap_1},
-    { p := p, cap := cap, p_mem := p_mem, cap_pos := cap_pos } =
-        { p := p_1, cap := cap_1, p_mem := p_mem_1, cap_pos := cap_pos_1 } →
-      p = p_1 ∧ cap = cap_1
 
 #### Overload.Layer.one_le_amp : theorem
   ∀ (ℓ : Overload.Layer), 1 ≤ ℓ.amp
@@ -537,14 +467,6 @@
 
 #### Overload.SamplePath.lt_d_departedPrefix : theorem
   ∀ (P : Overload.SamplePath) {t : ℝ}, {n | t < P.d n}.Nonempty → t < P.d (P.departedPrefix t)
-
-#### Overload.SamplePath.mk.inj : theorem
-  ∀ {a d : ℕ → ℝ} {a_nonneg : ∀ (n : ℕ), 0 ≤ a n} {a_le_d : ∀ (n : ℕ), a n ≤ d n}
-    {a_mono : Monotone a} {a_1 d_1 : ℕ → ℝ} {a_nonneg_1 : ∀ (n : ℕ), 0 ≤ a_1 n}
-    {a_le_d_1 : ∀ (n : ℕ), a_1 n ≤ d_1 n} {a_mono_1 : Monotone a_1},
-    { a := a, d := d, a_nonneg := a_nonneg, a_le_d := a_le_d, a_mono := a_mono } =
-        { a := a_1, d := d_1, a_nonneg := a_nonneg_1, a_le_d := a_le_d_1, a_mono := a_mono_1 } →
-      a = a_1 ∧ d = d_1
 
 #### Overload.SamplePath.sojournSum : def
   Overload.SamplePath → ℕ → ℝ
@@ -671,18 +593,6 @@
     S.F y = y →
       ∃ Λ, ∑ j, S.r j * Λ j = y ∧ ∀ (i : Fin k), Λ i = S.lam i * S.h i (S.gD (∑ j, S.r j * Λ j))
 
-#### Overload.Star.mk.inj : theorem
-  ∀ {k : ℕ} {lam r : Fin k → ℝ} {h : Fin k → ℝ → ℝ} {gD : ℝ → ℝ}
-    {lam_nonneg : ∀ (i : Fin k), 0 ≤ lam i} {r_nonneg : ∀ (i : Fin k), 0 ≤ r i}
-    {gD_mem : ∀ (x : ℝ), 0 ≤ x → gD x ∈ Set.Icc 0 1} {lam_1 r_1 : Fin k → ℝ} {h_1 : Fin k → ℝ → ℝ}
-    {gD_1 : ℝ → ℝ} {lam_nonneg_1 : ∀ (i : Fin k), 0 ≤ lam_1 i} {r_nonneg_1 : ∀ (i : Fin k), 0 ≤ r_1 i}
-    {gD_mem_1 : ∀ (x : ℝ), 0 ≤ x → gD_1 x ∈ Set.Icc 0 1},
-    { lam := lam, r := r, h := h, gD := gD, lam_nonneg := lam_nonneg, r_nonneg := r_nonneg,
-          gD_mem := gD_mem } =
-        { lam := lam_1, r := r_1, h := h_1, gD := gD_1, lam_nonneg := lam_nonneg_1,
-          r_nonneg := r_nonneg_1, gD_mem := gD_mem_1 } →
-      lam = lam_1 ∧ r = r_1 ∧ h = h_1 ∧ gD = gD_1
-
 #### Overload.Star.no_congestedEq_of_signatures : theorem
   ∀ {k : ℕ} (S : Overload.Star k) {K : Fin k → ℝ} {Θ : ℝ},
     S.Contract K → ∑ i, S.signature K i < Θ → ¬S.CongestedEq Θ
@@ -698,51 +608,6 @@
 
 #### Overload.SystemFacts : structure
   Type u_1 → Type u_2 → Type u_3 → Type u_4 → Type (max (max (max u_1 u_2) u_3) u_4)
-
-#### Overload.SystemFacts.mk.inj : theorem
-  ∀ {station : Type u_1} {req : Type u_2} {origin : Type u_3} {wire : Type u_4}
-    {stations : Finset station} {requests : Finset req}
-    {sent received inflight rate sojourn : station → ℝ} {acct : Overload.Accounting}
-    {goodput offered sbar : ℝ} {attempts : req → station → ℕ} {cap : station → ℕ} {spent : req → ℝ}
-    {deadline issued consumed outstanding expired : ℝ} {joint : origin → wire → ℝ}
-    {originCount : origin → ℝ} {wireCount : wire → ℝ} {stations_1 : Finset station}
-    {requests_1 : Finset req} {sent_1 received_1 inflight_1 rate_1 sojourn_1 : station → ℝ}
-    {acct_1 : Overload.Accounting} {goodput_1 offered_1 sbar_1 : ℝ} {attempts_1 : req → station → ℕ}
-    {cap_1 : station → ℕ} {spent_1 : req → ℝ}
-    {deadline_1 issued_1 consumed_1 outstanding_1 expired_1 : ℝ} {joint_1 : origin → wire → ℝ}
-    {originCount_1 : origin → ℝ} {wireCount_1 : wire → ℝ},
-    { stations := stations, requests := requests, sent := sent, received := received,
-          inflight := inflight, rate := rate, sojourn := sojourn, acct := acct, goodput := goodput,
-          offered := offered, sbar := sbar, attempts := attempts, cap := cap, spent := spent,
-          deadline := deadline, issued := issued, consumed := consumed, outstanding := outstanding,
-          expired := expired, joint := joint, originCount := originCount, wireCount := wireCount } =
-        { stations := stations_1, requests := requests_1, sent := sent_1, received := received_1,
-          inflight := inflight_1, rate := rate_1, sojourn := sojourn_1, acct := acct_1,
-          goodput := goodput_1, offered := offered_1, sbar := sbar_1, attempts := attempts_1,
-          cap := cap_1, spent := spent_1, deadline := deadline_1, issued := issued_1,
-          consumed := consumed_1, outstanding := outstanding_1, expired := expired_1,
-          joint := joint_1, originCount := originCount_1, wireCount := wireCount_1 } →
-      stations = stations_1 ∧
-        requests = requests_1 ∧
-          sent = sent_1 ∧
-            received = received_1 ∧
-              inflight = inflight_1 ∧
-                rate = rate_1 ∧
-                  sojourn = sojourn_1 ∧
-                    acct = acct_1 ∧
-                      goodput = goodput_1 ∧
-                        offered = offered_1 ∧
-                          sbar = sbar_1 ∧
-                            attempts = attempts_1 ∧
-                              cap = cap_1 ∧
-                                spent = spent_1 ∧
-                                  deadline = deadline_1 ∧
-                                    issued = issued_1 ∧
-                                      consumed = consumed_1 ∧
-                                        outstanding = outstanding_1 ∧
-                                          expired = expired_1 ∧
-                                            joint = joint_1 ∧
-                                              originCount = originCount_1 ∧ wireCount = wireCount_1
 
 #### Overload.UniformLossEq : def
   {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℕ) → ℝ → ℝ → Prop

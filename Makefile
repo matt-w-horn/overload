@@ -92,15 +92,36 @@ silencing-guard:
 
 # Kernel re-check: leanchecker (shipped with the toolchain since v4.28.0)
 # replays each Overload module's .olean through the kernel, imports
-# trusted — the airtight backstop behind the elaborator. Import loading
-# dominates (~16s per module, ~11 min for the library), so this is an
-# occasional gate, run on demand rather than per commit.
+# trusted — the airtight backstop behind the elaborator. One invocation
+# covers the library: the tool matches targets by name PREFIX and spawns
+# one concurrent task per matched module (LeanChecker.lean:93,106-108 in
+# the toolchain source), so `leanchecker Overload` already checks all of
+# it — the old per-module loop re-checked everything on its first
+# iteration. Concurrency is bounded only by LEAN_NUM_THREADS (default =
+# cores), and each task's import replay peaks ~2.6 GB (measured
+# 2026-07-31, ClosedLoop), so workers are budgeted by MEMORY, never by
+# cores. Measured 2026-07-31 on this 16 GB / 10-core machine: the
+# 10-worker default demanded ~52 GB and thrashed without finishing one
+# module; 4 workers still churned 5 GB of swap at ~25% pool utilization;
+# 1 worker replayed the whole library in 2m31s at 4.9 GB peak RSS —
+# concurrent environments evict each other's pages, so past the memory
+# budget, more workers is strictly slower. Default: hw.memsize / 5 GiB
+# per worker, clamped to [1, cores]; override with LEANCHECKER_WORKERS=N
+# (use 1 when other work holds memory; each worker wants ~5 GiB free).
+# Prefix matching also picks up stale oleans of renamed modules from
+# .lake/build — run `lake clean` first for an exact module set.
 leanchecker:
-	@set -e; for f in Overload.lean $$(find Overload -name '*.lean' | sort); do \
-	  m=$$(echo $$f | sed 's/\.lean$$//' | tr '/' '.'); \
-	  echo "leanchecker: $$m"; \
-	  lake env leanchecker "$$m"; \
-	done; \
+	@set -e; \
+	if [ -n "$(LEANCHECKER_WORKERS)" ]; then n="$(LEANCHECKER_WORKERS)"; \
+	else \
+	  mem_gb=$$(( $$(sysctl -n hw.memsize) / 1073741824 )); \
+	  n=$$(( mem_gb / 5 )); \
+	  ncpu=$$(sysctl -n hw.ncpu); \
+	  if [ "$$n" -lt 1 ]; then n=1; fi; \
+	  if [ "$$n" -gt "$$ncpu" ]; then n=$$ncpu; fi; \
+	fi; \
+	echo "leanchecker: replaying every Overload module ($$n workers)"; \
+	LEAN_NUM_THREADS=$$n lake env leanchecker -v Overload; \
 	echo "leanchecker: kernel accepts every Overload module"
 
 # Advisory: the simpNF environment linter re-run with

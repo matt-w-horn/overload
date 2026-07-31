@@ -134,7 +134,7 @@ theorem sqs_unclamped_congestedEq : sqsUnclampedLoop.CongestedEq 100 :=
 
 /-- The redelivery loop under a redrive policy: the amplification response is
 the truncated geometric at cap `m` (`maxReceiveCount`), over the saturated
-step kernel — `Bistability.cappedLoop`, read as an SQS redrive policy. -/
+step kernel — `cappedLoop`, read as an SQS redrive policy. -/
 noncomputable abbrev dlqLoop (lam C : ℝ) (m : ℕ) (hlam : 0 ≤ lam)
     (hm : 1 ≤ m) : ClosedLoop :=
   cappedLoop lam C m hlam hm

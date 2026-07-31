@@ -1,0 +1,9 @@
+{
+  "name": "harmonicPartial",
+  "kind": "def",
+  "statement": "harmonicPartial : ℕ → ℝ := fun n => ∑ i ∈ Finset.range n, 1 / (i + 1)",
+  "docstring": "The `n`-th partial sum of the harmonic series; the sums grow without bound.",
+  "expected": "prose-overclaims",
+  "axis": "existence",
+  "why": "The divergence clause names a theorem with no counterpart in the definition — a definition asserts nothing, so any property claimed in its docstring beyond the body itself is prose saying more."
+}

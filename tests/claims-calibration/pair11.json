@@ -1,0 +1,9 @@
+{
+  "name": "exp_nonneg_of_one_le",
+  "kind": "theorem",
+  "statement": "∀ x : ℝ, 1 ≤ Real.exp x → 0 ≤ Real.exp x",
+  "docstring": "Once the exponential clears `1`, it stays nonnegative: the threshold is what forces the sign.",
+  "expected": "statement-suspect",
+  "axis": "hypothesis",
+  "why": "The hypotheses are satisfiable (probe 1 quiet: `x = 0`), but the conclusion proves with the hypothesis deleted (`Real.exp_pos`), so probe 2 fires: the threshold the docstring calls load-bearing does no work. Trivial-statement shape, distinct from pair4's vacuous shape."
+}

@@ -1,0 +1,9 @@
+{
+  "name": "linear_decay_bounded",
+  "kind": "theorem",
+  "statement": "∀ (y : ℝ), y * Real.exp (-y) ≤ Real.exp (-1)",
+  "docstring": "The function `y ↦ y * Real.exp (-y)` is bounded above by `Real.exp (-1)`.",
+  "expected": "supported",
+  "axis": "-",
+  "why": "Known-good pair, statement and docstring verbatim from Mathlib's `Real.mul_exp_neg_le_exp_neg_one` (docs site, fetched 2026-07-30; verified against the local pin). Tests the false-positive direction: a config that flags it is miscalibrated."
+}

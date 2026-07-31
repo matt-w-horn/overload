@@ -1,0 +1,9 @@
+{
+  "name": "log_self_band_bound",
+  "kind": "theorem",
+  "statement": "∀ (x : ℝ), 0 < x → x ≤ 1 → |Real.log x * x| < 1",
+  "docstring": "Bound for `|Real.log x * x|` in the interval `(0, 1]`.",
+  "expected": "supported",
+  "axis": "-",
+  "why": "Known-good pair from Mathlib's `Real.abs_log_mul_self_lt` (docs site, fetched 2026-07-30; verified against the local pin). Tests the false-positive direction."
+}

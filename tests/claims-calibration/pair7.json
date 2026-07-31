@@ -1,0 +1,9 @@
+{
+  "name": "growth_unbounded_atTop",
+  "kind": "theorem",
+  "statement": "Filter.Tendsto Real.exp Filter.atTop Filter.atTop",
+  "docstring": "The real exponential function tends to `+∞` at `+∞`.",
+  "expected": "supported",
+  "axis": "-",
+  "why": "Known-good pair from Mathlib's `Real.tendsto_exp_atTop` (docs site, fetched 2026-07-30; verified against the local pin). Tests the false-positive direction."
+}

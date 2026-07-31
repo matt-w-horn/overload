@@ -1,0 +1,9 @@
+{
+  "name": "logistic",
+  "kind": "def",
+  "statement": "logistic : ℝ → ℝ := fun x => 1 / (1 + Real.exp (-x))",
+  "docstring": "The logistic function `x ↦ 1 / (1 + Real.exp (-x))`.",
+  "expected": "supported",
+  "axis": "-",
+  "why": "Known-good definition pair: the docstring restates exactly the body, claiming no property the definition does not carry."
+}

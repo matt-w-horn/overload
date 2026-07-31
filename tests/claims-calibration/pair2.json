@@ -1,0 +1,9 @@
+{
+  "name": "exp_le_exp_of_le",
+  "kind": "theorem",
+  "statement": "∀ {a b : ℝ}, a ≤ b → Real.exp a ≤ Real.exp b",
+  "docstring": "Exponential order: `Real.exp a ≤ Real.exp b` exactly when `a ≤ b`.",
+  "expected": "prose-overclaims",
+  "axis": "direction",
+  "why": "The statement proves one direction; \"exactly when\" claims the iff. (The converse happens to be true in Mathlib, but this statement does not prove it.)"
+}

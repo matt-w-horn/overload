@@ -270,7 +270,7 @@ theorem coupledAmp_mono_base (layers : List (ℝ × ℕ)) {p q : ℝ}
 /-- **Saturation** — hypothesis free: at total bottom failure every layer
 burns its whole cap and the composite equals the forced-failure envelope
 `∏ nᵢ`. The load-coupled refinement of
-`Spec.reduction_forced_failure`. -/
+`reduction_forced_failure`. -/
 theorem coupledAmp_at_one (layers : List (ℝ × ℕ)) :
     coupledAmp layers 1 = capProd layers := by
   induction layers with

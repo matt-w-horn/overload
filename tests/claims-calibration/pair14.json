@@ -1,0 +1,15 @@
+{
+  "name": "logistic_pos",
+  "kind": "theorem",
+  "statement": "∀ (x : ℝ), 0 < logistic x",
+  "docstring": "The logistic function is positive at every real.",
+  "deps": [
+    {
+      "name": "logistic",
+      "doc": "The logistic function `x ↦ 1 / (1 + Real.exp (-x))`."
+    }
+  ],
+  "expected": "supported",
+  "axis": "-",
+  "why": "Known-good dependency-bearing pair: the claim matches the statement given the verified dependency docstring. A referee can reconstruct `logistic` from that docstring in a probe (`1 / (1 + exp (-x)) > 0` closes by `positivity`)."
+}

@@ -1,0 +1,9 @@
+{
+  "name": "card_pos_of_nonempty",
+  "kind": "theorem",
+  "statement": "∀ {s : Finset ℕ}, s.Nonempty → 0 < s.card",
+  "docstring": "A nonempty collection has positive size; size grows as elements join.",
+  "expected": "prose-overclaims",
+  "axis": "existence",
+  "why": "The second clause names a monotonicity fact with no counterpart in the statement — an extra claim on top of an accurate description, which the protocol reads as prose saying more. (Re-keyed 2026-07-30 from intent-unclear: all four calibrated configurations returned prose-overclaims/existence with sound evidence, and the protocol's own decision rule agrees.)"
+}

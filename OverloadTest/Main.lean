@@ -66,7 +66,16 @@ are sorted; the JSON omits an empty one. An absent `consumers` key is not
 universe (`overloadOmittedTokens` is consumed by the `#omitted_audit`
 elaborator alone), so dead-code arithmetic must read `cls`, never the
 consumer list. None of the three enters `lockBlock`: the lock freezes
-statements, not the consumption graph around them. -/
+statements, not the consumption graph around them.
+
+The three claim hashes feed the claims gate (`tests/claims.lock`):
+`statementHash` over the printed type, `docHash` over the docstring text
+(empty string when absent), and `contextHash` over the sorted
+`name docHash` lines of the row's direct in-universe dependencies — the
+docstrings a blinded referee received as verified context, so editing a
+dependency's docstring invalidates its consumers' verdicts. Hashes are
+computed only here; `scripts/claims.py` copies them from the manifest
+rather than re-implementing `String.hash`. None enters `lockBlock`. -/
 structure Entry where
   name : String
   kind : String
@@ -78,6 +87,9 @@ structure Entry where
   cls : String := ""
   consumers : Array String := #[]
   pinnedBy : Array String := #[]
+  statementHash : String := ""
+  docHash : String := ""
+  contextHash : String := ""
 
 def Entry.toJson (e : Entry) : Json :=
   Json.mkObj <|
@@ -91,6 +103,9 @@ def Entry.toJson (e : Entry) : Json :=
         else [("consumers", Json.arr (e.consumers.map Json.str))])
     ++ (if e.pinnedBy.isEmpty then []
         else [("pinnedBy", Json.arr (e.pinnedBy.map Json.str))])
+    ++ [("statementHash", Json.str e.statementHash),
+        ("docHash", Json.str e.docHash),
+        ("contextHash", Json.str e.contextHash)]
 
 /-- The lock block for one declaration: a `#### ` header line, the printed
 type indented beneath it, and for definition kinds a value-hash line. -/
@@ -192,6 +207,19 @@ def manifestEntries (root : Name) (cov : CoverageReport) : CoreM (Array Entry) :
       pinnedByOf := pinnedByOf.insert m (((pinnedByOf.find? m).getD #[]).push r)
   let sortedStrings (a : Array Name) : Array String :=
     (a.map (·.toString)).qsort (· < ·)
+  -- Claim hashes: every universe member's docstring hash first, so a row's
+  -- contextHash can cite its dependencies' docHashes (absent docstring
+  -- hashes as the empty string, so gaining a docstring is a context change
+  -- like any other edit).
+  let mut docHashOf : NameMap String := {}
+  for n in names do
+    let doc := (← findDocString? env n).getD ""
+    docHashOf := docHashOf.insert n (hex doc.hash)
+  let contextHashOf (n : Name) : String :=
+    let deps := ((cov.depsOf.find? n).getD {}).toList.toArray.qsort
+      (·.toString < ·.toString)
+    let lines := deps.toList.map fun d => s!"{d} {(docHashOf.find? d).getD ""}"
+    hex (String.intercalate "\n" lines).hash
   let mut entries : Array Entry := #[]
   for n in names do
     let some ci := env.find? n | continue
@@ -220,10 +248,115 @@ def manifestEntries (root : Name) (cov : CoverageReport) : CoreM (Array Entry) :
       if cls == "C3" then sortedStrings ((pinnedByOf.find? n).getD #[]) else #[]
     entries := entries.push
       { name := n.toString, kind := kindOf env n ci, module, type, valueHash?, doc?,
-        terminal, cls, consumers, pinnedBy }
+        terminal, cls, consumers, pinnedBy,
+        statementHash := hex type.hash,
+        docHash := (docHashOf.find? n).getD "",
+        contextHash := contextHashOf n }
   return entries
 
-/-- Split a lock file into `name ↦ block` (blocks begin at `#### `). -/
+/-- Parse the claims ledger (`tests/claims.lock`): the `mode:` line plus
+`name ↦ (statementHash, docHash, contextHash)`. Full shape validation
+(verdict vocabulary, notes, sortedness) lives in `scripts/claims.py`, the
+ledger's only writer; the gate reads just what it compares. -/
+def parseClaims (text : String) :
+    Option String × Std.HashMap String (String × String × String) := Id.run do
+  let mut mode : Option String := none
+  let mut rows : Std.HashMap String (String × String × String) := {}
+  for line in text.splitOn "\n" do
+    let l := line.trimAscii.toString
+    if l.isEmpty || l.startsWith "--" then continue
+    if l.startsWith "mode:" then
+      mode := some ((l.drop 5).trimAscii.toString)
+      continue
+    let parts := (l.splitOn "|").map (·.trimAscii.toString)
+    if parts.length ≥ 4 then
+      rows := rows.insert parts[0]! (parts[1]!, parts[2]!, parts[3]!)
+  return (mode, rows)
+
+/-- Claims-gate findings: a manifest row with no ledger row, a ledger row
+whose statement, docstring, or dependency-context hash no longer matches,
+and orphan ledger rows naming deleted declarations. The finding names
+which of the three moved — a referee's verdict is invalidated by exactly
+one of statement edit, docstring edit, or a direct dependency's docstring
+edit, and the fix differs by which. -/
+def claimFindings (rows : Std.HashMap String (String × String × String))
+    (entries : Array Entry) : Array String := Id.run do
+  let mut fs : Array String := #[]
+  let mut seen : Std.HashSet String := {}
+  for e in entries do
+    seen := seen.insert e.name
+    match rows.get? e.name with
+    | none => fs := fs.push s!"no verdict for {e.name}"
+    | some (sh, dh, ch) =>
+      if sh != e.statementHash then
+        fs := fs.push s!"stale verdict for {e.name}: the statement changed"
+      else if dh != e.docHash then
+        fs := fs.push s!"stale verdict for {e.name}: the docstring changed"
+      else if ch != e.contextHash then
+        fs := fs.push
+          s!"stale verdict for {e.name}: a direct dependency's docstring changed"
+  for (name, _) in rows.toList do
+    unless seen.contains name do
+      fs := fs.push s!"orphan row for {name}: not in the manifest"
+  return fs.qsort (· < ·)
+
+/-- The claims gate must see all four finding kinds on doctored input
+before its verdict on the real tree counts — the `selfTestLock`
+discipline. -/
+def selfTestClaims : IO Unit := do
+  let mk (n sh dh ch : String) : Entry :=
+    { name := n, kind := "theorem", module := "M", type := "T",
+      valueHash? := none, doc? := none,
+      statementHash := sh, docHash := dh, contextHash := ch }
+  let rows : Std.HashMap String (String × String × String) :=
+    (((({} : Std.HashMap _ _).insert "A" ("s", "d", "c"))
+      |>.insert "B" ("s", "d", "c"))
+      |>.insert "D" ("s", "d", "c"))
+      |>.insert "Z" ("s", "d", "c")
+  let entries := #[mk "A" "s" "d" "c2", mk "B" "s" "d" "c",
+                   mk "C" "s" "d" "c", mk "D" "s2" "d" "c"]
+  let fs := claimFindings rows entries
+  let expect := #["no verdict for C", "orphan row for Z",
+                  "dependency's docstring changed", "the statement changed"]
+  unless fs.size == 4 && (expect.zip fs).all (fun (e, f) => (f.splitOn e).length > 1) do
+    throw <| IO.userError s!"claims self-test: expected the four finding kinds, got {fs}"
+
+/-- The backticked spans of a docstring, for the phantom-reference check. -/
+def tickedSpans (doc : String) : List String := Id.run do
+  let mut out : List String := []
+  let mut inTick := false
+  let mut cur := ""
+  for c in doc.toList do
+    if c == '`' then
+      if inTick && !cur.isEmpty then out := cur :: out
+      inTick := !inTick
+      cur := ""
+    else if inTick then
+      cur := cur.push c
+  return out.reverse
+
+/-- Every binder name in an expression. A docstring legitimately refers to
+its own statement's hypothesis and parameter names (`hcap`, `pastaFact`),
+but pretty-printing erases a non-dependent binder's name (`pastaFact :
+Prop` prints as `Prop →`), so the phantom-reference check reads them from
+the type expression, where they survive. -/
+def binderNames : Expr → List String
+  | .forallE n ty body _ => n.toString :: (binderNames ty ++ binderNames body)
+  | .lam n ty body _ => n.toString :: (binderNames ty ++ binderNames body)
+  | .letE n ty v body _ =>
+    n.toString :: (binderNames ty ++ binderNames v ++ binderNames body)
+  | .app f a => binderNames f ++ binderNames a
+  | .mdata _ e => binderNames e
+  | .proj _ _ e => binderNames e
+  | _ => []
+
+/-- Whether a backticked span could be a declaration reference: an
+identifier path of length ≥ 3. File names (`Foo.lean`) and anything with
+operators, spaces, or binders is prose or notation, not a reference. -/
+def isClaimRefCandidate (s : String) : Bool :=
+  s.length ≥ 3 && !s.endsWith ".lean"
+    && ((s.toList.head?.map Char.isAlpha).getD false)
+    && s.toList.all (fun c => c.isAlphanum || c == '_' || c == '.' || c == '\'')
 def parseLock (text : String) : Std.HashMap String String := Id.run do
   let mut m : Std.HashMap String String := {}
   let mut name : Option String := none
@@ -510,6 +643,101 @@ unsafe def main (args : List String) : IO UInt32 := do
         failures := failures.push ⟨"lock", d⟩
   else
     failures := failures.push ⟨"lock", s!"{lockFile} missing; run with --update-lock"⟩
+
+  -- [2b] claims gate: every declaration's docstring-vs-statement verdict
+  -- (tests/claims.lock, written only by scripts/claims.py after a blinded
+  -- review) must exist and match the manifest's three claim hashes. In
+  -- `advisory` mode (pre-bootstrap) findings print without failing; the
+  -- ledger's `mode:` line flips it, a tracked, deliberate diff.
+  selfTestClaims
+  let claimsFile : FilePath := "tests" / "claims.lock"
+  if (← claimsFile.pathExists) then
+    let (mode?, claimRows) := parseClaims (← IO.FS.readFile claimsFile)
+    let mode := mode?.getD "advisory"
+    let cfs := claimFindings claimRows entries
+    if mode == "failing" then
+      for f in cfs do
+        failures := failures.push ⟨"claims", f⟩
+    else
+      for f in cfs do
+        IO.println s!"claims (advisory): {f}"
+    IO.println s!"claims: {entries.size} declarations against {claimRows.size} \
+      verdict row(s), {cfs.size} finding(s), mode {mode} (self-test ok)"
+  else
+    failures := failures.push ⟨"claims", s!"{claimsFile} missing"⟩
+
+  -- [2c] phantom references: a backticked identifier in a docstring that
+  -- resolves to nothing is a phantom citation — the overclaim signature
+  -- the environment can check mechanically. A span resolves as: an
+  -- environment constant's full name (internals excluded) or last
+  -- component; a dotted suffix of an audited name (`Accounting.useful`
+  -- for `Overload.Accounting.useful`); a name bound in the row's own
+  -- printed statement (binders like `hcap`, structure parameters like
+  -- `pastaFact`); dot-notation whose head is an audited declaration
+  -- (`flatLoop.toStar`); or the repo's Module.decl citation convention,
+  -- both halves checked (`Deadline.neff` — head a module basename, tail
+  -- resolvable), which is what keeps a citation into a *renamed* module
+  -- (`Bistability.…`, `Spec.…`) a finding. Candidates are identifier
+  -- paths of length ≥ 3, so single-letter variables and notation stay
+  -- prose. Calibrated 2026-07-30: a constructed fake fires (see the
+  -- doctored probe below), and the first live run caught two stale
+  -- renamed-module citations.
+  let mut knownRefsM : Std.HashSet String := {}
+  let mut overloadSuffixesM : Std.HashSet String := {}
+  for (n, _) in env.constants.toList do
+    if let .str _ s := n then knownRefsM := knownRefsM.insert s
+    unless n.isInternal do knownRefsM := knownRefsM.insert n.toString
+    if auditRule `Overload n then
+      let comps := (privateToUserName n).components.map (·.toString)
+      for i in [0:comps.length] do
+        let suffix := String.intercalate "." (comps.drop i)
+        knownRefsM := knownRefsM.insert suffix
+        overloadSuffixesM := overloadSuffixesM.insert suffix
+  let mut moduleBasesM : Std.HashSet String := {}
+  for m in env.header.moduleNames do
+    if let .str _ s := m then moduleBasesM := moduleBasesM.insert s
+  let knownRefs := knownRefsM
+  let overloadSuffixes := overloadSuffixesM
+  let moduleBases := moduleBasesM
+  -- Core vocabulary, plus external-system identifiers the examples cite
+  -- as code (AWS's redrive-policy field); both are backticked
+  -- legitimately and are not environment constants.
+  let allowedVocab : List String := ["Prop", "Type", "Sort", "maxReceiveCount"]
+  let resolvesRef (ownType t : String) : Bool :=
+    knownRefs.contains t || allowedVocab.contains t
+      || (ownType.splitOn t).length > 1
+      || (match t.splitOn "." with
+          | head :: rest@(_ :: _) =>
+            let tail := String.intercalate "." rest
+            (overloadSuffixes.contains head && knownRefs.contains tail)
+              || (moduleBases.contains head && knownRefs.contains tail)
+          | _ => false)
+  let mut phantoms : Std.HashSet String := {}
+  let mut refsChecked : Nat := 0
+  for e in entries do
+    -- The one docstring whose job is naming absent declarations: the
+    -- omitted-result token list. Its tokens must NOT resolve — the
+    -- `#omitted_audit` sweep enforces exactly that.
+    if e.name == "Overload.overloadOmittedTokens" then continue
+    let binders : Std.HashSet String := Id.run do
+      let mut s : Std.HashSet String := {}
+      if let some ci := env.find? e.name.toName then
+        for b in binderNames ci.type do s := s.insert b
+      return s
+    for t in tickedSpans (e.doc?.getD "") do
+      if isClaimRefCandidate t then
+        refsChecked := refsChecked + 1
+        unless binders.contains t || resolvesRef e.type t do
+          phantoms := phantoms.insert
+            s!"docstring of {e.name} references `{t}`, which resolves to nothing"
+  -- The detector must fire before its zero counts: a constructed fake.
+  unless !resolvesRef "T" "clearly_no_such_declaration_x9" &&
+      resolvesRef "T" "Overload.expAttempts" do
+    failures := failures.push ⟨"claim-refs", "self-test: detector accepts a fake or rejects a real name"⟩
+  for p in phantoms.toList.toArray.qsort (· < ·) do
+    failures := failures.push ⟨"claim-refs", p⟩
+  IO.println s!"claim-refs: {refsChecked} backticked reference(s) checked, \
+    {phantoms.size} phantom(s) (self-test ok)"
 
   -- [3] import roots. Three hand-maintained lists, same hazard each: a
   -- module missing from one is silently outside that root's sweep.

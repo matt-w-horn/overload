@@ -329,8 +329,9 @@ variable {k : ℕ} (S : Star k)
 `Jᵢⱼ = (λᵢLᵢℓ_D)·rⱼ` — server `j`'s demand feeds the sink by `rⱼ`, and
 the sink's failure level moves server `i`'s demand by `λᵢLᵢℓ_D`. The
 entries `Lᵢ` (per-server response slope) and `ℓ_D` (sink kernel slope)
-are Lipschitz surrogates for `hᵢ'` and `g_D'` — **modeling inputs**,
-the same status as the mesh example's coupling entries. -/
+are Lipschitz surrogates for the derivatives of `h` and `gD` —
+**modeling inputs**, the same status as the mesh example's coupling
+entries. -/
 def gainMatrix (L : Fin k → ℝ) (ℓD : ℝ) : Matrix (Fin k) (Fin k) ℝ :=
   Matrix.of fun i j => S.lam i * L i * ℓD * S.r j
 

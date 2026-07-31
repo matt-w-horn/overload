@@ -1,0 +1,9 @@
+{
+  "name": "inv_mul_cancel_of_le",
+  "kind": "theorem",
+  "statement": "∀ {a : ℝ}, 0 < a → a⁻¹ * a = 1",
+  "docstring": "The inverse cancels: for any real `a`, the product `a⁻¹ * a` is `1`.",
+  "expected": "prose-overclaims",
+  "axis": "hypothesis",
+  "why": "The docstring drops `0 < a`; at `a = 0` the product is `0`, not `1`, so the docstring's reading is refutable. (2026-07-30: the original statement carried an inert `a ≤ b` hypothesis, a second defect one referee verdicted on; the binder was removed so the pair carries exactly the keyed defect.)"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "log_lt_self_of_pos",
+  "kind": "theorem",
+  "statement": "∀ (x : ℝ), 0 < x → Real.log x < x",
+  "docstring": "For positive `x`, the logarithm satisfies `Real.log x ≤ x`.",
+  "expected": "prose-underclaims",
+  "axis": "strength",
+  "why": "The statement proves the strict inequality; the prose states only `≤`, specifically enough to mislead a consumer who needs strictness and looks elsewhere for it."
+}

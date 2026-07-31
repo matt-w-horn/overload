@@ -1,0 +1,9 @@
+{
+  "name": "sq_eq_four_witness",
+  "kind": "theorem",
+  "statement": "∃ x : ℝ, x ^ 2 = 4",
+  "docstring": "`x = 2` is exactly the solution of `x ^ 2 = 4`: the witness is unique.",
+  "expected": "prose-overclaims",
+  "axis": "strength",
+  "why": "The statement is bare existence; uniqueness is claimed and false (`x = -2`)."
+}

@@ -1,0 +1,9 @@
+{
+  "name": "abs_add_bound",
+  "kind": "theorem",
+  "statement": "∀ {x y : ℝ}, |x + y| ≤ |x| + |y|",
+  "docstring": "The absolute value is multiplicative: `|x * y| = |x| * |y|`.",
+  "expected": "intent-unclear",
+  "axis": "other",
+  "why": "The docstring describes a different, true, independently provable result (`abs_mul`), neither a strengthening nor a weakening of the statement (the triangle inequality). The defect cannot be localized from the pair: either the prose was attached to the wrong statement or the statement fails to carry the recorded intent."
+}

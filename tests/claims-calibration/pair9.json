@@ -1,0 +1,9 @@
+{
+  "name": "sq_le_self_on_unit",
+  "kind": "theorem",
+  "statement": "∀ x ∈ Set.Icc (0:ℝ) 1, x ^ 2 ≤ x",
+  "docstring": "Squaring never increases a real number.",
+  "expected": "prose-overclaims",
+  "axis": "quantifier",
+  "why": "The prose universalizes over all reals what the statement bounds to `[0, 1]`; the universal reading is refutable at `x = 2` (`4 ≤ 2` is false)."
+}

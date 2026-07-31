@@ -176,8 +176,8 @@ theorem invokeFail_at_one (layers : List (ℝ × ℕ)) :
     rw [invokeFail_cons, ih]
     simp [composeFail]
 
-/-- The load-coupled amplification is nonnegative: each per-layer factor
-is. -/
+/-- The load-coupled amplification is nonnegative when `p` and every
+layer's failure level sit in `[0,1]`: each per-layer factor is. -/
 theorem coupledAmp_nonneg (layers : List (ℝ × ℕ)) {p : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1)
     (hℓ : ∀ x ∈ layers, x.1 ∈ Set.Icc (0 : ℝ) 1) :

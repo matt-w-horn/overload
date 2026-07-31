@@ -263,9 +263,11 @@ theorem congestedOnly_scale {lam C c : ℝ} (hc : 0 < c) :
   unfold CongestedOnly
   exact mul_le_mul_iff_right₀ hc
 
-/-- Pin of the three scale invariances at `c = 2`: the healthy-only point
-`(1, 2, 3)`, the band point `(1, 3, 2)`, and the congested-only point
-`(3, 1)` each keep their phase when load and capacity double. -/
+/-- Pin at scale `c = 2`: the healthy-only point `(1, 2, 3)`, the band
+point `(1, 3, 2)`, and the congested-only point `(3, 1)`, with load and
+capacity doubled, sit in their respective phase regions — read off the
+unscaled memberships through `healthyOnly_scale`/`bistableBand_scale`/
+`congestedOnly_scale`. -/
 theorem phase_scale_pin :
     HealthyOnly (2 * 1) 2 (2 * 3) ∧ BistableBand (2 * 1) 3 (2 * 2) ∧
       CongestedOnly (2 * 3) (2 * 1) :=
@@ -313,11 +315,14 @@ theorem phase_matches_of_rho_eq {lam₁ C₁ lam₂ C₂ A : ℝ} (hC₁ : 0 < C
   · rw [congestedOnly_iff_rho hC₁, congestedOnly_iff_rho hC₂, hrho]
 
 /-- Pin of the transfer claim: `(λ, C) = (1, 2)` and `(5, 10)` share
-`ρ₀ = 1/2`, so the band membership of the small system carries to the large
-one at the same amplification `A = 3` — capacity ten times over, same phase. -/
-theorem phase_matches_of_rho_eq_pin : BistableBand 5 3 10 :=
-  (phase_matches_of_rho_eq (lam₁ := 1) (C₁ := 2) (lam₂ := 5) (C₂ := 10) (A := 3)
-    (by norm_num) (by norm_num) (by norm_num)).2.1.mp
-      (by unfold BistableBand; norm_num)
+`ρ₀ = 1/2`, so band membership transfers between them at the same
+amplification `A = 3` — the iff from `phase_matches_of_rho_eq`, with the
+small system's membership supplied, so the large one's follows: capacity
+ten times over, same phase. -/
+theorem phase_matches_of_rho_eq_pin :
+    (BistableBand 1 3 2 ↔ BistableBand 5 3 10) ∧ BistableBand 1 3 2 :=
+  ⟨(phase_matches_of_rho_eq (lam₁ := 1) (C₁ := 2) (lam₂ := 5) (C₂ := 10)
+      (A := 3) (by norm_num) (by norm_num) (by norm_num)).2.1,
+    by unfold BistableBand; norm_num⟩
 
 end Overload

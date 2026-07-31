@@ -146,11 +146,16 @@ theorem stepLoop_burst_crosses {lam C A Λ₀ B w : ℝ} (hlam : 0 < lam)
   rw [stepLoop_F_of_ge hlam.le hA hreach]
   exact hcap
 
-/-- Numeric regression on the jitter inequality: a window of `3` holds a
-cohort of `3` against a basin gap of `1`, the spike landing exactly on the
-separatrix. Sufficiency only: nothing here proves a smaller window fails. -/
-theorem jitter_window_avoids_three : (1 : ℝ) + 3 / 3 ≤ 2 :=
-  jitter_window_avoids (by norm_num) (by norm_num) (by norm_num)
+/-- Numeric regression on the jitter inequality: any positive window of at
+least `3` holds a cohort of `3` on baseline `1` at or below the threshold
+`2` — the instance of `jitter_window_avoids` over a free window — and at
+window `3` the spike lands exactly on the separatrix. Sufficiency only:
+nothing here proves a smaller window fails. -/
+theorem jitter_window_avoids_three :
+    (∀ w : ℝ, 3 / (2 - 1) ≤ w → 0 < w → (1 : ℝ) + 3 / w ≤ 2) ∧
+      (1 : ℝ) + 3 / 3 = 2 :=
+  ⟨fun _w hw hw0 => jitter_window_avoids (by norm_num) hw hw0,
+    by norm_num⟩
 
 /-- Numeric regression on the safe side: `stepLoop 1 2 3` has the healthy
 fixed point `1`; a burst of `1` over a window of `4` on baseline `1/2`

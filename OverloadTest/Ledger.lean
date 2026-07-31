@@ -44,7 +44,6 @@ def terminalLedger : List (Lean.Name × String) :=
     (`Overload.coupledAmp_nil, "base-case eval pin of the load-coupled recursion; rfl at the definition, so a consuming pin restates it"),
     (`Overload.docBlameThmEnabled, "enabled registration of Batteries' docBlameThm; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
     (`Overload.explicitVarsOfIffEnabled, "enabled registration of Batteries' explicitVarsOfIff; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
-    (`Overload.fluid_decay_witness, "satisfiability witness for fluid_decay_of_deriv_le's eight-hypothesis bundle, with the bound attained at F = 0; already a witness, nothing left to pin"),
     (`Overload.invokeFail_nil, "base-case eval pin of the load-coupled recursion; rfl at the definition, so a consuming pin restates it"),
     (`Overload.signature_gap_witnessed, "terminal deliverable; billed in README; quantifies over the certificate predicate, so a pin supplies a predicate rather than numbers"),
     (`Overload.signature_not_decide_congestedEq_three, "numeric leg of the incompleteness theorem, congestion form; still quantifies over the certificate predicate, so a pin supplies a predicate rather than numbers"),

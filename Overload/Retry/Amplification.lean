@@ -117,8 +117,9 @@ theorem attemptWeight_of_cap_lt {p : ℝ} {n j : ℕ} (h : n < j + 1) :
   unfold attemptWeight
   rw [if_neg (by omega), if_neg (by omega)]
 
-/-- Pin of the off-support branch: attempt `5` carries no mass under a cap of
-`2`, at a failure probability that is otherwise unremarkable. -/
+/-- Pin of the off-support branch: attempt `6` (index `5`) carries no mass
+under a cap of `2`, at a failure probability that is otherwise
+unremarkable. -/
 theorem attemptWeight_of_cap_lt_pin : attemptWeight (1 / 2 : ℝ) 2 5 = 0 :=
   attemptWeight_of_cap_lt (by norm_num)
 

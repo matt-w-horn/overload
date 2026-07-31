@@ -617,12 +617,14 @@ theorem fluid_drain_clears {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ} (hδ : 0 < �
   have h3 := (div_le_iff₀ hδ).mp h2
   linarith
 
-/-- Numeric pin of the recovery integral at `12/3 = 4`: the trajectory
-`12 − 3t`, whose drift is exactly `−3`, is at zero by second `4`. The
-continuous replacement for the discrete `Q k = 12 − 3k` regression that
-went with the old drain bound. -/
+/-- Numeric pin of the drain bound at `12/3 = 4`: the trajectory `12 − 3t`
+is at or below zero by second `4` — the instance of `fluid_drain_clears`
+at drain rate `3` — and exactly at zero there. The continuous replacement
+for the discrete `Q k = 12 − 3k` regression that went with the old drain
+bound. -/
 theorem fluid_drain_twelve_clears_at_four :
-    (fun t : ℝ => 12 - 3 * t) 4 ≤ 0 := by
+    (fun t : ℝ => 12 - 3 * t) 4 ≤ 0 ∧ (fun t : ℝ => 12 - 3 * t) 4 = 0 := by
+  refine ⟨?_, by norm_num⟩
   refine fluid_drain_clears (δ := 3) (t₀ := 0) (t₁ := 10) (v := fun _ => -3)
     (x := fun t : ℝ => 12 - 3 * t)
     (by norm_num) (fun t _ => ?_) (fun _ _ => le_rfl) 4 (by norm_num)
@@ -858,46 +860,59 @@ theorem fluid_recovery_within {F : ℝ → ℝ} {L Λ₀ t₀ t₁ ε : ℝ} {x 
       _ = ε := by field_simp
 
 /-- Numeric pin of the spike-recovery time: a unit excursion above the
-equilibrium, held at gain `0`, is within `1/2` after `log 2` seconds, and
-second `1` is past that. The trajectory `e^{-s}` under the operator `F ≡ 0`
-is the pair `fluid_decay_witness` uses; here the bound is slack rather than
-attained, so the pin exercises the log inversion. -/
-theorem fluid_recovery_within_half : Real.exp (-1 : ℝ) - 0 ≤ 1 / 2 := by
-  refine fluid_recovery_within (F := fun _ => (0 : ℝ)) (L := 0) (Λ₀ := 0)
-    (t₀ := 0) (t₁ := 1) (ε := 1 / 2) (x := fun s => Real.exp (-s))
-    (by norm_num) (by norm_num) (fun t _ => by norm_num)
-    (fun t _ => ?_) 1 (by norm_num) ?_
-  · have h := ((hasDerivAt_id t).neg).exp
+equilibrium, held at gain `0` on the window `[0, 1]`, is within `1/2`
+from any time past the recovery threshold `log 2` — the instance of
+`fluid_recovery_within` over a free time — and second `1` is past that
+threshold (`log 2 ≤ 1`). The trajectory `e^{-s}` under the operator
+`F ≡ 0` is the pair `fluid_decay_witness` uses. -/
+theorem fluid_recovery_within_half :
+    (∀ t ∈ Set.Icc (0 : ℝ) 1,
+      (0 : ℝ) + Real.log ((Real.exp (-(0 : ℝ)) - 0) / (1 / 2)) / (1 - 0) ≤ t →
+        Real.exp (-t) - 0 ≤ 1 / 2) ∧ Real.log 2 ≤ 1 := by
+  constructor
+  · refine fluid_recovery_within (F := fun _ => (0 : ℝ)) (L := 0) (Λ₀ := 0)
+      (t₀ := 0) (t₁ := 1) (ε := 1 / 2) (x := fun s => Real.exp (-s))
+      (by norm_num) (by norm_num) (fun t _ => by norm_num) (fun t _ => ?_)
+    have h := ((hasDerivAt_id t).neg).exp
     change HasDerivAt (fun s : ℝ => Real.exp (-s)) (0 - Real.exp (-t)) t
     have hval : (0 : ℝ) - Real.exp (-t) = Real.exp (-t) * (-1) := by ring
     rw [hval]
     exact h
-  · have hlog : Real.log 2 ≤ 1 := by
-      have := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)
-      linarith
-    norm_num
+  · have := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)
     linarith
 
 /-- Witness that the decay hypotheses are satisfiable, with the bound
-tight: `x s = e^{-s}` is a genuine motion solving `x' = F(x) - x` for the
-constant operator `F ≡ 0`, whose fixed point is `Λ₀ = 0` with gain `L = 0`;
-it stays in `[0, 1]` for `t ∈ [0, 1]`, and the bound of
-`fluid_decay_of_deriv_le` specializes to `e^{-t} ≤ e^{-t}` — attained, not
-merely respected. -/
+tight: the constant operator `F ≡ 0` fixes `Λ₀ = 0` with derivative bound
+`L = 0` on `(0, 1)`; `x s = e^{-s}` solves `x' = F(x) - x` on `[0, 1]`
+and stays in `[0, 1]`; and the bound of `fluid_decay_of_deriv_le`
+follows, specializing to `e^{-t} ≤ e^{-t}` — attained, not merely
+respected. -/
 theorem fluid_decay_witness :
-    ∀ t ∈ Set.Icc (0 : ℝ) 1,
-      Real.exp (-t) - 0 ≤
-        (Real.exp (-0) - 0) * Real.exp (-((1 - 0) * (t - 0))) := by
-  refine fluid_decay_of_deriv_le (F := fun _ => (0 : ℝ)) (a := 0) (b := 1)
-    ⟨le_rfl, zero_le_one⟩ rfl continuousOn_const
-    ((differentiable_const (0 : ℝ)).differentiableOn) (fun z _ => by simp)
-    (fun t _ => ?_) (fun t ht => ?_) (fun t _ => (Real.exp_pos (-t)).le)
-  · have h := ((hasDerivAt_id t).neg).exp
+    Function.IsFixedPt (fun _ : ℝ => (0 : ℝ)) 0 ∧
+      (∀ z ∈ Set.Ioo (0 : ℝ) 1, deriv (fun _ : ℝ => (0 : ℝ)) z ≤ 0) ∧
+      (∀ t ∈ Set.Icc (0 : ℝ) 1,
+        HasDerivAt (fun s : ℝ => Real.exp (-s))
+          ((fun _ : ℝ => (0 : ℝ)) (Real.exp (-t)) - Real.exp (-t)) t) ∧
+      (∀ t ∈ Set.Icc (0 : ℝ) 1, Real.exp (-t) ∈ Set.Icc (0 : ℝ) 1) ∧
+      ∀ t ∈ Set.Icc (0 : ℝ) 1,
+        Real.exp (-t) - 0 ≤
+          (Real.exp (-0) - 0) * Real.exp (-((1 - 0) * (t - 0))) := by
+  have hderiv : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+      HasDerivAt (fun s : ℝ => Real.exp (-s))
+        ((fun _ : ℝ => (0 : ℝ)) (Real.exp (-t)) - Real.exp (-t)) t := by
+    intro t _
+    have h := ((hasDerivAt_id t).neg).exp
     have hval : (fun _ => (0 : ℝ)) (Real.exp (-t)) - Real.exp (-t)
         = Real.exp (-t) * (-1) := by norm_num
     rw [hval]
     exact h
-  · exact ⟨(Real.exp_pos (-t)).le,
+  have hrange : ∀ t ∈ Set.Icc (0 : ℝ) 1, Real.exp (-t) ∈ Set.Icc (0 : ℝ) 1 :=
+    fun t ht => ⟨(Real.exp_pos (-t)).le,
       Real.exp_le_one_iff.mpr (by linarith [ht.1])⟩
+  refine ⟨rfl, fun z _ => by simp, hderiv, hrange, ?_⟩
+  exact fluid_decay_of_deriv_le (F := fun _ => (0 : ℝ)) (a := 0) (b := 1)
+    ⟨le_rfl, zero_le_one⟩ rfl continuousOn_const
+    ((differentiable_const (0 : ℝ)).differentiableOn) (fun z _ => by simp)
+    hderiv hrange (fun t _ => (Real.exp_pos (-t)).le)
 
 end Overload

@@ -1545,7 +1545,12 @@
         ∀ t ∈ Set.Icc t₀ t₁, x t - Λ₀ ≤ (x t₀ - Λ₀) * Real.exp (-((1 - L) * (t - t₀)))
 
 #### Overload.fluid_decay_witness : theorem
-  ∀ t ∈ Set.Icc 0 1, Real.exp (-t) - 0 ≤ (Real.exp (-0) - 0) * Real.exp (-((1 - 0) * (t - 0)))
+  Function.IsFixedPt (fun x => 0) 0 ∧
+    (∀ z ∈ Set.Ioo 0 1, deriv (fun x => 0) z ≤ 0) ∧
+      (∀ t ∈ Set.Icc 0 1,
+          HasDerivAt (fun s => Real.exp (-s)) ((fun x => 0) (Real.exp (-t)) - Real.exp (-t)) t) ∧
+        (∀ t ∈ Set.Icc 0 1, Real.exp (-t) ∈ Set.Icc 0 1) ∧
+          ∀ t ∈ Set.Icc 0 1, Real.exp (-t) - 0 ≤ (Real.exp (-0) - 0) * Real.exp (-((1 - 0) * (t - 0)))
 
 #### Overload.fluid_drain_clears : theorem
   ∀ {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ},
@@ -1559,7 +1564,7 @@
       (∀ t ∈ Set.Icc t₀ t₁, v t ≤ -δ) → ∀ t ∈ Set.Icc t₀ t₁, x t ≤ x t₀ - δ * (t - t₀)
 
 #### Overload.fluid_drain_twelve_clears_at_four : theorem
-  (fun t => 12 - 3 * t) 4 ≤ 0
+  (fun t => 12 - 3 * t) 4 ≤ 0 ∧ (fun t => 12 - 3 * t) 4 = 0
 
 #### Overload.fluid_recovery_within : theorem
   ∀ {F : ℝ → ℝ} {L Λ₀ t₀ t₁ ε : ℝ} {x : ℝ → ℝ},
@@ -1570,7 +1575,9 @@
             ∀ t ∈ Set.Icc t₀ t₁, t₀ + Real.log ((x t₀ - Λ₀) / ε) / (1 - L) ≤ t → x t - Λ₀ ≤ ε
 
 #### Overload.fluid_recovery_within_half : theorem
-  Real.exp (-1) - 0 ≤ 1 / 2
+  (∀ t ∈ Set.Icc 0 1,
+      0 + Real.log ((Real.exp (-0) - 0) / (1 / 2)) / (1 - 0) ≤ t → Real.exp (-t) - 0 ≤ 1 / 2) ∧
+    Real.log 2 ≤ 1
 
 #### Overload.gain_gt_one_repels : theorem
   ∀ {F : ℝ → ℝ} {a b Λ₀ : ℝ},
@@ -1781,7 +1788,7 @@
   ∀ {B Λ₀ z w : ℝ}, Λ₀ < z → B / (z - Λ₀) ≤ w → 0 < w → Λ₀ + B / w ≤ z
 
 #### Overload.jitter_window_avoids_three : theorem
-  1 + 3 / 3 ≤ 2
+  (∀ (w : ℝ), 3 / (2 - 1) ≤ w → 0 < w → 1 + 3 / w ≤ 2) ∧ 1 + 3 / 3 = 2
 
 #### Overload.kernelLoop : def
   (lam : ℝ) →
@@ -1974,9 +1981,10 @@
 
 #### Overload.miscoded_pair_blind_then_refined : theorem
   (fun x => 0) 0 = (fun x => 0) 1 ∧
-    Overload.refinedLabel (fun x => 0) (fun s => s) 0 ≠
-        Overload.refinedLabel (fun x => 0) (fun s => s) 1 ∧
-      Overload.FactorsThrough (fun s => s) (Overload.refinedLabel (fun x => 0) fun s => s)
+    (fun x => 0) 0 = (fun x => 0) 1 ∧
+      Overload.refinedLabel (fun x => 0) (fun s => s) 0 ≠
+          Overload.refinedLabel (fun x => 0) (fun s => s) 1 ∧
+        Overload.FactorsThrough (fun s => s) (Overload.refinedLabel (fun x => 0) fun s => s)
 
 #### Overload.miscoding_opens_amplification : theorem
   ∀ {lam : ℝ} {g : ℝ → ℝ} {m : ℕ} {e : ℝ} {hlam : 0 ≤ lam} {hm : 1 ≤ m}
@@ -2231,7 +2239,7 @@
               (Overload.CongestedOnly lam₁ C₁ ↔ Overload.CongestedOnly lam₂ C₂)
 
 #### Overload.phase_matches_of_rho_eq_pin : theorem
-  Overload.BistableBand 5 3 10
+  (Overload.BistableBand 1 3 2 ↔ Overload.BistableBand 5 3 10) ∧ Overload.BistableBand 1 3 2
 
 #### Overload.phase_regions_disjoint_pin : theorem
   ¬Overload.BistableBand 1 2 3 ∧ ¬Overload.CongestedOnly 1 3 ∧ ¬Overload.CongestedOnly 1 2
@@ -2257,7 +2265,7 @@
   ∀ {lam : ℝ}, lam * 2 * 1 ≤ 8 → lam ≤ 8 / (2 * 1)
 
 #### Overload.pipeline_replay_envelope_at_four : theorem
-  4 ≤ 8 / (2 * 1)
+  4 ≤ 8 / (2 * 1) ∧ 4 = 8 / (2 * 1)
 
 #### Overload.pipeline_squash_caps_ipc : theorem
   ∀ {G : ℝ},
@@ -2278,7 +2286,7 @@
     inflight = rate * sojourn → inflight ≤ P → 0 < sojourn → rate ≤ P / sojourn
 
 #### Overload.pool_rate_bound_pin : theorem
-  4 ≤ 1 / (1 / 4)
+  (∀ (rate : ℝ), 1 = rate * (1 / 4) → rate ≤ 1 / (1 / 4)) ∧ 4 = 1 / (1 / 4)
 
 #### Overload.postfixedPts : def
   (ℝ → ℝ) → ℝ → ℝ → Set ℝ

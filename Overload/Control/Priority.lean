@@ -121,10 +121,10 @@ def sharedGoodput (lam A : Fin k → ℝ) (ρ : ℝ) (j : Fin k) : ℝ :=
 /-- **Amplification is effective priority.** Under undiscriminating
 contention, the goodput ratio between two classes is their *attempt* ratio —
 intended priority never enters. A low-priority class that amplifies hard
-outranks a high-priority class that does not. (The identity is unconditional:
-when class `i` offers nothing, both sides are `0` by the division-by-zero
-convention, and the ratio reading is vacuous — apply it only to classes with
-positive offered attempts.) -/
+outranks a high-priority class that does not. (The identity needs only
+`ρ ≠ 0`; when class `i` offers nothing, both sides are `0` by the
+division-by-zero convention, and the ratio reading is vacuous — apply it
+only to classes with positive offered attempts.) -/
 theorem effective_priority (lam A : Fin k → ℝ) {ρ : ℝ} (hρ : ρ ≠ 0)
     {i j : Fin k} :
     sharedGoodput lam A ρ j / sharedGoodput lam A ρ i
@@ -151,12 +151,12 @@ theorem inversion_threshold {lam Ahi lamlo ε Alo : ℝ} (hlamhi : 0 < lam)
   rw [div_lt_iff₀ hden]
   nlinarith [mul_pos hε hN]
 
-/-- **The priority-inversion construction.** Fix a high class with
-positive offered load and any target share `ε > 0`. Some positive
-low-class amplification drives the high class's fraction of total offered
-attempts below `ε` (`inversion_threshold` prices the threshold).
-Amplification alone — with no change to intended priority — starves the
-high class of attempt share. -/
+/-- **The priority-inversion construction.** Fix positive offered loads
+for both classes and any target share `ε > 0`. Some positive low-class
+amplification drives the high class's fraction of total offered attempts
+below `ε` (`inversion_threshold` prices the threshold). Amplification
+alone — with no change to intended priority — starves the high class of
+attempt share. -/
 theorem inversion {lam Ahi : ℝ} (hlamhi : 0 < lam) (hAhi : 0 < Ahi)
     {lamlo : ℝ} (hlamlo : 0 < lamlo) {ε : ℝ} (hε : 0 < ε) :
     ∃ Alo, 0 < Alo ∧
@@ -232,9 +232,9 @@ it. -/
 theorem alloc_le_residual {demand : ℕ → ℝ} {C : ℝ} (j : ℕ) :
     alloc demand C j ≤ residual demand C j := min_le_right _ _
 
-/-- Pin of the residual bound at overload: the top class takes `3` of capacity
-`4`, so class `1` is held to the leftover `1` however large its own demand —
-here `9`, nine times what the residual can serve. -/
+/-- Pin of the residual bound at overload: with demands `(3, 9)` against
+capacity `4`, class `1`'s allocation is held to the leftover `1`
+(`alloc_le_residual` carries the demand-independent general claim). -/
 theorem alloc_le_residual_pin :
     alloc (fun j => if j = 0 then (3 : ℝ) else 9) 4 1 ≤ 1 :=
   (alloc_le_residual 1).trans (by unfold residual; norm_num)

@@ -85,8 +85,9 @@ def totalTime (T B : ℕ → ℝ) (k : ℕ) : ℝ :=
 def fitsIn (T B : ℕ → ℝ) (D : ℝ) (k : ℕ) : Prop := totalTime T B k ≤ D
 
 open Classical in
-/-- The deadline-capped attempt count: the largest `k ≤ n` whose attempts fit
-in `D`. -/
+/-- The deadline-capped attempt count: the largest `k ≤ n` whose attempts
+fit in `D` (junk `0` when none fits — `Nat.findGreatest`'s fallback, per
+the totality convention; the theorems supply the fitting hypothesis). -/
 noncomputable def neff (T B : ℕ → ℝ) (D : ℝ) (n : ℕ) : ℕ :=
   Nat.findGreatest (fitsIn T B D) n
 

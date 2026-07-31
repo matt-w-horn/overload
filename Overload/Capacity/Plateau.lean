@@ -135,9 +135,10 @@ theorem plateau (hcap : ∀ j ∈ s, 1 ≤ cap j) (hlam : ∀ j ∈ s, 0 ≤ lam
     have h1 : 0 ≤ p ^ cap j := pow_nonneg (le_of_lt hp0) _
     linarith [mul_nonneg (hlam j hj) h1]
 
-/-- The congested equilibrium exists whenever offered load exceeds capacity:
-a loss level in `(0,1)` balancing the loop, by the intermediate value theorem
-on the (continuous, polynomial) goodput curve. -/
+/-- A congested equilibrium exists when offered load exceeds positive
+capacity and every cap in `s` is at least `1`: a loss level in `(0,1)`
+balancing the loop, by the intermediate value theorem on the (continuous,
+polynomial) goodput curve. -/
 theorem congested_exists (hcap : ∀ j ∈ s, 1 ≤ cap j) (hC : 0 < C)
     (hover : C < ∑ j ∈ s, lam j) :
     ∃ p, 0 < p ∧ p < 1 ∧ (1 - p) * attemptRate s lam cap p = C := by

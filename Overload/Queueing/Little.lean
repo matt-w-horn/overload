@@ -293,7 +293,8 @@ theorem d_le_of_lt_departedPrefix {t : ℝ} {k : ℕ}
   have hmem : k ∈ {n | t < P.d n} := not_le.mp h
   exact absurd (Nat.sInf_le hmem) (not_le.mpr hk)
 
-/-- The customer at the departed prefix has not departed. -/
+/-- When some departure exceeds `t`, the customer at the departed prefix
+has not departed by `t`. -/
 theorem lt_d_departedPrefix {t : ℝ} (hne : {n | t < P.d n}.Nonempty) :
     t < P.d (P.departedPrefix t) := Nat.sInf_mem hne
 

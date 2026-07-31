@@ -112,8 +112,9 @@ def affine (J : Matrix (Fin k) (Fin k) ℝ) (c : Fin k → ℝ)
     (x : Fin k → ℝ) : Fin k → ℝ :=
   fun i => J.mulVec x i + c i
 
-/-- Weighted-bound propagation: if deviations are within `M·w` and `J·w ≤ ρ·w`,
-one application of `J` shrinks the envelope to `ρ·M·w`. -/
+/-- Weighted-bound propagation: for entrywise-nonnegative `J` and
+nonnegative envelope scale `M`, if deviations are within `M·w` and
+`J·w ≤ ρ·w`, one application of `J` keeps deviations within `ρ·M·w`. -/
 theorem abs_mulVec_le (hJ : ∀ i j, 0 ≤ J i j) {w : Fin k → ℝ} {ρ M : ℝ}
     (hM : 0 ≤ M) (hρw : ∀ i, J.mulVec w i ≤ ρ * w i) {x : Fin k → ℝ}
     (hx : ∀ i, |x i| ≤ M * w i) (i : Fin k) :

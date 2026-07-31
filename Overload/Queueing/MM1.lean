@@ -531,9 +531,10 @@ theorem mm1Kernel_monoOn {C τ : ℝ} (hτ : 0 ≤ τ) :
   · exact absurd (lt_of_le_of_lt hxy hyC) hxC
   · exact le_rfl
 
-/-- Below capacity the exponential kernel is genuinely below one — the
-honest contrast with the saturated step cartoon, which jumps straight to
-certain failure. -/
+/-- Below capacity, at positive timeout, the exponential kernel is
+genuinely below one — the honest contrast with the saturated step
+cartoon, which jumps straight to certain failure. (`0 < τ` is
+load-bearing: at `τ = 0` the kernel equals one.) -/
 theorem mm1Kernel_lt_one {C τ Λ : ℝ} (hΛ : Λ < C) (hτ : 0 < τ) :
     mm1Kernel C τ Λ < 1 := by
   rw [mm1Kernel_of_lt hΛ, Real.exp_lt_one_iff]
@@ -632,9 +633,9 @@ theorem mm1Loop_two_fixedPts :
 
 open Filter in
 /-- **The cartoon justified**: below capacity the exponential kernel
-vanishes pointwise as the timeout sharpens (`τ → ∞`) — exactly
-`stepKernel`'s value there. The step kernel is the sharp-timeout limit of
-the queueing-derived one. -/
+vanishes pointwise as `τ → ∞` — exactly `stepKernel`'s value there. This
+is the `Λ < C` leg of the sharp-timeout limit; the saturated leg is
+`mm1Kernel_of_ge`, where the two kernels agree at `1` outright. -/
 theorem mm1Kernel_tendsto_zero {C Λ : ℝ} (hΛ : Λ < C) :
     Tendsto (fun τ => mm1Kernel C τ Λ) atTop (nhds 0) := by
   have hpos : 0 < C - Λ := by linarith

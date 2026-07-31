@@ -234,8 +234,9 @@ The star's linearized coupling matrix is `Jᵢⱼ = aᵢ·bⱼ` with
 `Coupling.lean` weight certificate has a *scalar* criterion.
 -/
 
-/-- Forward direction: if the pairing sum is below one, the explicit
-weight `w = a + ε` certifies `J = a·bᵀ`. -/
+/-- Forward direction: for nonnegative `a` and `b`, if the pairing sum is
+below one, the weight `w = a + ε` at a sufficiently small `ε > 0`
+certifies `J = a·bᵀ`. -/
 theorem rankOne_certificate_of_pairing_lt {k : ℕ} {a b : Fin k → ℝ}
     (ha : ∀ i, 0 ≤ a i) (hb : ∀ j, 0 ≤ b j)
     (hs : ∑ j, b j * a j < 1) :

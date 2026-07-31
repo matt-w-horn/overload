@@ -107,9 +107,11 @@ cousin on the response side, parking `h ≡ 1` instead.) -/
 def constLoop (p₀ : ℝ) (hp₀ : p₀ ∈ Set.Icc (0 : ℝ) 1) : BoundedLoop :=
   L.withKernel (fun _ => p₀) (fun _ _ => hp₀)
 
-/-- **The tightness witness.** Any response level the profile reaches at or
-above the threshold is a congested equilibrium of the sibling loop whose
-kernel parks there: `F ≡ λ·h(p₀)` is its own fixed point. -/
+/-- **The tightness witness.** Any nonnegative threshold at or below the
+parked response `λ·h(p₀)` is a congested equilibrium threshold of the
+sibling loop whose kernel parks there: `F ≡ λ·h(p₀)` is its own fixed
+point. (On a bare `BoundedLoop` the response may be negative, so `0 ≤ Θ`
+is load-bearing.) -/
 theorem constLoop_congestedEq {p₀ Θ : ℝ} (hp₀ : p₀ ∈ Set.Icc (0 : ℝ) 1)
     (hΘ0 : 0 ≤ Θ) (hΘ : Θ ≤ L.lam * L.h p₀) :
     (L.constLoop p₀ hp₀).CongestedEq Θ :=

@@ -108,8 +108,10 @@ theorem pipeline_replay_envelope {lam : ℝ} (hfeas : lam * 2 * 1 ≤ 8) :
   hop_amplification_bound (K := 1) (A := 2) (r := fun _ => 1)
     (C := fun _ => 8) 0 (by norm_num) (by norm_num) hfeas
 
-/-- Numeric regression: the boundary rate `4` saturates the envelope. -/
-theorem pipeline_replay_envelope_at_four : (4 : ℝ) ≤ 8 / (2 * 1) :=
-  pipeline_replay_envelope (by norm_num)
+/-- Numeric regression: the boundary rate `4` meets the envelope — the
+instance of `pipeline_replay_envelope` — and saturates it exactly. -/
+theorem pipeline_replay_envelope_at_four :
+    (4 : ℝ) ≤ 8 / (2 * 1) ∧ (4 : ℝ) = 8 / (2 * 1) :=
+  ⟨pipeline_replay_envelope (by norm_num), by norm_num⟩
 
 end Overload

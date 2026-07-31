@@ -551,11 +551,12 @@ theorem stepLoop_two_fixedPts {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
     (hband_lo.trans_eq (stepLoop_F_of_ge (le_of_lt hlam) hA le_rfl).symm)
     hband_hi
 
-/-- **Any clamp narrows the band**: under `h ≤ K`, a congested equilibrium at
-threshold `C` forces `λ ≥ C/K`. The band's lower edge is `C/K`; at `K = 1+β`
-with small `β` the band is a sliver. Stated on the boundedness core: the
-proof is the clamp theorem contraposed, so batching kernels and backpressure
-clients get the band's lower edge without being monotone. -/
+/-- **Any clamp narrows the band**: under a positive clamp `h ≤ K`, a
+congested equilibrium at threshold `C` forces `λ ≥ C/K` — a lower bound
+on the onset load, sharp over the clamp-respecting kernel family rather
+than the edge of any single loop's band. Stated on the boundedness core:
+the proof is the clamp theorem contraposed, so batching kernels and
+backpressure clients get the bound without being monotone. -/
 theorem clamp_band_lower (L : BoundedLoop) {K C : ℝ} (hK : 0 < K)
     (hclamp : ∀ p ∈ Set.Icc (0 : ℝ) 1, L.h p ≤ K)
     (hcong : L.CongestedEq C) : C / K ≤ L.lam := by

@@ -108,8 +108,8 @@ theorem lfpIcc_le_of_prefixed (hx : x ∈ Set.Icc a b) (hFx : F x ≤ x) :
     lfpIcc F a b ≤ x :=
   csInf_le bddBelow_prefixedPts ⟨hx, hFx⟩
 
-/-- The greatest fixed point sits above every postfixed (in particular, every
-fixed) point. No monotonicity needed. -/
+/-- The supremum of the postfixed points sits above every postfixed (in
+particular, every fixed) point. No monotonicity needed. -/
 theorem le_gfpIcc_of_postfixed (hx : x ∈ Set.Icc a b) (hxF : x ≤ F x) :
     x ≤ gfpIcc F a b :=
   le_csSup bddAbove_postfixedPts ⟨hx, hxF⟩

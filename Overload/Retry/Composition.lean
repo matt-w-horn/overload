@@ -112,8 +112,9 @@ layer `i` has i.i.d. per-attempt failure probability `p i` and cap `n i`. -/
 def stackAmp {ι : Type*} (s : Finset ι) (p : ι → ℝ) (n : ι → ℕ) : ℝ :=
   ∏ i ∈ s, expAttempts (p i) (n i)
 
-/-- Layered amplification is at least 1: retries never reduce the attempt
-count below one per request. -/
+/-- Layered amplification is at least 1: with nonnegative failure
+probabilities and at least one attempt allowed per layer, retries never
+reduce the attempt count below one per request. -/
 theorem one_le_stackAmp {ι : Type*} (s : Finset ι) {p : ι → ℝ} {n : ι → ℕ}
     (hp : ∀ i ∈ s, 0 ≤ p i) (hn : ∀ i ∈ s, 1 ≤ n i) : 1 ≤ stackAmp s p n := by
   have h : ∏ _i ∈ s, (1 : ℝ) ≤ stackAmp s p n :=

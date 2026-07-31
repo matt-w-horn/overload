@@ -90,7 +90,8 @@ The overload story, mapped mechanism by mechanism:
   kernel.
 * **Quota is admission denominated in requests**: quota bounds *submissions*,
   but the scheduler serves *placement attempts*. Without a reschedule clamp,
-  a fixed quota bounds nothing (`borg_quota_needs_clamp`); with a per-task
+  a fixed quota bounds nothing (`borg_quota_needs_clamp`, instantiating
+  `admission_needs_clamp`); with a per-task
   replacement clamp it bounds attempt load exactly (`borg_quota_bound`).
 
 Numbers are stylized illustrations of the public design (except the ~25 s
@@ -276,10 +277,11 @@ theorem borg_cascade_certified (p₁ p₂ : ℝ) (h₁ : p₁ ∈ Set.Icc (0 : �
 ## Quota as admission denomination
 -/
 
-/-- **Quota alone bounds nothing.** A tenant admitted 10 tasks/s of quota,
-with unclamped rescheduling, can exceed any target placement load — here,
-1000 placements/s from 10 tasks/s. Admission denominated in submissions is
-blind to the amplification behind it. -/
+/-- **Quota is not a placement bound.** A tenant admitted 10 tasks/s of
+quota, with unclamped rescheduling, exceeds 1000 placements/s at some
+amplification — the numeric instance of `admission_needs_clamp`, which
+gives any target load. Admission denominated in submissions is blind to
+the amplification behind it. -/
 theorem borg_quota_needs_clamp : ∃ A, 0 < A ∧ (1000 : ℝ) < 10 * A :=
   admission_needs_clamp (by norm_num) 1000
 

@@ -132,7 +132,8 @@ variable (L : BoundedLoop)
 /-- The demand operator `F(Λ) = λ·h(g(Λ))`. -/
 def F (Λ : ℝ) : ℝ := L.lam * L.h (L.g Λ)
 
-/-- The demand envelope: `F` never exceeds `λ·Amax`. Boundedness alone. -/
+/-- The demand envelope: on nonnegative load, `F` stays at or below
+`λ·Amax`. Boundedness alone. -/
 theorem F_le {x : ℝ} (hx : 0 ≤ x) : L.F x ≤ L.lam * L.Amax :=
   mul_le_mul_of_nonneg_left (L.h_le_Amax _ (L.g_mem x hx)) L.lam_nonneg
 
@@ -303,9 +304,10 @@ theorem noSustaining_no_congestedEq (hns : L.NoSustaining) {C : ℝ}
   linarith
 
 variable {L} in
-/-- Retrying a load-*independent* failure channel ("blips") buys masking
-without bistability: the equilibrium is unique. Only channels that are both
-retry-eligible and load-coupled destabilize. -/
+/-- Retrying a load-*independent* failure channel ("blips") leaves the
+equilibrium unique: with `g` constant at `p₀`, the fixed points of `F` on
+nonnegative load are exactly `λ·h(p₀)`. Contrapositive: two equilibria
+need a load-coupled channel. -/
 theorem blip_unique_eq {p₀ : ℝ} (hg : ∀ x, 0 ≤ x → L.g x = p₀) {Λ : ℝ}
     (hΛ : 0 ≤ Λ) : L.F Λ = Λ ↔ Λ = L.lam * L.h p₀ := by
   unfold BoundedLoop.F

@@ -73,9 +73,9 @@ and the bridge between the two readings is a modeling step, not a lemma.
 
 namespace Overload
 
-/-- **Jitter is trigger-avoidance.** A cohort `B` spread over any window
-`w ≥ B/(z − Λ₀)` keeps the spiked demand `Λ₀ + B/w` at or below the
-threshold `z` — the minimum jitter window is computable from the basin gap
+/-- **Jitter is trigger-avoidance.** A cohort `B` spread over any positive
+window `w ≥ B/(z − Λ₀)` keeps the spiked demand `Λ₀ + B/w` at or below
+the threshold `z` — a sufficient window is computable from the basin gap
 `z − Λ₀`. -/
 theorem jitter_window_avoids {B Λ₀ z w : ℝ} (hgap : Λ₀ < z)
     (hw : B / (z - Λ₀) ≤ w) (hw0 : 0 < w) : Λ₀ + B / w ≤ z := by

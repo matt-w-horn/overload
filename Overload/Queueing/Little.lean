@@ -264,9 +264,12 @@ when no arrival ever reaches `t`, per the totality convention; the
 theorems supply nonemptiness). -/
 noncomputable def arrivals (t : ℝ) : ℕ := sInf {n | t ≤ P.a n}
 
-/-- The longest initial segment fully departed by `t`. With overtaking,
-customers beyond the prefix may also have departed — the prefix is what
-the lower sandwich needs, and it needs no order on departures. -/
+/-- The least index whose departure time exceeds `t`: everything below it
+has departed (junk `0` when every customer departs by `t`, per the
+totality convention; `lt_d_departedPrefix` supplies the nonemptiness that
+makes it maximal). With overtaking, customers beyond the prefix may also
+have departed — the prefix is what the lower sandwich needs, and it needs
+no order on departures. -/
 noncomputable def departedPrefix (t : ℝ) : ℕ := sInf {n | t < P.d n}
 
 /-- Below the arrival count, customers have arrived. -/

@@ -35,8 +35,9 @@ it takes a new registration rather than an attribute on the original. -/
 
 /-- Batteries' `explicitVarsOfIff` linter, re-registered enabled: `lake
 lint` fails on any `↔` statement that binds a variable explicitly when it
-occurs on both sides of the iff. Such a variable cannot be inferred from
-an application of either direction, so it should be implicit. -/
+occurs on both sides of the iff. Such a variable is inferred by
+unification from an application of either direction, so it should be
+implicit. -/
 @[env_linter] def explicitVarsOfIffEnabled : Linter := explicitVarsOfIff
 
 end Overload

@@ -151,13 +151,12 @@ theorem inversion_threshold {lam Ahi lamlo ε Alo : ℝ} (hlamhi : 0 < lam)
   rw [div_lt_iff₀ hden]
   nlinarith [mul_pos hε hN]
 
-/-- **The priority-inversion construction.** Fix a high class `hi` with
-positive offered load and any target share `ε > 0`. A large enough low-class
-amplification drives the high class's fraction of total offered attempts
-below `ε` — its goodput fraction too, since `sharedGoodput` scales every
-class by the same `ρ`.
-Amplification alone — with no change to intended priority — starves the high
-class. One step past the named threshold suffices. -/
+/-- **The priority-inversion construction.** Fix a high class with
+positive offered load and any target share `ε > 0`. Some positive
+low-class amplification drives the high class's fraction of total offered
+attempts below `ε` (`inversion_threshold` prices the threshold).
+Amplification alone — with no change to intended priority — starves the
+high class of attempt share. -/
 theorem inversion {lam Ahi : ℝ} (hlamhi : 0 < lam) (hAhi : 0 < Ahi)
     {lamlo : ℝ} (hlamlo : 0 < lamlo) {ε : ℝ} (hε : 0 < ε) :
     ∃ Alo, 0 < Alo ∧

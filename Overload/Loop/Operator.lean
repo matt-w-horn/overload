@@ -82,21 +82,23 @@ def prefixedPts (F : ℝ → ℝ) (a b : ℝ) : Set ℝ :=
 def postfixedPts (F : ℝ → ℝ) (a b : ℝ) : Set ℝ :=
   {x | x ∈ Set.Icc a b ∧ x ≤ F x}
 
-/-- The least fixed point of `F` on `[a, b]` (the healthy equilibrium),
-realized as the infimum of the prefixed points. -/
+/-- The infimum of the prefixed points of `F` on `[a, b]` — the healthy
+equilibrium once the side conditions hold: `isFixedPt_lfpIcc` needs
+`a ≤ b`, monotonicity, and `MapsTo` to make it a least fixed point. -/
 noncomputable def lfpIcc (F : ℝ → ℝ) (a b : ℝ) : ℝ := sInf (prefixedPts F a b)
 
-/-- The greatest fixed point of `F` on `[a, b]` (the congested equilibrium),
-realized as the supremum of the postfixed points. -/
+/-- The supremum of the postfixed points of `F` on `[a, b]` — the congested
+equilibrium once the side conditions hold: `isFixedPt_gfpIcc` needs
+`a ≤ b`, monotonicity, and `MapsTo` to make it a greatest fixed point. -/
 noncomputable def gfpIcc (F : ℝ → ℝ) (a b : ℝ) : ℝ := sSup (postfixedPts F a b)
 
 variable {F : ℝ → ℝ} {a b x y : ℝ}
 
-/-- The prefixed points are bounded below by `a`. -/
+/-- The prefixed points are bounded below. -/
 theorem bddBelow_prefixedPts : BddBelow (prefixedPts F a b) :=
   ⟨a, fun _x hx => hx.1.1⟩
 
-/-- The postfixed points are bounded above by `b`. -/
+/-- The postfixed points are bounded above. -/
 theorem bddAbove_postfixedPts : BddAbove (postfixedPts F a b) :=
   ⟨b, fun _x hx => hx.1.2⟩
 

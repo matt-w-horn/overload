@@ -107,13 +107,6 @@ def Certificate (J : Matrix (Fin k) (Fin k) ℝ) : Prop :=
   (∀ i j, 0 ≤ J i j) ∧
     ∃ w : Fin k → ℝ, (∀ i, 0 < w i) ∧ ∀ i, J.mulVec w i < w i
 
-/-- One row of `J·x` as the sum it is defined to be — `rfl`, and the shape the
-weight arguments below are written in. Mathlib spells the same unfolding
-`Matrix.mulVec_eq_sum`, over a `Finset.sum` of scaled columns rather than
-pointwise; eight sites here want the pointwise form. -/
-theorem mulVec_apply' (J : Matrix (Fin k) (Fin k) ℝ) (x : Fin k → ℝ)
-    (i : Fin k) : J.mulVec x i = ∑ j, J i j * x j := rfl
-
 /-- The linearized balance iteration around an operating point. -/
 def affine (J : Matrix (Fin k) (Fin k) ℝ) (c : Fin k → ℝ)
     (x : Fin k → ℝ) : Fin k → ℝ :=
@@ -125,7 +118,7 @@ theorem abs_mulVec_le (hJ : ∀ i j, 0 ≤ J i j) {w : Fin k → ℝ} {ρ M : �
     (hM : 0 ≤ M) (hρw : ∀ i, J.mulVec w i ≤ ρ * w i) {x : Fin k → ℝ}
     (hx : ∀ i, |x i| ≤ M * w i) (i : Fin k) :
     |J.mulVec x i| ≤ ρ * M * w i := by
-  calc |J.mulVec x i| = |∑ j, J i j * x j| := by rw [mulVec_apply']
+  calc |J.mulVec x i| = |∑ j, J i j * x j| := by rw [Matrix.mulVec_apply_eq_sum]
     _ ≤ ∑ j, |J i j * x j| := Finset.abs_sum_le_sum_abs _ _
     _ = ∑ j, J i j * |x j| := Finset.sum_congr rfl fun j _ => by
         rw [abs_mul, abs_of_nonneg (hJ i j)]
@@ -134,7 +127,7 @@ theorem abs_mulVec_le (hJ : ∀ i j, 0 ≤ J i j) {w : Fin k → ℝ} {ρ M : �
     _ = M * ∑ j, J i j * w j := by
         rw [Finset.mul_sum]
         exact Finset.sum_congr rfl fun j _ => by ring
-    _ = M * J.mulVec w i := by rw [mulVec_apply']
+    _ = M * J.mulVec w i := by rw [Matrix.mulVec_apply_eq_sum]
     _ ≤ M * (ρ * w i) := mul_le_mul_of_nonneg_left (hρw i) hM
     _ = ρ * M * w i := by ring
 
@@ -177,8 +170,8 @@ theorem certificate_decay_pin :
     (c := ![0]) (xstar := ![0]) (x₀ := ![1]) ?_ zero_le_one (by norm_num) ?_ ?_
     ?_ 3 0
   · intro i j; fin_cases i; fin_cases j; norm_num
-  · intro i; fin_cases i; rw [mulVec_apply']; norm_num
-  · funext i; fin_cases i; simp [affine, mulVec_apply']
+  · intro i; fin_cases i; rw [Matrix.mulVec_apply_eq_sum]; norm_num
+  · funext i; fin_cases i; simp [affine, Matrix.mulVec_apply_eq_sum]
   · intro i; fin_cases i; norm_num
 
 /-- **A certificate names a genuine contraction rate.** `Certificate` supplies
@@ -201,7 +194,7 @@ theorem certificate_rate [NeZero k] (hcert : Certificate J) :
   · refine le_trans ?_
       (Finset.le_sup' (fun i => J.mulVec w i / w i) (Finset.mem_univ i₀))
     refine div_nonneg ?_ (hw i₀).le
-    rw [mulVec_apply']
+    rw [Matrix.mulVec_apply_eq_sum]
     exact Finset.sum_nonneg fun j _ => mul_nonneg (hJ i₀ j) (hw j).le
   · exact (Finset.sup'_lt_iff hne).mpr fun i _ =>
       (div_lt_one (hw i)).mpr (hJw i)
@@ -241,7 +234,7 @@ theorem certificate_fixedPoint_unique [NeZero k]
     calc |x i₀ - y i₀| = |J.mulVec (fun j => x j - y j) i₀| := by
           rw [heJ]
       _ ≤ ∑ j, |J i₀ j * (x j - y j)| := by
-          rw [mulVec_apply']
+          rw [Matrix.mulVec_apply_eq_sum]
           exact Finset.abs_sum_le_sum_abs _ _
       _ = ∑ j, J i₀ j * |x j - y j| := Finset.sum_congr rfl fun j _ => by
           rw [abs_mul, abs_of_nonneg (hJ i₀ j)]
@@ -249,7 +242,7 @@ theorem certificate_fixedPoint_unique [NeZero k]
           Finset.sum_le_sum fun j _ =>
             mul_le_mul_of_nonneg_left (hbound j) (hJ i₀ j)
       _ = |x i₀ - y i₀| / w i₀ * J.mulVec w i₀ := by
-          rw [mulVec_apply', Finset.mul_sum]
+          rw [Matrix.mulVec_apply_eq_sum, Finset.mul_sum]
           exact Finset.sum_congr rfl fun j _ => by ring
       _ < |x i₀ - y i₀| / w i₀ * w i₀ :=
           mul_lt_mul_of_pos_left (hJw i₀) hMpos
@@ -342,8 +335,8 @@ theorem two_site_certificate_iff {γ₁ γ₂ ε₁₂ ε₂₁ : ℝ} (hγ₁ :
       · have := (div_lt_iff₀ hpos2).mp htA
         linarith
 
-/-- **Two-site equilibrium, in closed form**: below the margin product the
-determinant is positive and the balance solves exactly. -/
+/-- **Two-site equilibrium exists**: below the margin product — a positive
+determinant of `I − J` — the linearized balance has a fixed point. -/
 theorem two_site_equilibrium_exists {γ₁ γ₂ ε₁₂ ε₂₁ c₀ c₁ : ℝ}
     (hdet : ε₁₂ * ε₂₁ < (1 - γ₁) * (1 - γ₂)) :
     ∃ x : Fin 2 → ℝ, affine !![γ₁, ε₁₂; ε₂₁, γ₂] ![c₀, c₁] x = x := by
@@ -372,7 +365,7 @@ spectral radius `5`). -/
 theorem certificate_of_row_sums {J : Matrix (Fin k) (Fin k) ℝ}
     (hJ : ∀ i j, 0 ≤ J i j) (h : ∀ i, ∑ j, J i j < 1) : Certificate J := by
   refine ⟨hJ, fun _ => 1, fun _ => one_pos, fun i => ?_⟩
-  simpa [mulVec_apply'] using h i
+  simpa [Matrix.mulVec_apply_eq_sum] using h i
 
 /-- **The k-site headroom rule**: for a nonnegative gain matrix, diagonal
 gains at most `γ < 1` and every off-diagonal spill at most `ε` with

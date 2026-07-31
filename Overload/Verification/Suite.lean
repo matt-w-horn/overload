@@ -100,8 +100,10 @@ namespace Overload
 observation window: per-station flow and occupancy, bottleneck work
 accounting, per-request attempt counts and deadline spend, budget-token
 totals, and failure counts jointly by ground-truth origin and emitted wire
-code. Everything here is observable; the `VerificationSuite` below is the
-list of identities the observations must satisfy. -/
+code. Everything here is observable, and `acct` carries the accounting
+well-formedness (positive capacity and window, nonnegative components,
+work conservation); the `VerificationSuite` below is the list of further
+identities the observations must satisfy. -/
 structure SystemFacts (station req origin wire : Type*) where
   /-- The stations (mechanisms, queues, tiers) under observation. -/
   stations : Finset station

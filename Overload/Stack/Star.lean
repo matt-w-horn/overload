@@ -106,12 +106,15 @@ namespace Overload
 open Matrix
 
 /-- A fan-in star: `k` servers feeding one shared sink. Server `i` offers
-fresh load `lam i`, amplifies by `h i`, and forwards a fraction `r i` of
-its demand to the sink, whose load-coupled failure kernel is `gD`. -/
+fresh load `lam i`, scales its demand by the response `h i`, and forwards
+it weighted by `r i` to the sink, whose load-coupled failure kernel is
+`gD`. The fields constrain only nonnegativity of `lam` and `r` and the
+kernel's range: `r` is a weight, not a fraction, and `h` carries no lower
+bound. -/
 structure Star (k : ℕ) where
   /-- Fresh offered load at server `i`. -/
   lam : Fin k → ℝ
-  /-- Fan-out ratio: the fraction of server `i`'s demand that lands on
+  /-- Fan-out weight: the multiple of server `i`'s demand that lands on
   the shared sink. -/
   r : Fin k → ℝ
   /-- Per-server amplification response: sink failure probability →
@@ -244,7 +247,7 @@ theorem rankOne_certificate_of_pairing_lt {k : ℕ} {a b : Fin k → ℝ}
     have hb0 : ∀ j ∈ Finset.univ, b j = 0 :=
       (Finset.sum_eq_zero_iff_of_nonneg fun j _ => hb j).mp hB.symm
     refine ⟨fun _ => 1, fun _ => one_pos, fun i => ?_⟩
-    rw [mulVec_apply']
+    rw [Matrix.mulVec_apply_eq_sum]
     have hz : ∑ j, (Matrix.of fun i j => a i * b j) i j * 1 = 0 :=
       Finset.sum_eq_zero fun j hj => by
         change a i * b j * 1 = 0
@@ -258,7 +261,7 @@ theorem rankOne_certificate_of_pairing_lt {k : ℕ} {a b : Fin k → ℝ}
     have hε0 : 0 < ε := div_pos (by linarith) (by linarith)
     refine ⟨fun i => a i + ε, fun i => by have := ha i; linarith,
       fun i => ?_⟩
-    rw [mulVec_apply']
+    rw [Matrix.mulVec_apply_eq_sum]
     have hexpand : ∑ j, (Matrix.of fun i j => a i * b j) i j * (a j + ε)
         = a i * s + a i * ε * B := by
       rw [hs_def, hB_def, Finset.mul_sum, Finset.mul_sum,
@@ -298,7 +301,7 @@ theorem pairing_lt_of_rankOne_certificate {k : ℕ} {a b : Fin k → ℝ}
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro i _
-      rw [mulVec_apply', Finset.mul_sum, Finset.mul_sum]
+      rw [Matrix.mulVec_apply_eq_sum, Finset.mul_sum, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro j _
       change b i * ((a i * b j) * w j) = b i * a i * (b j * w j)

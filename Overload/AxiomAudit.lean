@@ -132,7 +132,7 @@ analysis the library scopes out rather than axiomatizes:
 `fluidFlow` (Kurtz fluid limits and ODE flow), `sojournDistribution` (the
 open-loop sojourn law behind `mm1Kernel` — a modeling definition, not a
 derived theorem), `PASTA` (the PASTA theorem; the lowercase `pasta`
-*interface field* in `Spec` is the hypothesis, deliberately present and
+*interface field* in `VerificationSuite` is the hypothesis, deliberately present and
 deliberately not matched), `retrialQueue` (M/M/1 retrial closed forms),
 `foldBifurcation` (crossing-count geometry), `limitCycle` (circuit-breaker
 cycles). Matching is case-sensitive substring over fully-qualified names. -/

@@ -2053,10 +2053,6 @@
     Function.IsFixedPt Overload.mm1BandLoop.F z₁ ∧
       Function.IsFixedPt Overload.mm1BandLoop.F z₂ ∧ z₁ ≤ 31 ∧ 100 ≤ z₂ ∧ z₁ < z₂
 
-#### Overload.mulVec_apply' : theorem
-  ∀ {k : ℕ} (J : Matrix (Fin k) (Fin k) ℝ) (x : Fin k → ℝ) (i : Fin k),
-    J.mulVec x i = ∑ j, J i j * x j
-
 #### Overload.neff : def
   (ℕ → ℝ) → (ℕ → ℝ) → ℝ → ℕ → ℕ
   value-hash 4a0ce20e713bc134

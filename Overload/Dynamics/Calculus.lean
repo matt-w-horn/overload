@@ -828,8 +828,9 @@ theorem fluid_decay_of_deriv_le {F : ℝ → ℝ} {L a b Λ₀ t₀ t₁ : ℝ} 
   exact h
 
 /-- **Spike recovery time, in seconds**: under gain at most `L` above the
-equilibrium `Λ₀`, an excursion is back within `ε` of `Λ₀` once
-`log((x t₀ − Λ₀)/ε) / (1 − L)` seconds have passed. Inverting the
+equilibrium `Λ₀`, the excess `x t − Λ₀` is at most `ε` once
+`log((x t₀ − Λ₀)/ε) / (1 − L)` seconds have passed — one-sided, capping
+the excess from above, within the window `[t₀, t₁]`. Inverting the
 exponential of `fluid_decay_of_gain_le` — the spike-recovery arithmetic
 priced in seconds rather than simulated. The bound is a sufficient time,
 not the earliest one. -/

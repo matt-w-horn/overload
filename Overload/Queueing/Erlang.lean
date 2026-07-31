@@ -208,11 +208,11 @@ theorem erlangB_mul_sum {a : ℝ} (ha : 0 < a) (c : ℕ) :
       div_eq_iff hD.ne']
     linear_combination a * ih - hT
 
-/-- **The stable recursion equals the textbook closed form**:
-`B(c, a) = (a^c/c!) / ∑_{j≤c} a^j/j!`. The identity that makes computing
-by the recursion trustworthy — the naive closed form overflows long
-before real server counts, the recursion never does, and they provably
-agree. -/
+/-- **The stable recursion equals the textbook closed form** for positive
+offered load (`0 < a`): `B(c, a) = (a^c/c!) / ∑_{j≤c} a^j/j!`. The
+identity that makes computing by the recursion trustworthy — in machine
+arithmetic the naive closed form overflows long before real server
+counts, the recursion does not, and here they provably agree. -/
 theorem erlangB_eq_closed {a : ℝ} (ha : 0 < a) (c : ℕ) :
     erlangB a c
       = a ^ c / c.factorial

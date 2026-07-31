@@ -133,10 +133,11 @@ theorem abs_mulVec_le (hJ : ∀ i j, 0 ≤ J i j) {w : Fin k → ℝ} {ρ M : �
     _ = ρ * M * w i := by ring
 
 /-- **Geometric decay toward an equilibrium.** If an equilibrium `x⋆` of
-the coupled balance exists, every trajectory's deviation envelope after
-`n` steps is at most `ρⁿ·M·w`, for any rate `0 ≤ ρ` with `J·w ≤ ρ·w`.
-Read at `ρ < 1` this is geometric decay in the `w`-weighted sense; the
-statement itself asserts only the envelope. -/
+the coupled balance exists, then for entrywise-nonnegative `J`, every
+trajectory starting inside the envelope (`|x₀ − x⋆| ≤ M·w` entrywise, with
+`0 ≤ M`) has deviation after `n` steps at most `ρⁿ·M·w`, for any rate
+`0 ≤ ρ` with `J·w ≤ ρ·w`. Read at `ρ < 1` this is geometric decay in the
+`w`-weighted sense; the statement itself asserts only the envelope. -/
 theorem certificate_decay (hJ : ∀ i j, 0 ≤ J i j) {w : Fin k → ℝ}
     {ρ M : ℝ} (hM : 0 ≤ M) (hρ0 : 0 ≤ ρ)
     (hρw : ∀ i, J.mulVec w i ≤ ρ * w i) {c xstar : Fin k → ℝ}

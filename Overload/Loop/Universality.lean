@@ -167,9 +167,9 @@ end BoundedLoop
 namespace ClosedLoop
 
 /-- **Congested-only, existence**: once fresh demand alone meets the
-threshold (`Θ ≤ λ`), a congested equilibrium exists — for *any* kernel
-(Knaster–Tarski supplies the fixed point, and every fixed point sits at or
-above the offered load). -/
+threshold (`Θ ≤ λ`), a congested equilibrium exists — for any monotone
+kernel (Knaster–Tarski supplies the fixed point, and every nonnegative
+fixed point sits at or above the offered load). -/
 theorem congestedEq_of_over (L : ClosedLoop) {Θ : ℝ}
     (hover : CongestedOnly L.lam Θ) : L.CongestedEq Θ := by
   have hA0 : (0 : ℝ) ≤ L.Amax := le_trans zero_le_one L.one_le_Amax
@@ -210,15 +210,20 @@ theorem eq_ge_of_over (L : ClosedLoop) {Θ Λ : ℝ}
     _ ≤ L.F Λ := L.lam_le_F hΛ
     _ = Λ := hfix
 
-/-- Pin of `eq_ge_of_over` at concrete numbers (the inequality itself is
-immediate; the content is the route). `stepLoop 20 10 5` is congested-only at
-threshold `10` (`CongestedOnly 20 10` is `10 ≤ 20`), and `Λ = 100 = λ·A` is a
-fixed point (`F 100 = 20·5`); the theorem places it at or above the
-threshold. -/
-theorem eq_ge_of_over_pin : (10 : ℝ) ≤ 100 :=
-  (stepLoop 20 10 5 (by norm_num) (by norm_num)).eq_ge_of_over
-    (show (10 : ℝ) ≤ 20 by norm_num) (by norm_num)
-    (by rw [stepLoop_F_of_ge (by norm_num) (by norm_num) (by norm_num)]; norm_num)
+/-- Pin of `eq_ge_of_over` at concrete numbers. `stepLoop 20 10 5` is
+congested-only at threshold `10` (`CongestedOnly 20 10` is `10 ≤ 20`), so
+every nonnegative fixed point sits at or above the threshold — the
+instance of `eq_ge_of_over` over a free fixed point — and `Λ = 100 = λ·A`
+is one (`F 100 = 20·5`). -/
+theorem eq_ge_of_over_pin :
+    (∀ Λ : ℝ, 0 ≤ Λ →
+        (stepLoop 20 10 5 (by norm_num) (by norm_num)).F Λ = Λ →
+          (10 : ℝ) ≤ Λ) ∧
+      (stepLoop 20 10 5 (by norm_num) (by norm_num)).F 100 = 100 :=
+  ⟨fun _Λ hΛ hfix =>
+      (stepLoop 20 10 5 (by norm_num) (by norm_num)).eq_ge_of_over
+        (show (10 : ℝ) ≤ 20 by norm_num) hΛ hfix,
+    by rw [stepLoop_F_of_ge (by norm_num) (by norm_num) (by norm_num)]; norm_num⟩
 
 end ClosedLoop
 
@@ -317,8 +322,8 @@ theorem phase_matches_of_rho_eq {lam₁ C₁ lam₂ C₂ A : ℝ} (hC₁ : 0 < C
 /-- Pin of the transfer claim: `(λ, C) = (1, 2)` and `(5, 10)` share
 `ρ₀ = 1/2`, so band membership transfers between them at the same
 amplification `A = 3` — the iff from `phase_matches_of_rho_eq`, with the
-small system's membership supplied, so the large one's follows: capacity
-ten times over, same phase. -/
+small system's membership supplied, so the large one's follows: load and
+capacity scaled five times over, same phase. -/
 theorem phase_matches_of_rho_eq_pin :
     (BistableBand 1 3 2 ↔ BistableBand 5 3 10) ∧ BistableBand 1 3 2 :=
   ⟨(phase_matches_of_rho_eq (lam₁ := 1) (C₁ := 2) (lam₂ := 5) (C₂ := 10)

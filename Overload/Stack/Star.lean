@@ -75,7 +75,7 @@ The assume-guarantee reading:
 The gain side, eigenvalue-free as in `Coupling.lean`:
 
 * `rankOne_certificate_iff` — for `J = a·bᵀ` with nonnegative factors, a
-  positive sub-invariant weight (`Certificate`) exists **iff** the
+  positive strictly contracting weight (`Certificate`) exists **iff** the
   pairing sum `∑ bⱼaⱼ < 1` — the certificate form of "a rank-one
   nonnegative matrix's sole nonzero eigenvalue is `⟨b, a⟩`", with the
   weight `w = a + ε` explicit and the converse by pairing with `b`.
@@ -315,7 +315,7 @@ theorem pairing_lt_of_rankOne_certificate {k : ℕ} {a b : Fin k → ℝ}
     exact (mul_lt_iff_lt_one_left hbw).mp hpair
 
 /-- **The rank-one certificate criterion**: for `J = a·bᵀ` with
-nonnegative factors, a positive sub-invariant weight exists **iff** the
+nonnegative factors, a positive strictly contracting weight exists **iff** the
 pairing sum is below one — the eigenvalue-free form of "the sole nonzero
 eigenvalue of a nonnegative rank-one matrix is `⟨b, a⟩`". -/
 theorem rankOne_certificate_iff {k : ℕ} {a b : Fin k → ℝ}
@@ -498,11 +498,12 @@ theorem toStar_signature (L : ClosedLoop) :
 
 end ClosedLoop
 
-/-- A verdict on a star and its declared contract *factors through the
-signature sum* when it is constant on the fibers of that sum: two
-contracted stars exporting the same total receive the same verdict. The
-fan-in analogue of `FactorsThroughSignature`, over the number the fan-in
-contract actually exports. -/
+/-- A verdict on a one-server star (`Star 1`, where the incompleteness
+witnesses live) and its declared contract *factors through the signature
+sum* when it is constant on the fibers of that sum: two contracted stars
+exporting the same total receive the same verdict. The fan-in analogue of
+`FactorsThroughSignature`, over the number the fan-in contract actually
+exports. -/
 def FactorsThroughStarSignature (P : Star 1 → (Fin 1 → ℝ) → Prop) : Prop :=
   ∀ (S₁ : Star 1) (K₁ : Fin 1 → ℝ) (S₂ : Star 1) (K₂ : Fin 1 → ℝ),
     S₁.Contract K₁ → S₂.Contract K₂ →

@@ -214,7 +214,8 @@ theorem one_le_coupledAmp (layers : List (ℝ × ℕ)) {p : ℝ}
     rw [coupledAmp_cons]
     exact hhead.trans (le_mul_of_one_le_right (zero_le_one.trans hhead) hrec)
 
-/-- The load-coupled amplification never exceeds the cap product, the
+/-- When `p` and every layer's failure level sit in `[0, 1]`, the
+load-coupled amplification never exceeds the cap product, the
 forced-failure envelope of the stack. -/
 theorem coupledAmp_le_capProd (layers : List (ℝ × ℕ)) {p : ℝ}
     (hp : p ∈ Set.Icc (0 : ℝ) 1)

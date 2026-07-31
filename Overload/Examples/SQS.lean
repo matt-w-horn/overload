@@ -63,8 +63,9 @@ The mapping into this library, and the point of the example:
   (`sqs_unclamped_bistable`, `sqs_unclamped_congestedEq`).
 * A redrive policy is exactly the **cap clamp**: `maxReceiveCount = 5`
   with offered poison load `λ` satisfying `λ·5 < C` removes the congested
-  equilibrium outright (`sqs_dlq_no_congestedEq`) — no timing, backoff, or
-  kernel assumptions. The honest residual: the clamp does not close the band.
+  equilibrium outright (`sqs_dlq_no_congestedEq`, on the step-kernel
+  redrive loop) — no timing or backoff hypothesis anywhere. The honest
+  residual: the clamp does not close the band.
   At `λ = 25` against `C = 100` the clamped system itself is genuinely
   bistable (`sqs_dlq_band_residual`, certified directly on `dlqLoop` by the
   two-point certificate) — one point, not the whole interval.
@@ -139,11 +140,12 @@ noncomputable abbrev dlqLoop (lam C : ℝ) (m : ℕ) (hlam : 0 ≤ lam)
     (hm : 1 ≤ m) : ClosedLoop :=
   cappedLoop lam C m hlam hm
 
-/-- **The dead-letter queue removes the congested equilibrium.** With
+/-- **The dead-letter queue removes the congested equilibrium** that the
+unclamped loop sustains (`sqs_unclamped_congestedEq`). With
 `maxReceiveCount = 5` and poison load 1 msg/s against a 100 msg/s fleet,
-`λ·5 = 5 < 100` and no congested equilibrium exists — whatever the failure
-kernel does, however failures are timed, with no backoff hypothesis anywhere.
-One inequality certifies the architecture. -/
+`λ·5 = 5 < 100` and the redrive loop — the saturated step kernel at these
+numbers — has no congested equilibrium, with no backoff hypothesis
+anywhere. One inequality certifies the architecture. -/
 theorem sqs_dlq_no_congestedEq :
     ¬(dlqLoop 1 100 5 (by norm_num) (by norm_num)).CongestedEq 100 :=
   cappedLoop_no_congestedEq (by norm_num)
@@ -195,8 +197,9 @@ theorem sqs_bulk_outranks {ρ : ℝ} (hρ : ρ ≠ 0) :
 
 /-- **The inversion, instantiated**: for the 1%-share target there is a bulk
 redelivery amplification that drives the interactive workload (2 msg/s,
-amplification 1) below 1% of total goodput. Nothing about intended priority
-appears anywhere in the system. -/
+amplification 1, against bulk offered load 1 msg/s) below 1% of total
+offered attempts. Nothing about intended priority appears anywhere in the
+system. -/
 theorem sqs_inversion_instance :
     ∃ Alo, 0 < Alo ∧ (2 * 1) / (2 * 1 + 1 * Alo) < (1 / 100 : ℝ) :=
   inversion (by norm_num) (by norm_num) (by norm_num) (by norm_num)

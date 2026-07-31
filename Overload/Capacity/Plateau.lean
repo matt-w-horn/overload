@@ -116,9 +116,10 @@ theorem attemptRate_at_zero (hcap : ∀ j ∈ s, 1 ≤ cap j) :
   refine Finset.sum_congr rfl fun j hj => ?_
   rw [expAttempts_at_zero (hcap j hj), mul_one]
 
-/-- **The plateau theorem.** At any uniform-loss equilibrium, goodput equals
-`min (∑ lam) C`: independent of every retry cap, and — backoff never entering
-the model — of every backoff schedule. With zero-cost rejection and
+/-- **The plateau theorem.** At any uniform-loss equilibrium over
+nonnegative per-class loads, goodput equals `min (∑ lam) C`: independent
+of the retry caps (each at least `1`), and — backoff never entering the
+model — of every backoff schedule. With zero-cost rejection and
 always-useful processing, retries cannot dent throughput. -/
 theorem plateau (hcap : ∀ j ∈ s, 1 ≤ cap j) (hlam : ∀ j ∈ s, 0 ≤ lam j)
     {p : ℝ} (heq : UniformLossEq s lam cap C p) :

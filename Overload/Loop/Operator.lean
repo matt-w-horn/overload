@@ -226,7 +226,8 @@ theorem isFixedPt_gfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
   rw [gfpIcc_eq_gfp_restrict hm hf]
   exact congrArg Subtype.val (restrictIcc F a b hm hf).isFixedPt_gfp
 
-/-- Every fixed point is bracketed by `lfpIcc` and `gfpIcc`. -/
+/-- The lower half of the bracket: a fixed point in `[a, b]` sits at or
+above `lfpIcc`. The upper half is `isFixedPt_le_gfpIcc`. -/
 theorem lfpIcc_le_isFixedPt (hx : x ∈ Set.Icc a b)
     (h : Function.IsFixedPt F x) : lfpIcc F a b ≤ x :=
   lfpIcc_le_of_prefixed hx h.le
@@ -290,7 +291,9 @@ theorem mapsTo_Icc_of_postfixed (hm : MonotoneOn F (Set.Icc a b))
   have hz' : z ∈ Set.Icc a b := ⟨le_trans hy.1 hz.1, hz.2⟩
   exact ⟨le_trans hyF (hm hy hz' hz.1), (hf hz').2⟩
 
-/-- A fixed point exists below every prefixed point. -/
+/-- For a monotone self-map of `[a, b]`, a fixed point exists in `[a, x]`
+for every prefixed point `x ∈ [a, b]`: at or below the prefixed point,
+without leaving the interval. -/
 theorem exists_fixedPt_le (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hx : x ∈ Set.Icc a b)
     (hFx : F x ≤ x) : ∃ z ∈ Set.Icc a x, Function.IsFixedPt F z := by

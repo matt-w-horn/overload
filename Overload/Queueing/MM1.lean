@@ -137,7 +137,7 @@ over the closed-form weights (`3/4 = 1/2 + 1/4`). The recursion is a
 consistency check of the closed form against an equation written in the same
 file — the independent verification of `stationaryWeight` is
 `stationaryWeight_unique_of_global_balance`, which quantifies over all
-summable solutions. -/
+solutions summing to `1`, for `0 ≤ λ < μ`. -/
 theorem global_balance_pin :
     (1 + 2 : ℝ) * stationaryWeight (1 / 2) 1
       = 1 * stationaryWeight (1 / 2) 0 + 2 * stationaryWeight (1 / 2) 2 :=
@@ -439,13 +439,15 @@ theorem meanQueue_half : meanQueue (1 / 2) = 1 := by
   norm_num
 
 /-- Numeric regression on the documented bridge: at `λ = 1`, `μ = 2` the
-utilization law holds one customer, so Little's identity at mean sojourn `1`
-returns the delay law's `1/(μ−λ)`. The equation is immediate at these
-numbers; what the pin exercises is that the hypothesis bundle is satisfiable
-at all. -/
-theorem meanWait_eq_of_little_pin : (1 : ℝ) = (2 - 1)⁻¹ :=
-  meanWait_eq_of_little (by norm_num) (by norm_num)
-    (by rw [meanQueue_half]; norm_num)
+utilization law holds one customer, and that is Little's identity at mean
+sojourn `1` (`meanQueue (1/2) = 1·1`), so the bridge returns the delay
+law's `1/(μ−λ) = 1`. The equation is immediate at these numbers; the pin
+carries the satisfied Little hypothesis alongside it. -/
+theorem meanWait_eq_of_little_pin :
+    meanQueue (1 / 2) = 1 * 1 ∧ (1 : ℝ) = (2 - 1)⁻¹ :=
+  ⟨by rw [meanQueue_half]; norm_num,
+    meanWait_eq_of_little (by norm_num) (by norm_num)
+      (by rw [meanQueue_half]; norm_num)⟩
 
 /-- Numeric regression: `3/4` utilization holds three customers. -/
 theorem meanQueue_three_quarters : meanQueue (3 / 4) = 3 := by
@@ -572,9 +574,10 @@ the two point evaluations `mm1BandLoop_healthy` and `mm1BandLoop_inflow`. -/
 noncomputable abbrev mm1BandLoop : ClosedLoop :=
   mm1Loop 30 100 1 4 (by norm_num) (by norm_num) (by norm_num)
 
-/-- The healthy leg of the M/M/1 band: at demand 31 the timeout probability
-is at most `e^{-69} ≤ 1/70`, so amplification is at most `70/69` and
-`F(31) ≤ 30·70/69 < 31` — inflow falls back. -/
+/-- The healthy leg of the M/M/1 band: at demand 31 inflow stays within
+the level, `F(31) ≤ 31`. The margin lives inside the proof: the timeout
+probability is bounded by `e^{-69} ≤ 1/70`, so amplification is at most
+`70/69` and `30·70/69 < 31` closes the goal. -/
 theorem mm1BandLoop_healthy : mm1BandLoop.F 31 ≤ 31 := by
   change (30 : ℝ) * expAttempts (mm1Kernel 100 1 31) 4 ≤ 31
   have hp : mm1Kernel 100 1 31 ≤ (1 / 70 : ℝ) := by

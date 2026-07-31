@@ -308,8 +308,8 @@ theorem service_order_at_backlog :
     (2 : ℝ) < fifoSojourn 25 10 ∧ lifoSojourn ≤ 2 :=
   ⟨fifo_head_expired (by norm_num) (by norm_num), lifo_fresh (by norm_num)⟩
 
-/-- Numeric regression: strict priority at the same numbers grants
-`(3, 1)` — the languages differ, the interface holds for both. -/
+/-- Numeric regression: strict priority at the same numbers grants the top
+class its full `3` — the languages differ, the interface holds for both. -/
 theorem strictDiscipline_alloc_at_overload :
     (strictDiscipline 2).alloc ![3, 9] 4 0 = 3 := by
   change alloc (extendDemand ![3, 9]) 4 0 = 3

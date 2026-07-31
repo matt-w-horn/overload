@@ -107,7 +107,8 @@ theorem neff_le (T B : ℕ → ℝ) (D : ℝ) (n : ℕ) : neff T B D n ≤ n := 
   unfold neff
   exact Nat.findGreatest_le n
 
-/-- The attempts `neff` claims feasible really fit. -/
+/-- Within a nonnegative deadline (`0 ≤ D`), the attempts `neff` claims
+feasible really fit. -/
 theorem fitsIn_neff (hD : 0 ≤ D) : fitsIn T B D (neff T B D n) := by
   classical
   unfold neff
@@ -209,11 +210,13 @@ theorem two_le_neff_rearmed {τ : ℝ} (hτ : 0 < τ) (h2 : 2 * τ ≤ D)
   push_cast
   linarith
 
-/-- **The whole slow regime, uniformly**: whenever the first failure latency
-meets or exceeds the deadline (`D ≤ T 0`), at most one attempt fits — exactly
-one at the boundary `T 0 = D` (`neff_slow_remaining`), none when strictly
-slower. Either way, a slow failure under remaining-deadline apportionment
-cannot amplify. -/
+/-- **The whole slow regime, uniformly**: for positive latencies and
+nonnegative backoffs, whenever the first failure latency meets or exceeds
+the deadline (`D ≤ T 0`), at most one attempt fits — exactly one at the
+boundary `T 0 = D` when an attempt is available at all
+(`neff_slow_remaining`, which asks `1 ≤ n`), none when strictly slower
+(`neff_eq_zero_of_strictly_slow`). Either way, a slow failure under
+remaining-deadline apportionment cannot amplify. -/
 theorem neff_le_one_of_slow (hT0 : D ≤ T 0) (hTpos : ∀ j, 0 < T j)
     (hB : ∀ j, 0 ≤ B j) : neff T B D n ≤ 1 := by
   classical
@@ -254,9 +257,10 @@ theorem neff_slow_remaining (hT0 : T 0 = D) (hTpos : ∀ j, 0 < T j)
   rw [Finset.sum_range_one, show (1 : ℕ) - 1 = 0 from rfl,
     Finset.range_zero, Finset.sum_empty, add_zero, hT0]
 
-/-- **Strictly slower than the deadline ⟹ no attempt completes**: when the
-first failure latency exceeds the whole budget (`D < T 0`), the exact count is
-`0`, not merely at most one. `fitsIn` counts attempts that *complete* within
+/-- **Strictly slower than the deadline ⟹ no attempt completes**: for
+nonnegative latencies and backoffs, when the first failure latency exceeds
+the whole budget (`D < T 0`), the exact count is `0`, not merely at most
+one. `fitsIn` counts attempts that *complete* within
 the budget, and here none does — the sharp value inside
 `neff_le_one_of_slow`'s uniform bound, whose other boundary case is
 `neff_slow_remaining`'s exact `1`. -/

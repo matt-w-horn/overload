@@ -480,8 +480,9 @@ theorem valueArea_le_valueSum {g : ℕ → ℝ} (hg : ∀ n, 0 ≤ g n) (t : ℝ
   Finset.sum_le_sum fun k _ =>
     mul_le_mul_of_nonneg_left (P.timeIn_le_W t k) (hg k)
 
-/-- Weighted lower sandwich: the fully-departed prefix's total value is
-already contained in the value in system. -/
+/-- Weighted lower sandwich: for nonnegative weights, and with some arrival
+at or after `t`, the fully-departed prefix's total value is already
+contained in the value in system. -/
 theorem valueSum_departedPrefix_le {g : ℕ → ℝ} (hg : ∀ n, 0 ≤ g n)
     {t : ℝ} (hne : {n | t ≤ P.a n}.Nonempty) :
     P.valueSum g (P.departedPrefix t) ≤ P.valueArea g t := by

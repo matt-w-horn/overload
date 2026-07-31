@@ -148,9 +148,9 @@ theorem borg_no_stranding :
 allocation arithmetic and the equilibrium machinery. Batch, offered 8 tasks/s
 under a 4-placement reschedule clamp, runs as a closed loop over its
 *residual* capacity `residual (borgDemand 80) 100 1 = 40`, and `8·4 = 32 <
-40` certifies no congested equilibrium there: production's isolation
-(`borg_prod_immune`) and batch's collapse-freedom compose, each phase theorem
-instantiated at the class's own capacity. -/
+40` certifies no congested equilibrium there: production's allocation
+isolation (`borg_prod_immune`) fixes the residual batch runs over, and this
+clamp certificate is the phase theorem instantiated at that residual. -/
 theorem borg_batch_over_residual :
     ¬(cappedLoop 8 40 4 (by norm_num) (by norm_num)).CongestedEq
       (residual (borgDemand 80) 100 1) := by

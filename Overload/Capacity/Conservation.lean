@@ -142,12 +142,13 @@ theorem pool_rate_bound {inflight rate sojourn P : ℝ}
 
 /-- Pin of the pool bound at its tight corner: any rate holding one slot
 in flight at sojourn `1/4` is at most `1/(1/4)` — the instance of
-`pool_rate_bound` over a free rate — and `4` attains the bound. -/
+`pool_rate_bound` over a free rate — and rate `4` attains the bound: it
+holds one slot in flight (`1 = 4·(1/4)`) and equals `1/(1/4)`. -/
 theorem pool_rate_bound_pin :
     (∀ rate : ℝ, (1 : ℝ) = rate * (1 / 4) → rate ≤ 1 / (1 / 4)) ∧
-      (4 : ℝ) = 1 / (1 / 4) :=
+      (1 : ℝ) = 4 * (1 / 4) ∧ (4 : ℝ) = 1 / (1 / 4) :=
   ⟨fun _rate hlittle =>
       pool_rate_bound hlittle le_rfl (by norm_num),
-    by norm_num⟩
+    by norm_num, by norm_num⟩
 
 end Overload

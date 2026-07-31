@@ -550,35 +550,45 @@ theorem BoundedLoop.clamp_fluid_strictAnti (L : BoundedLoop)
   linarith
 
 /-- Pin of the drift sign at a clamp with nothing offered: at `λ = 0` the
-demand operator is identically zero, so `λ·K = 0` sits below the threshold
-`1`, and the trajectory `x t = 100·e^{−t}` — which solves `x' = F(x) − x`
-there — stays above `1` throughout `[0, 1]` and strictly decreases on it. -/
+demand operator is identically zero (the step loop at zero load witnesses
+one), so `λ·Amax = 0` sits below the threshold `1`; the trajectory
+`x t = 100·e^{−t}` solves `x' = F(x) − x` on `[0, 1]`, stays above the
+threshold throughout, and — by `clamp_fluid_strictAnti` — strictly
+decreases on it. -/
 theorem clamp_fluid_strictAnti_pin :
-    StrictAntiOn (fun t : ℝ => 100 * Real.exp (-t)) (Set.Icc 0 1) := by
+    ∃ L : BoundedLoop, L.lam = 0 ∧ (∀ Λ : ℝ, L.F Λ = 0) ∧
+      (∀ t ∈ Set.Icc (0 : ℝ) 1,
+        HasDerivAt (fun s : ℝ => 100 * Real.exp (-s))
+          (L.F (100 * Real.exp (-t)) - 100 * Real.exp (-t)) t) ∧
+      (∀ t ∈ Set.Icc (0 : ℝ) 1, (1 : ℝ) ≤ 100 * Real.exp (-t)) ∧
+      StrictAntiOn (fun t : ℝ => 100 * Real.exp (-t)) (Set.Icc 0 1) := by
+  obtain ⟨L, hlam⟩ : ∃ L : BoundedLoop, L.lam = 0 :=
+    ⟨(stepLoop 0 5 2 (by norm_num) (by norm_num)).toBoundedLoop, rfl⟩
+  have hF : ∀ Λ : ℝ, L.F Λ = 0 := fun Λ => by
+    change L.lam * L.h (L.g Λ) = 0
+    rw [hlam, zero_mul]
   have hexp1 : Real.exp 1 < 100 := lt_trans Real.exp_one_lt_d9 (by norm_num)
   have hmul : Real.exp (-1) * Real.exp 1 = 1 := by
     rw [← Real.exp_add]
     norm_num
-  refine (stepLoop 0 5 2 (by norm_num)
-    (by norm_num)).toBoundedLoop.clamp_fluid_strictAnti (K := 2) (Θ := 1)
-    (fun p hp => by
-      change (1 : ℝ) + p * (2 - 1) ≤ 2
-      linarith [hp.2])
-    (show (0 : ℝ) * 2 < 1 by norm_num) zero_le_one (fun t _ => ?_)
-    (fun t ht => ?_)
-  · have hexp : HasDerivAt (fun s : ℝ => Real.exp (-s)) (-Real.exp (-t)) t := by
+  have hderiv : ∀ t ∈ Set.Icc (0 : ℝ) 1,
+      HasDerivAt (fun s : ℝ => 100 * Real.exp (-s))
+        (L.F (100 * Real.exp (-t)) - 100 * Real.exp (-t)) t := by
+    intro t _
+    have hexp : HasDerivAt (fun s : ℝ => Real.exp (-s)) (-Real.exp (-t)) t := by
       simpa using (hasDerivAt_neg t).exp
-    change HasDerivAt (fun s : ℝ => 100 * Real.exp (-s))
-      ((0 : ℝ) * (1 + stepKernel 5 (100 * Real.exp (-t)) * (2 - 1))
-        - 100 * Real.exp (-t)) t
-    rw [show (0 : ℝ) * (1 + stepKernel 5 (100 * Real.exp (-t)) * (2 - 1))
-      - 100 * Real.exp (-t) = 100 * -Real.exp (-t) by ring]
+    rw [hF, show (0 : ℝ) - 100 * Real.exp (-t) = 100 * -Real.exp (-t) by ring]
     exact hexp.const_mul 100
-  · have hmono : Real.exp (-1) ≤ Real.exp (-t) :=
+  have habove : ∀ t ∈ Set.Icc (0 : ℝ) 1, (1 : ℝ) ≤ 100 * Real.exp (-t) := by
+    intro t ht
+    have hmono : Real.exp (-1) ≤ Real.exp (-t) :=
       Real.exp_le_exp.mpr (by linarith [ht.2])
     have hstep := mul_lt_mul_of_pos_left hexp1 (Real.exp_pos (-1))
     rw [hmul] at hstep
     linarith
+  exact ⟨L, hlam, hF, hderiv, habove,
+    L.clamp_fluid_strictAnti L.h_le_Amax (by rw [hlam]; norm_num)
+      zero_le_one hderiv habove⟩
 
 /-- **The continuous drain bound**: a trajectory whose drift is at most
 `−δ` loses at least `δ` per second — `x t ≤ x t₀ − δ·(t − t₀)` — by the

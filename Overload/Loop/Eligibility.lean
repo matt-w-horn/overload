@@ -220,7 +220,8 @@ theorem kernelLoop_congestedEq_mono_cap_pin :
         (show (2 : ℝ) ≤ 2 from le_rfl))
 
 /-- Numeric regression, the miscoding corollary at the demonstration
-numbers: no sustaining at `e = 0`, amplification above one at `e = 1`. -/
+numbers: no sustaining at `e = 0`, and at `e = 1` amplification above one
+at kernel saturation (`p = 1`). -/
 theorem demoEligibleLoop_miscoding_opens_amplification :
     (demoEligibleLoop 0 ⟨le_rfl, zero_le_one⟩).NoSustaining ∧
     1 < (demoEligibleLoop 1 ⟨zero_le_one, le_rfl⟩).h 1 :=

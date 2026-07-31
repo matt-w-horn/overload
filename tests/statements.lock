@@ -240,7 +240,8 @@
   ∀ (L : Overload.ClosedLoop) {Θ Λ : ℝ}, Overload.CongestedOnly L.lam Θ → 0 ≤ Λ → L.F Λ = Λ → Θ ≤ Λ
 
 #### Overload.ClosedLoop.eq_ge_of_over_pin : theorem
-  10 ≤ 100
+  (∀ (Λ : ℝ), 0 ≤ Λ → (Overload.stepLoop 20 10 5 ⋯ ⋯).F Λ = Λ → 10 ≤ Λ) ∧
+    (Overload.stepLoop 20 10 5 ⋯ ⋯).F 100 = 100
 
 #### Overload.ClosedLoop.floor_certifies : theorem
   ∀ (L : Overload.ClosedLoop) {g' : ℝ → ℝ} (hg'_mem : ∀ (x : ℝ), 0 ≤ x → g' x ∈ Set.Icc 0 1)
@@ -1036,7 +1037,14 @@
     0 < K → (∀ p ∈ Set.Icc 0 1, L.h p ≤ K) → L.CongestedEq C → C / K ≤ L.lam
 
 #### Overload.clamp_fluid_strictAnti_pin : theorem
-  StrictAntiOn (fun t => 100 * Real.exp (-t)) (Set.Icc 0 1)
+  ∃ L,
+    L.lam = 0 ∧
+      (∀ (Λ : ℝ), L.F Λ = 0) ∧
+        (∀ t ∈ Set.Icc 0 1,
+            HasDerivAt (fun s => 100 * Real.exp (-s))
+              (L.F (100 * Real.exp (-t)) - 100 * Real.exp (-t)) t) ∧
+          (∀ t ∈ Set.Icc 0 1, 1 ≤ 100 * Real.exp (-t)) ∧
+            StrictAntiOn (fun t => 100 * Real.exp (-t)) (Set.Icc 0 1)
 
 #### Overload.class_clamp_at_overload : theorem
   ¬(Overload.stepLoop (1 / 4) 10 2 ⋯ ⋯).CongestedEq ((Overload.propDiscipline 2).alloc ![3, 9] 4 0)
@@ -1962,7 +1970,7 @@
   ∀ {lam mu W : ℝ}, 0 < lam → lam < mu → Overload.meanQueue (lam / mu) = lam * W → W = (mu - lam)⁻¹
 
 #### Overload.meanWait_eq_of_little_pin : theorem
-  1 = (2 - 1)⁻¹
+  Overload.meanQueue (1 / 2) = 1 * 1 ∧ 1 = (2 - 1)⁻¹
 
 #### Overload.meanWait_false_above_saturation : theorem
   Overload.meanWait 2 1 ≠ (1 - 2)⁻¹
@@ -2286,7 +2294,7 @@
     inflight = rate * sojourn → inflight ≤ P → 0 < sojourn → rate ≤ P / sojourn
 
 #### Overload.pool_rate_bound_pin : theorem
-  (∀ (rate : ℝ), 1 = rate * (1 / 4) → rate ≤ 1 / (1 / 4)) ∧ 4 = 1 / (1 / 4)
+  (∀ (rate : ℝ), 1 = rate * (1 / 4) → rate ≤ 1 / (1 / 4)) ∧ 1 = 4 * (1 / 4) ∧ 4 = 1 / (1 / 4)
 
 #### Overload.postfixedPts : def
   (ℝ → ℝ) → ℝ → ℝ → Set ℝ

@@ -112,8 +112,11 @@ noncomputable def witnessFacts : SystemFacts (Fin 1) (Fin 1) (Fin 2) (Fin 2) whe
   originCount := fun o => if o = 0 then 1 else 0
   wireCount := fun w => if w = 0 then 1 else 0
 
-/-- The suite holds of the witness: every field closes by arithmetic.
-This is the satisfiability certificate for the whole `Prop`-bundle. -/
+/-- The suite holds of the witness: every numeric field closes by
+arithmetic on the witness numerals, and the PASTA parameter is
+instantiated at `True` — the sampling-unbiasedness proposition is
+supplied trivially, not certified. This is the satisfiability certificate
+for the numeric side of the `Prop`-bundle. -/
 theorem witnessSuite : VerificationSuite True witnessFacts where
   flow_balance := fun _ _ => rfl
   useful_work := by norm_num [witnessFacts]

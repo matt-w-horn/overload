@@ -84,10 +84,11 @@ theorem jitter_window_avoids {B Λ₀ z w : ℝ} (hgap : Λ₀ < z)
   have h2 : B / w ≤ z - Λ₀ := (div_le_iff₀ hw0).mpr (by linarith)
   linarith
 
-/-- **The safe side of the trigger threshold.** A burst whose spiked demand
-`Λ₀ + B/w` lands at or below a fixed point `z` of the loop never crosses it:
-every iterate of the demand map stays at or below `z`, so the congested
-branch is unreachable from this burst. -/
+/-- **The safe side of the trigger threshold.** A nonnegative burst
+(`0 ≤ Λ₀`, `0 ≤ B`, `0 < w`) whose spiked demand `Λ₀ + B/w` lands at or
+below a fixed point `z` in the demand envelope never crosses it: every
+iterate of the demand map stays at or below `z`, so demand levels above
+`z` are unreachable from this burst. -/
 theorem ClosedLoop.burst_safe (L : ClosedLoop) {z Λ₀ B w : ℝ}
     (hz : z ∈ Set.Icc 0 (L.lam * L.Amax)) (hfz : Function.IsFixedPt L.F z)
     (hΛ₀ : 0 ≤ Λ₀) (hB : 0 ≤ B) (hw : 0 < w)
@@ -95,10 +96,10 @@ theorem ClosedLoop.burst_safe (L : ClosedLoop) {z Λ₀ B w : ℝ}
   iterate_le_of_le_fixedPt L.F_monotoneOn_Icc L.F_mapsTo hz hfz
     ⟨by positivity, htrig.trans hz.2⟩ htrig n
 
-/-- **The tipping side.** A spiked demand that is postfixed (`x ≤ F x` —
-attempt inflow at the spike already sustains it) ratchets upward under
-iteration: each step of the demand map is at least the last. Past the
-separatrix, the storm feeds itself. -/
+/-- **The tipping side.** A nonnegative spiked demand (`0 ≤ Λ₀ + B/w`) that
+is postfixed (`x ≤ F x` — attempt inflow at the spike already sustains it)
+ratchets upward under iteration: each step of the demand map is at least the
+last. Past the separatrix, the storm feeds itself. -/
 theorem ClosedLoop.burst_tips (L : ClosedLoop) {Λ₀ B w : ℝ}
     (h0 : 0 ≤ Λ₀ + B / w) (hpost : Λ₀ + B / w ≤ L.F (Λ₀ + B / w)) (n : ℕ) :
     L.F^[n] (Λ₀ + B / w) ≤ L.F^[n + 1] (Λ₀ + B / w) :=

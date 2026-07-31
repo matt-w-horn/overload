@@ -131,9 +131,10 @@ theorem pointwise_no_congestedEq {Θ : ℝ}
 
 variable {L} in
 /-- **Clamp completeness.** Over the kernel-quantified family — the same
-demand profile `(λ, h, Amax)`, every admissible kernel — safety is
-*equivalent* to the pointwise clamp condition: no kernel can congest the
-profile iff `λ·h(p) < Θ` at every failure level. Converse instrument: a
+demand profile `(λ, h, Amax)`, every admissible kernel — safety at a
+nonnegative threshold (`0 ≤ Θ`) is *equivalent* to the pointwise clamp
+condition: no kernel can congest the profile iff `λ·h(p) < Θ` at every
+failure level. Converse instrument: a
 level `p₀` with `λ·h(p₀) ≥ Θ` is realized as a congested equilibrium by the
 constant kernel parked at `p₀` (`constLoop_congestedEq`). The clamp theorem
 is not merely sufficient; against the kernel family it is exact. -/

@@ -1885,6 +1885,11 @@
 #### Overload.lifo_fresh : theorem
   ∀ {D : ℝ}, 0 ≤ D → Overload.lifoSojourn ≤ D
 
+#### Overload.lipschitzOnWith_smoothLoop_F : theorem
+  ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
+    LipschitzOnWith (lam * (A - 1) / C).toNNReal (Overload.smoothLoop lam C A hlam hC hA).F
+      (Set.Ici 0)
+
 #### Overload.looseBudgetLoop : def
   Overload.BoundedLoop
   value-hash ac2e129df36a36f
@@ -2414,6 +2419,14 @@
   ¬(Function.IsFixedPt (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 10 ∧
       Function.IsFixedPt (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 20)
 
+#### Overload.smoothDemoLoop_fluid_drain_pin : theorem
+  ∃ t₁,
+    0 < t₁ ∧
+      ∃ α,
+        α 0 = 30 ∧
+          (∀ t ∈ Set.Icc 0 t₁, HasDerivAt α ((Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F (α t) - α t) t) ∧
+            ∀ t ∈ Set.Icc 0 t₁, (∀ s ∈ Set.Icc 0 t, 25 ≤ α s) → α t ≤ 30 - 5 * t
+
 #### Overload.smoothDemoLoop_not_bistableOn : theorem
   ¬Overload.BistableOn (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 0 (10 * 2)
 
@@ -2425,6 +2438,17 @@
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
     lam * (A - 1) < C → ∀ {Λ : ℝ}, 0 ≤ Λ → deriv (Overload.smoothLoop lam C A hlam hC hA).F Λ < 1
 
+#### Overload.smoothLoop_exists_trajectory : theorem
+  ∀ {lam C A x₀ : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
+    0 < x₀ →
+      ∀ (t₀ : ℝ),
+        ∃ t₁,
+          t₀ < t₁ ∧
+            ∃ α,
+              α t₀ = x₀ ∧
+                ∀ t ∈ Set.Icc t₀ t₁,
+                  HasDerivAt α ((Overload.smoothLoop lam C A hlam hC hA).F (α t) - α t) t
+
 #### Overload.smoothLoop_fixedPt_unique : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
     lam * (A - 1) < C →
@@ -2433,6 +2457,20 @@
           y ∈ Set.Icc 0 (lam * A) →
             Function.IsFixedPt (Overload.smoothLoop lam C A hlam hC hA).F x →
               Function.IsFixedPt (Overload.smoothLoop lam C A hlam hC hA).F y → x = y
+
+#### Overload.smoothLoop_fluid_drain : theorem
+  ∀ {lam C A Θ x₀ : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),
+    lam * A < Θ →
+      Θ ≤ x₀ →
+        ∀ (t₀ : ℝ),
+          ∃ t₁,
+            t₀ < t₁ ∧
+              ∃ α,
+                α t₀ = x₀ ∧
+                  (∀ t ∈ Set.Icc t₀ t₁,
+                      HasDerivAt α ((Overload.smoothLoop lam C A hlam hC hA).F (α t) - α t) t) ∧
+                    ∀ t ∈ Set.Icc t₀ t₁,
+                      (∀ s ∈ Set.Icc t₀ t, Θ ≤ α s) → α t ≤ x₀ - (Θ - lam * A) * (t - t₀)
 
 #### Overload.smoothLoop_not_bistableOn : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C) (hA : 1 ≤ A),

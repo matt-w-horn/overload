@@ -10,6 +10,7 @@ import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Algebra.Order.Star.Real
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.ODE.ExistUnique
 import Mathlib.Analysis.ODE.Gronwall
 import Mathlib.Analysis.SpecialFunctions.Bernstein
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
@@ -79,9 +80,19 @@ itself; this module reads the same loop through derivatives:
   witnessed tight by `fluid_decay_witness`), and the spike is back within
   `ε` after `log((x t₀ − Λ₀)/ε)/(1 − L)` seconds
   (`fluid_recovery_within`).
+* **The smooth loop's trajectory, supplied**: `x' = F(x) - x` has a local
+  solution by Picard–Lindelöf (`smoothLoop_exists_trajectory`, through the
+  Lipschitz modulus `lipschitzOnWith_smoothLoop_F`), and under the clamp
+  condition `λ·A < Θ` that trajectory, while at or above the threshold,
+  loses at least `Θ − λ·A` per second (`smoothLoop_fluid_drain`, pinned by
+  `smoothDemoLoop_fluid_drain_pin`).
 
-Scope: every trajectory statement takes the trajectory as a hypothesis.
-Existence and uniqueness of solutions of `x' = F(x) - x` are not claimed.
+Scope: the general trajectory statements take the trajectory as a
+hypothesis. For the smooth loop the trajectory is supplied:
+`smoothLoop_exists_trajectory` proves local existence of a solution of
+`x' = F(x) - x` by Picard–Lindelöf, with `lipschitzOnWith_smoothLoop_F` as
+the modulus. Uniqueness, extension past the local interval, and existence
+for any other loop are not claimed.
 Derivative hypotheses use Mathlib's `deriv` and `HasDerivAt`; a strict
 lower bound on `deriv F` implies differentiability (a non-differentiable
 point has `deriv F x = 0`), so only the gain-below-one results carry an
@@ -327,6 +338,34 @@ theorem smoothLoop_deriv_lt_one {lam C A : ℝ} (hlam : 0 ≤ lam) (hC : 0 < C)
     _ < 1 := by
         rw [mul_one_div, div_lt_one hC]
         exact hgain
+
+/-- The smooth loop's operator is Lipschitz on `[0, ∞)` with constant
+`λ(A−1)/C`: the mean value inequality applied to the closed-form gain
+`λ(A−1)·C/(Λ+C)²` (`hasDerivAt_smoothLoop_F`), whose maximum over `[0, ∞)`
+is `λ(A−1)/C` at `Λ = 0`. The modulus a Picard–Lindelöf construction for
+the fluid equation `x' = F(x) − x` consumes. -/
+theorem lipschitzOnWith_smoothLoop_F {lam C A : ℝ} (hlam : 0 ≤ lam)
+    (hC : 0 < C) (hA : 1 ≤ A) :
+    LipschitzOnWith (Real.toNNReal (lam * (A - 1) / C))
+      (smoothLoop lam C A hlam hC hA).F (Set.Ici 0) := by
+  have hlamA : 0 ≤ lam * (A - 1) := mul_nonneg hlam (sub_nonneg.mpr hA)
+  refine (convex_Ici (0 : ℝ)).lipschitzOnWith_of_nnnorm_hasDerivWithin_le
+    (f' := fun Λ => lam * ((A - 1) * (C / (Λ + C) ^ 2)))
+    (fun x hx => (hasDerivAt_smoothLoop_F hlam hC hA hx).hasDerivWithinAt)
+    (fun x hx => ?_)
+  have hx0 : (0 : ℝ) ≤ x := hx
+  have hnonneg : 0 ≤ lam * ((A - 1) * (C / (x + C) ^ 2)) := by
+    have : 0 ≤ A - 1 := sub_nonneg.mpr hA
+    positivity
+  rw [← NNReal.coe_le_coe, coe_nnnorm, Real.norm_eq_abs,
+    Real.coe_toNNReal _ (div_nonneg hlamA hC.le), abs_of_nonneg hnonneg]
+  have hdiv : C / (x + C) ^ 2 ≤ 1 / C := by
+    rw [div_le_div_iff₀ (by positivity) hC]
+    nlinarith
+  calc lam * ((A - 1) * (C / (x + C) ^ 2))
+      = lam * (A - 1) * (C / (x + C) ^ 2) := by ring
+    _ ≤ lam * (A - 1) * (1 / C) := mul_le_mul_of_nonneg_left hdiv hlamA
+    _ = lam * (A - 1) / C := by ring
 
 /-- **Stability by slope, uniqueness**: with `λ(A−1) < C` the smooth loop
 has at most one equilibrium in its demand envelope — no order argument, no
@@ -592,6 +631,143 @@ theorem fluid_drain_twelve_clears_at_four :
     (HasDerivAt.const_mul (3 : ℝ) (hasDerivAt_id t)).const_sub 12
   convert h using 1
   norm_num
+
+/-- **The fluid equation has a trajectory.** For every positive initial
+backlog `x₀`, the smooth loop's fluid equation `x' = F(x) − x` has a local
+solution: a trajectory `α` with `α t₀ = x₀` and derivative `F (α t) − α t`
+at every `t` of a closed interval of positive length. Picard–Lindelöf
+(Mathlib's `IsPicardLindelof`) on the ball `[0, 2x₀]`, with the Lipschitz
+modulus from `lipschitzOnWith_smoothLoop_F`. Local existence only: the
+interval length is existential, and neither uniqueness nor extension past
+the interval is claimed. -/
+theorem smoothLoop_exists_trajectory {lam C A x₀ : ℝ} (hlam : 0 ≤ lam)
+    (hC : 0 < C) (hA : 1 ≤ A) (hx₀ : 0 < x₀) (t₀ : ℝ) :
+    ∃ t₁, t₀ < t₁ ∧ ∃ α : ℝ → ℝ, α t₀ = x₀ ∧
+      ∀ t ∈ Set.Icc t₀ t₁,
+        HasDerivAt α ((smoothLoop lam C A hlam hC hA).F (α t) - α t) t := by
+  have hA0 : (0 : ℝ) ≤ A := le_trans zero_le_one hA
+  have hLb0 : 0 ≤ lam * A + 2 * x₀ :=
+    add_nonneg (mul_nonneg hlam hA0) (by linarith)
+  set ε : ℝ := x₀ / (lam * A + 2 * x₀ + 1) with hεdef
+  have hε0 : 0 < ε := div_pos hx₀ (by linarith)
+  have hball : Metric.closedBall x₀ x₀ = Set.Icc 0 (2 * x₀) := by
+    rw [Real.closedBall_eq_Icc, sub_self, two_mul]
+  have hlamA : 0 ≤ lam * (A - 1) / C :=
+    div_nonneg (mul_nonneg hlam (sub_nonneg.mpr hA)) hC.le
+  have hG : LipschitzOnWith (Real.toNNReal (lam * (A - 1) / C + 1))
+      (fun x => (smoothLoop lam C A hlam hC hA).F x - x) (Set.Ici 0) := by
+    refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
+    have h1 := (lipschitzOnWith_smoothLoop_F hlam hC hA).dist_le_mul x hx y hy
+    rw [Real.dist_eq, Real.dist_eq, Real.coe_toNNReal _ hlamA] at h1
+    rw [Real.dist_eq, Real.dist_eq, Real.coe_toNNReal _ (by linarith)]
+    have h2 : (smoothLoop lam C A hlam hC hA).F x - x -
+        ((smoothLoop lam C A hlam hC hA).F y - y) =
+        ((smoothLoop lam C A hlam hC hA).F x -
+          (smoothLoop lam C A hlam hC hA).F y) + -(x - y) := by
+      ring
+    calc |(smoothLoop lam C A hlam hC hA).F x - x -
+        ((smoothLoop lam C A hlam hC hA).F y - y)|
+        = |((smoothLoop lam C A hlam hC hA).F x -
+            (smoothLoop lam C A hlam hC hA).F y) + -(x - y)| := by rw [h2]
+      _ ≤ |(smoothLoop lam C A hlam hC hA).F x -
+            (smoothLoop lam C A hlam hC hA).F y| + |-(x - y)| := abs_add_le _ _
+      _ = |(smoothLoop lam C A hlam hC hA).F x -
+            (smoothLoop lam C A hlam hC hA).F y| + |x - y| := by rw [abs_neg]
+      _ ≤ lam * (A - 1) / C * |x - y| + |x - y| := by linarith
+      _ = (lam * (A - 1) / C + 1) * |x - y| := by ring
+  have hpl : IsPicardLindelof
+      (fun _ x => (smoothLoop lam C A hlam hC hA).F x - x)
+      (tmin := t₀ - ε) (tmax := t₀ + ε) ⟨t₀, by constructor <;> linarith⟩ x₀
+      (Real.toNNReal x₀) 0 (Real.toNNReal (lam * A + 2 * x₀))
+      (Real.toNNReal (lam * (A - 1) / C + 1)) := by
+    refine ⟨fun t _ht => ?_, fun _x _hx => continuousOn_const,
+      fun t _ht x hx => ?_, ?_⟩
+    · refine hG.mono ?_
+      rw [Real.coe_toNNReal _ hx₀.le, hball]
+      exact fun z hz => hz.1
+    · rw [Real.coe_toNNReal _ hx₀.le, hball] at hx
+      rw [Real.coe_toNNReal _ hLb0, Real.norm_eq_abs, abs_le]
+      have hFle : (smoothLoop lam C A hlam hC hA).F x ≤ lam * A :=
+        (smoothLoop lam C A hlam hC hA).F_le hx.1
+      have hF0 : 0 ≤ (smoothLoop lam C A hlam hC hA).F x :=
+        (smoothLoop lam C A hlam hC hA).F_nonneg hx.1
+      constructor
+      · change -(lam * A + 2 * x₀) ≤ (smoothLoop lam C A hlam hC hA).F x - x
+        linarith [hx.1, hx.2]
+      · change (smoothLoop lam C A hlam hC hA).F x - x ≤ lam * A + 2 * x₀
+        linarith [hx.1, hx.2, hx₀]
+    · rw [Real.coe_toNNReal _ hLb0, Real.coe_toNNReal _ hx₀.le]
+      change (lam * A + 2 * x₀) * max (t₀ + ε - t₀) (t₀ - (t₀ - ε)) ≤ x₀ - 0
+      rw [add_sub_cancel_left, sub_sub_cancel, max_self, sub_zero, hεdef]
+      calc (lam * A + 2 * x₀) * (x₀ / (lam * A + 2 * x₀ + 1))
+          ≤ (lam * A + 2 * x₀ + 1) * (x₀ / (lam * A + 2 * x₀ + 1)) :=
+            mul_le_mul_of_nonneg_right (by linarith)
+              (div_nonneg hx₀.le (by linarith))
+        _ = x₀ := by
+            rw [mul_comm]
+            exact div_mul_cancel₀ x₀ (by linarith)
+  obtain ⟨α, hα0, hα⟩ := hpl.exists_eq_forall_mem_Icc_hasDerivWithinAt₀
+  refine ⟨t₀ + ε / 2, by linarith, α, hα0, fun t ht => ?_⟩
+  exact (hα t ⟨by linarith [ht.1], by linarith [ht.2]⟩).hasDerivAt
+    (Icc_mem_nhds (by linarith [ht.1]) (by linarith [ht.2]))
+
+/-- **The drain, priced on the system's own trajectory.** Under the clamp
+condition `λ·A < Θ` (the smooth loop's response is bounded by `A`, so this
+is the clamp certificate at `K = A`) and initial backlog `x₀` at or above
+the threshold, a trajectory of `x' = F(x) − x` from `x₀` exists and,
+conditioned on staying at or above `Θ`, loses at least `Θ − λ·A` per
+second: `α t ≤ x₀ − (Θ − λ·A)(t − t₀)`. Existence from
+`smoothLoop_exists_trajectory`; the rate from `fluid_drain_le`, because at
+or above `Θ ≥ 0` the drift `F(α t) − α t` is at most `λ·A − Θ`. The
+horizon `t₁` is existential, and nothing is claimed past it or below the
+threshold. -/
+theorem smoothLoop_fluid_drain {lam C A Θ x₀ : ℝ} (hlam : 0 ≤ lam)
+    (hC : 0 < C) (hA : 1 ≤ A) (hΘ : lam * A < Θ) (hx₀ : Θ ≤ x₀) (t₀ : ℝ) :
+    ∃ t₁, t₀ < t₁ ∧ ∃ α : ℝ → ℝ, α t₀ = x₀ ∧
+      (∀ t ∈ Set.Icc t₀ t₁,
+        HasDerivAt α ((smoothLoop lam C A hlam hC hA).F (α t) - α t) t) ∧
+      ∀ t ∈ Set.Icc t₀ t₁, (∀ s ∈ Set.Icc t₀ t, Θ ≤ α s) →
+        α t ≤ x₀ - (Θ - lam * A) * (t - t₀) := by
+  have hlamA : 0 ≤ lam * A := mul_nonneg hlam (le_trans zero_le_one hA)
+  have hx₀0 : 0 < x₀ := lt_of_le_of_lt hlamA (lt_of_lt_of_le hΘ hx₀)
+  obtain ⟨t₁, ht₁, α, hα0, hα⟩ :=
+    smoothLoop_exists_trajectory hlam hC hA hx₀0 t₀
+  refine ⟨t₁, ht₁, α, hα0, hα, fun t ht hreg => ?_⟩
+  have hsub : Set.Icc t₀ t ⊆ Set.Icc t₀ t₁ := Set.Icc_subset_Icc_right ht.2
+  have hv : ∀ s ∈ Set.Icc t₀ t,
+      (smoothLoop lam C A hlam hC hA).F (α s) - α s ≤ -(Θ - lam * A) := by
+    intro s hs
+    have hΘs := hreg s hs
+    have h0s : 0 ≤ α s := le_trans (le_trans hlamA hΘ.le) hΘs
+    have hFle : (smoothLoop lam C A hlam hC hA).F (α s) ≤ lam * A :=
+      (smoothLoop lam C A hlam hC hA).F_le h0s
+    linarith
+  have hdrain := fluid_drain_le (δ := Θ - lam * A) (t₀ := t₀) (t₁ := t)
+    (x := α)
+    (v := fun s => (smoothLoop lam C A hlam hC hA).F (α s) - α s)
+    (fun s hs => hα s (hsub hs)) hv t (Set.right_mem_Icc.mpr ht.1)
+  rwa [hα0] at hdrain
+
+/-- Numeric pin of the drain on a concrete smooth loop: `λ = 10`, `C = 20`,
+`A = 2`, threshold `Θ = 25` — so `λ·A = 20 < 25` and the priced rate is
+`Θ − λ·A = 5` per second — with initial backlog `30`. A trajectory from
+`30` exists, and while it stays at or above `25` it obeys `α t ≤ 30 − 5t`.
+Exercises the drain theorem's hypothesis bundle at closed numerals. -/
+theorem smoothDemoLoop_fluid_drain_pin :
+    ∃ t₁, (0 : ℝ) < t₁ ∧ ∃ α : ℝ → ℝ, α 0 = 30 ∧
+      (∀ t ∈ Set.Icc (0 : ℝ) t₁,
+        HasDerivAt α ((smoothLoop 10 20 2 (by norm_num) (by norm_num)
+          (by norm_num)).F (α t) - α t) t) ∧
+      ∀ t ∈ Set.Icc (0 : ℝ) t₁, (∀ s ∈ Set.Icc (0 : ℝ) t, 25 ≤ α s) →
+        α t ≤ 30 - 5 * t := by
+  obtain ⟨t₁, ht₁, α, hα0, hα, hdrain⟩ :=
+    smoothLoop_fluid_drain (lam := 10) (C := 20) (A := 2) (Θ := 25)
+      (x₀ := 30) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+      (by norm_num) 0
+  refine ⟨t₁, ht₁, α, hα0, hα, fun t ht hreg => ?_⟩
+  have h := hdrain t ht hreg
+  norm_num at h
+  linarith
 
 /-- **The gain margin is a decay rate.** If along the trajectory the map's
 excursion above `Λ₀` is bounded by a gain `L` — `F (x t) - Λ₀ ≤ L·(x t - Λ₀)`

@@ -21,9 +21,28 @@ make verify              # every gate, then a stamp of the verified tree
 target, and it elaborates every module under Mathlib's standard syntax
 linter set. `lake test` runs the statement lock, the linter-coverage
 check, the negative fixtures, and the source scans. `lake lint` runs the
-environment linters, and `lake exe lint-style` runs the text-based ones.
-`make verify` runs all of them and promotes warnings to failures.
-`make leanchecker` replays every module through the kernel.
+environment linters: Batteries' set plus this library's own
+`silencingMarkers`, which fails on any declaration carrying a
+gate-silencing marker (`unsafe`, `partial`, an `implemented_by` or
+`extern` replacement, a `nolint` exemption). `lake exe lint-style` runs
+the text-based ones. `make verify` runs all of them and promotes
+warnings to failures.
+
+Two kernel re-checks sit behind the build, wired to run weekly in CI and
+on demand. `make leanchecker` replays every module through the
+toolchain's own checker: the same kernel implementation, at the same
+pin, that built the oleans, with imports trusted; it catches elaborator
+drift, not kernel bugs. `make nanoda` is the independent watcher:
+[lean4export](https://github.com/leanprover/lean4export) writes the
+library's full dependency cone, Mathlib included, and
+[Nanoda](https://github.com/ammkrn/nanoda_lib), a Lean kernel written
+from scratch in Rust, re-checks it with exactly `propext`,
+`Classical.choice`, and `Quot.sound` permitted. The case for a second
+implementation is Leonardo de Moura's
+[Who Watches the Provers?](https://leodemoura.github.io/blog/2026-3-16-who-watches-the-provers/):
+a kernel bug replays identically in the kernel's own checker, and an
+independent implementation has to be wrong in the same way at the same
+time.
 
 ## History
 

@@ -22,7 +22,7 @@ target, and it elaborates every module under Mathlib's standard syntax
 linter set. `lake test` runs the statement lock, the linter-coverage
 check, the negative fixtures, and the source scans. `lake lint` runs the
 environment linters: Batteries' set plus this library's own
-`silencingMarkers`, which fails on any declaration carrying a
+`silencingMarkers`, which fails on any library declaration carrying a
 gate-silencing marker (`unsafe`, `partial`, an `implemented_by` or
 `extern` replacement, a `nolint` exemption). `lake exe lint-style` runs
 the text-based ones. `make verify` runs all of them and promotes

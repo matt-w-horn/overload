@@ -30,8 +30,10 @@ jobs:
         run: make leanchecker LEANCHECKER_WORKERS=2
       # The independent watcher: lean4export exports the full dependency
       # cone (Mathlib included) and Nanoda, a from-scratch Rust kernel with
-      # its own arithmetic, re-checks it under the strict three-axiom
-      # whitelist. Self-calibrates against a doctored export every run;
-      # pins and config are in the Makefile.
+      # its own arithmetic, re-checks every declaration in it. Axiom
+      # discipline stays with the build-time audit (the export necessarily
+      # declares core's own axioms); this leg is independent type-checking.
+      # Self-calibrates against a doctored export every run; pins and
+      # config are in the Makefile.
       - name: nanoda
         run: make nanoda

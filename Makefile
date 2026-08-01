@@ -62,7 +62,7 @@ tally-sync:
 	  exit 1; \
 	fi; \
 	echo "tally-sync: gate and driver agree — $$driver"
-	@audit=$$(grep -oE '#axiom_budget_all: [0-9]+ declarations' .verify/build.log | grep -oE '[0-9]+' | head -1); \
+	@audit=$$(grep -oE '#axiom_budget_all: [0-9]+ declarations' .verify/build.log | grep -oE '[0-9]+' | tail -1); \
 	rule=$$(grep -oE 'audit-rule count [0-9]+' .verify/test.log | grep -oE '[0-9]+' | tail -1); \
 	if [ -z "$$audit" ]; then echo "tally-sync: no #axiom_budget_all count in .verify/build.log" >&2; exit 1; fi; \
 	if [ -z "$$rule" ]; then echo "tally-sync: no audit-rule count in .verify/test.log" >&2; exit 1; fi; \
@@ -98,19 +98,21 @@ scope:
 # for, so both are excluded); any touched linter line in lakefile.toml,
 # where removing an option silences it just as surely as a set_option;
 # any touched line at all in the gate carriers that nothing else watches
-# (.pre-commit-config.yaml, the workflows, Overload/Lint.lean — rare-change
-# files, so the sign-off friction is a few times a month at most); and the
-# two load-bearing lines other gates rest on — checks.py's token regex and
-# AxiomAudit's axiom allowlist.
+# (.pre-commit-config.yaml, the workflows, Overload/Lint.lean, and this
+# Makefile, which holds every sweep below — rare-change files, so the
+# sign-off friction is a few times a month at most); and the two
+# load-bearing lines other gates rest on — checks.py's token regex and
+# AxiomAudit's axiom allowlist. In CI the sign-off is the
+# silencing-signed-off label on the PR (ci.yml skips the mirror job).
 silencing-guard:
 	@hits=$$(git diff $(GUARD_DIFF) -U0 -- 'Overload.lean' 'Overload/*.lean' 'Overload/**/*.lean' 'tests/positive/*.lean' \
 	  | grep -E '^\+[^+]' \
 	  | grep -E 'set_option +(linter|debug)\.|set_option +[A-Za-z.]*maxHeartbeats|@\[nolint|@\[implemented_by|@\[extern|^\+ *((private|protected|public|noncomputable) +)*(axiom|unsafe|partial) '; true); \
 	tomlhits=$$(git diff $(GUARD_DIFF) -U0 -- lakefile.toml | grep -E '^[-+].*linter\.'; true); \
-	gatehits=$$(git diff $(GUARD_DIFF) -U0 -- .pre-commit-config.yaml '.github/workflows/*' Overload/Lint.lean \
-	  | grep -E '^[-+][^-+]'; true); \
+	gatehits=$$(git diff $(GUARD_DIFF) -U0 -- .pre-commit-config.yaml '.github/workflows/*' Overload/Lint.lean Makefile \
+	  | grep -E '^[-+]' | grep -vE '^(\+\+\+|---)'; true); \
 	surfhits=$$(git diff $(GUARD_DIFF) -U0 -- scripts/checks.py Overload/AxiomAudit.lean \
-	  | grep -E '^[-+][^-+]' | grep -E 'TOKEN_RE|re\.compile| r"|allowed'; true); \
+	  | grep -E '^[-+]' | grep -vE '^(\+\+\+|---)' | grep -E 'TOKEN_RE|re\.compile| r"|allowed'; true); \
 	if [ -n "$$hits$$tomlhits$$gatehits$$surfhits" ]; then \
 	  echo "silencing-guard: diff $(GUARD_DIFF) touches gate-silencing tokens or gate files;" >&2; \
 	  echo "sign off with SKIP=silencing-guard if deliberate" >&2; \
@@ -203,13 +205,13 @@ watcher-tools:
 	@if [ ! -d $(WATCHERS)/lean4export ]; then \
 	  git clone -q https://github.com/leanprover/lean4export $(WATCHERS)/lean4export; \
 	fi
-	@cd $(WATCHERS)/lean4export && git fetch -q origin && git checkout -q $(LEAN4EXPORT_REV)
+	@cd $(WATCHERS)/lean4export && git fetch -q origin && git checkout -q -f $(LEAN4EXPORT_REV)
 	@cp lean-toolchain $(WATCHERS)/lean4export/lean-toolchain
 	@set -o pipefail; cd $(WATCHERS)/lean4export && lake build 2>&1 | tail -1
 	@if [ ! -d $(WATCHERS)/nanoda_lib ]; then \
 	  git clone -q https://github.com/ammkrn/nanoda_lib $(WATCHERS)/nanoda_lib; \
 	fi
-	@cd $(WATCHERS)/nanoda_lib && git fetch -q origin && git checkout -q $(NANODA_REV)
+	@cd $(WATCHERS)/nanoda_lib && git fetch -q origin && git checkout -q -f $(NANODA_REV)
 	@set -o pipefail; cd $(WATCHERS)/nanoda_lib \
 	  && PATH="$$HOME/.cargo/bin:$$PATH" cargo build --release 2>&1 | tail -1
 	@printf '%s\n' \
@@ -231,15 +233,16 @@ nanoda: watcher-tools
 	  || { echo "nanoda: export is missing or empty" >&2; exit 1; }
 	@set -o pipefail; wc -c < $(WATCHERS)/export.ndjson | awk '{printf "nanoda: export is %d bytes\n", $$1}'
 	@# Self-calibration on every run: a checker that accepts a corrupted
-	@# export inspects nothing, so corrupt a copy (every Nat reference
-	@# becomes Bool) and require rejection before the real verdict counts.
-	@sed 's/Nat/Bool/g' $(WATCHERS)/export.ndjson > $(WATCHERS)/doctored.ndjson
-	@if $(WATCHERS)/nanoda_lib/target/release/nanoda_bin $(WATCHERS)/nanoda-config.json \
-	    < $(WATCHERS)/doctored.ndjson >/dev/null 2>&1; then \
+	@# export inspects nothing, so stream a corrupted copy (every Nat
+	@# reference becomes Bool) and require rejection before the real
+	@# verdict counts. Streamed rather than written: the export is
+	@# gigabytes, and a temp copy would double the disk footprint and
+	@# leak on the failure path.
+	@if sed 's/Nat/Bool/g' $(WATCHERS)/export.ndjson \
+	    | $(WATCHERS)/nanoda_lib/target/release/nanoda_bin $(WATCHERS)/nanoda-config.json >/dev/null 2>&1; then \
 	  echo "nanoda: DOCTORED export accepted — the checker inspects nothing" >&2; \
 	  exit 1; \
 	fi
-	@rm -f $(WATCHERS)/doctored.ndjson
 	@echo "nanoda: doctored export rejected (self-calibration passed)"
 	$(WATCHERS)/nanoda_lib/target/release/nanoda_bin $(WATCHERS)/nanoda-config.json < $(WATCHERS)/export.ndjson
 	@echo "nanoda: independent kernel accepts the export"

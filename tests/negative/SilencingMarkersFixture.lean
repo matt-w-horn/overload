@@ -32,5 +32,6 @@ def probeImpl : Nat → Nat := fun _ => 0
 /-- Probe: the private spelling must not hide the marker. -/
 private unsafe def probePrivateUnsafe : Nat := 0
 
-open Overload in
+-- The linter registry is keyed by short name, so no namespace open is
+-- needed (and a qualified name is rejected).
 #lint only silencingMarkers

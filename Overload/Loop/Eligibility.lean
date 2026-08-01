@@ -211,8 +211,8 @@ theorem demoEligibleLoop_one_congestedEq :
 /-- Numeric regression on the cap-side reading: a truncated-geometric loop
 whose offered load `2` already meets the threshold is congested at cap `3`.
 The proof reaches it from the cap-`1` instance through
-`kernelLoop_congestedEq_mono_cap` — the cap-monotonicity this pins; the
-statement records the cap-`3` endpoint. -/
+`kernelLoop_congestedEq_mono_cap`; the congestion itself already follows
+from the load meeting the threshold, at every cap. -/
 theorem kernelLoop_congestedEq_mono_cap_pin :
     (kernelLoop 2 (stepKernel 2) 3 (by norm_num) (by norm_num)
       (stepKernel_mem 2) (stepKernel_monoOn 2)).CongestedEq 2 :=

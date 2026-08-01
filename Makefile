@@ -31,8 +31,14 @@ lint:
 lint-style:
 	@set -o pipefail; lake exe lint-style 2>&1 | tee .verify/lint-style.log
 
+# The driver elaborates eleven expected-failure fixtures, each its own `lean`
+# process loading the Mathlib oleans, so the same memory budget applies; the
+# driver's own default is deliberately conservative for a bare `lake test`.
 test:
-	@set -o pipefail; lake test 2>&1 | tee .verify/test.log
+	@set -e; \
+	if [ -n "$(TEST_JOBS)" ]; then n="$(TEST_JOBS)"; \
+	else $(worker_budget); fi; \
+	set -o pipefail; OVERLOAD_TEST_JOBS=$$n lake test 2>&1 | tee .verify/test.log
 
 # The class tally is printed twice from two differently-built
 # environments: the build-time gate (#coverage_report, from Gate.lean's
@@ -116,6 +122,25 @@ silencing-guard:
 	fi; \
 	echo "silencing-guard: no gate-silencing tokens in diff $(GUARD_DIFF)"
 
+# Concurrent Lean processes are budgeted by MEMORY, never by cores: each one
+# replays the Mathlib imports and peaks at gigabytes, and past the memory
+# budget concurrent environments evict each other's pages, so more workers is
+# strictly slower. The measurements behind the 5 GiB-per-worker figure are in
+# the leanchecker note below. Sets $$n; every caller checks its own override
+# variable first.
+define worker_budget
+	  if command -v sysctl >/dev/null 2>&1 && sysctl -n hw.memsize >/dev/null 2>&1; then \
+	    mem_gb=$$(( $$(sysctl -n hw.memsize) / 1073741824 )); \
+	    ncpu=$$(sysctl -n hw.ncpu); \
+	  else \
+	    mem_gb=$$(( $$(awk '/MemTotal/ {print $$2}' /proc/meminfo) / 1048576 )); \
+	    ncpu=$$(nproc); \
+	  fi; \
+	  n=$$(( mem_gb / 5 )); \
+	  if [ "$$n" -lt 1 ]; then n=1; fi; \
+	  if [ "$$n" -gt "$$ncpu" ]; then n=$$ncpu; fi
+endef
+
 # Kernel re-check: leanchecker (shipped with the toolchain since v4.28.0)
 # replays each Overload module's .olean through the kernel, imports
 # trusted — the airtight backstop behind the elaborator. One invocation
@@ -139,18 +164,7 @@ silencing-guard:
 leanchecker:
 	@set -e; \
 	if [ -n "$(LEANCHECKER_WORKERS)" ]; then n="$(LEANCHECKER_WORKERS)"; \
-	else \
-	  if command -v sysctl >/dev/null 2>&1 && sysctl -n hw.memsize >/dev/null 2>&1; then \
-	    mem_gb=$$(( $$(sysctl -n hw.memsize) / 1073741824 )); \
-	    ncpu=$$(sysctl -n hw.ncpu); \
-	  else \
-	    mem_gb=$$(( $$(awk '/MemTotal/ {print $$2}' /proc/meminfo) / 1048576 )); \
-	    ncpu=$$(nproc); \
-	  fi; \
-	  n=$$(( mem_gb / 5 )); \
-	  if [ "$$n" -lt 1 ]; then n=1; fi; \
-	  if [ "$$n" -gt "$$ncpu" ]; then n=$$ncpu; fi; \
-	fi; \
+	else $(worker_budget); fi; \
 	echo "leanchecker: replaying every Overload module ($$n workers)"; \
 	LEAN_NUM_THREADS=$$n lake env leanchecker -v Overload; \
 	echo "leanchecker: kernel accepts every Overload module"
@@ -185,12 +199,13 @@ watcher-tools:
 	fi
 	@cd $(WATCHERS)/lean4export && git fetch -q origin && git checkout -q $(LEAN4EXPORT_REV)
 	@cp lean-toolchain $(WATCHERS)/lean4export/lean-toolchain
-	@cd $(WATCHERS)/lean4export && lake build 2>&1 | tail -1
+	@set -o pipefail; cd $(WATCHERS)/lean4export && lake build 2>&1 | tail -1
 	@if [ ! -d $(WATCHERS)/nanoda_lib ]; then \
 	  git clone -q https://github.com/ammkrn/nanoda_lib $(WATCHERS)/nanoda_lib; \
 	fi
 	@cd $(WATCHERS)/nanoda_lib && git fetch -q origin && git checkout -q $(NANODA_REV)
-	@cd $(WATCHERS)/nanoda_lib && cargo build --release 2>&1 | tail -1
+	@set -o pipefail; cd $(WATCHERS)/nanoda_lib \
+	  && PATH="$$HOME/.cargo/bin:$$PATH" cargo build --release 2>&1 | tail -1
 	@printf '%s\n' \
 	  '{' \
 	  '  "use_stdin": true,' \
@@ -205,8 +220,10 @@ watcher-tools:
 
 nanoda: watcher-tools
 	@echo "nanoda: exporting the Overload cone (Mathlib included)"
-	lake env $(WATCHERS)/lean4export/.lake/build/bin/lean4export Overload > $(WATCHERS)/export.ndjson
-	@wc -c < $(WATCHERS)/export.ndjson | awk '{printf "nanoda: export is %d bytes\n", $$1}'
+	mkdir -p $(WATCHERS) && lake env $(WATCHERS)/lean4export/.lake/build/bin/lean4export Overload > $(WATCHERS)/export.ndjson
+	@test -s $(WATCHERS)/export.ndjson \
+	  || { echo "nanoda: export is missing or empty" >&2; exit 1; }
+	@set -o pipefail; wc -c < $(WATCHERS)/export.ndjson | awk '{printf "nanoda: export is %d bytes\n", $$1}'
 	@# Self-calibration on every run: a checker that accepts a corrupted
 	@# export inspects nothing, so corrupt a copy (every Nat reference
 	@# becomes Bool) and require rejection before the real verdict counts.

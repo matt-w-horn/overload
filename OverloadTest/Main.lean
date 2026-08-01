@@ -518,6 +518,42 @@ def run (cmd : String) (args : Array String) : IO (UInt32 × String) := do
   let out ← IO.Process.output { cmd, args }
   return (out.exitCode, out.stdout ++ out.stderr)
 
+/--
+How many fixture elaborations may run at once.
+
+Each one is a `lean` process that loads the Mathlib oleans, so the binding
+resource is memory rather than cores: eleven at once is comfortable on a
+large build host and swaps a 16 GB laptop into being slower than sequential.
+The default is therefore conservative, and `OVERLOAD_TEST_JOBS` raises it —
+the `Makefile` derives a value from the host's memory the same way the
+`leanchecker` target does.
+-/
+def fixtureJobs : IO Nat := do
+  match (← IO.getEnv "OVERLOAD_TEST_JOBS") with
+  | some s => return max 1 (s.toNat?.getD 3)
+  | none => return 3
+
+/--
+Map `f` over `xs` with at most `n` running concurrently, in batches.
+
+Results come back in input order, so the driver's per-fixture lines stay
+diffable between runs even though the processes overlap. A batch barrier
+costs some wall time against a rolling pool, but every fixture here takes
+about the same time, so the loss is small and the implementation carries no
+`partial`.
+-/
+def runBatched {α β : Type} (n : Nat) (xs : Array α) (f : α → IO β) :
+    IO (Array β) := do
+  let n := max 1 n
+  let batches := (xs.size + n - 1) / n
+  let mut out := #[]
+  for b in [0:batches] do
+    let batch := xs.extract (b * n) (min ((b + 1) * n) xs.size)
+    let tasks ← batch.mapM fun x => IO.asTask (prio := .dedicated) (f x)
+    for t in tasks do
+      out := out.push (← IO.ofExcept t.get)
+  return out
+
 structure Failure where
   stage : String
   detail : String
@@ -804,8 +840,12 @@ unsafe def main (args : List String) : IO UInt32 := do
     {dirOrder.length} ordered directories (self-test ok)"
 
   -- [4] negative fixtures
-  for (file, expected) in negativeFixtures do
-    let (code, out) ← run "lean" #[s!"tests/negative/{file}"]
+  -- Each fixture is an independent `lean` process, so they overlap; results
+  -- are consumed in input order and the printed lines are unchanged.
+  let jobs ← fixtureJobs
+  let negOut ← runBatched jobs negativeFixtures.toArray fun (file, _) =>
+    run "lean" #[s!"tests/negative/{file}"]
+  for ((file, expected), (code, out)) in negativeFixtures.zip negOut.toList do
     if code == 0 then
       failures := failures.push ⟨"negative", s!"{file} elaborated; it must be rejected"⟩
     else if (out.splitOn expected).length > 1 then
@@ -813,16 +853,18 @@ unsafe def main (args : List String) : IO UInt32 := do
     else
       failures := failures.push
         ⟨"negative", s!"{file} failed without the expected message ({expected}):\n{out}"⟩
-  for file in scannerFixtures do
-    -- The scanner fixtures' argument rests on their compiling with at most
-    -- a warning — that is what makes them invisible to the elaboration
-    -- gates. Pin that property: ExampleSorryFixture silently stopped
-    -- elaborating once (2026-07-29, an import drift) and nothing noticed,
-    -- because only the scanner ever read it.
-    let (code, out) ← run "lean" #[s!"tests/negative/{file}"]
+  -- The scanner fixtures' argument rests on their compiling with at most
+  -- a warning — that is what makes them invisible to the elaboration
+  -- gates. Pin that property: ExampleSorryFixture silently stopped
+  -- elaborating once (2026-07-29, an import drift) and nothing noticed,
+  -- because only the scanner ever read it.
+  let scanOut ← runBatched jobs scannerFixtures.toArray fun file =>
+    run "lean" #[s!"tests/negative/{file}"]
+  for (file, (code, out)) in scannerFixtures.zip scanOut.toList do
     if code != 0 then
       failures := failures.push ⟨"negative",
         s!"{file} no longer elaborates; the scanner, not the elaborator, must reject it:\n{out}"⟩
+    -- The scan itself is a fast python process; it stays sequential.
     let (code, out) ← run "python3"
       #["scripts/checks.py", "--scan", s!"tests/negative/{file}"]
     if code == 0 then

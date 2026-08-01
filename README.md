@@ -1,5 +1,8 @@
 # Overload
 
+[![ci](https://github.com/matt-w-horn/overload/actions/workflows/ci.yml/badge.svg)](https://github.com/matt-w-horn/overload/actions/workflows/ci.yml)
+![license: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)
+
 Overload is machine-checked mathematics of retry amplification and
 congestion collapse over fixed capacity. It is a Lean 4 + Mathlib library
 with zero `sorry` and zero custom axioms. The build fails if either claim
@@ -27,6 +30,16 @@ environment linters, and `lake exe lint-style` runs the text-based ones.
 This repository's public history begins at its initial commit; the library
 was developed privately before release, and its history was restarted on
 2026-07-28.
+
+## Related
+
+- [lean-self-audit-template](https://github.com/matt-w-horn/lean-self-audit-template)
+  packages the two-tier honesty-gate design used here (axiom audit,
+  statement lock, claims ledger) as a fork-ready template for new
+  libraries.
+- [lean-skills](https://github.com/matt-w-horn/lean-skills) is the set of
+  Claude Code skills this library is built and audited with, including
+  the blinded claims-review workflow behind the ledger.
 
 ## License
 

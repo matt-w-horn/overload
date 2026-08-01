@@ -332,8 +332,9 @@ theorem unitPath_little :
   simpa using unitPath.little (one_pos : (0 : ℝ) < 1) unitPath_H1 unitPath_H2
 
 /-- The weighted bundle discharged: `SamplePath.brumelle` applies at unit
-weight and returns the time-average value in system `λ·Gbar = 1`. H1, H2, and H3
-are jointly satisfiable. -/
+weight and returns the time-average value in system `λ·Gbar = 1`. The
+joint satisfiability of H1, H2, and H3 is witnessed by `unitPath_H1`,
+`unitPath_H2`, and `unitPath_H3`, which this proof consumes. -/
 theorem unitPath_brumelle :
     Filter.Tendsto (fun t => unitPath.valueArea (fun _ => 1) t / t)
       Filter.atTop (nhds 1) := by

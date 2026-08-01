@@ -766,8 +766,10 @@ theorem smoothLoop_fluid_drain {lam C A Θ x₀ : ℝ} (hlam : 0 ≤ lam)
 /-- Numeric pin of the drain on a concrete smooth loop: `λ = 10`, `C = 20`,
 `A = 2`, threshold `Θ = 25` — so `λ·A = 20 < 25` and the priced rate is
 `Θ − λ·A = 5` per second — with initial backlog `30`. A trajectory from
-`30` exists, and while it stays at or above `25` it obeys `α t ≤ 30 − 5t`.
-Exercises the drain theorem's hypothesis bundle at closed numerals. -/
+`30` exists on some positive horizon `[0, t₁]`, and on it, while the
+trajectory stays at or above `25`, it obeys `α t ≤ 30 − 5t`; nothing is
+claimed past the existential horizon. Exercises the drain theorem's
+hypothesis bundle at closed numerals. -/
 theorem smoothDemoLoop_fluid_drain_pin :
     ∃ t₁, (0 : ℝ) < t₁ ∧ ∃ α : ℝ → ℝ, α 0 = 30 ∧
       (∀ t ∈ Set.Icc (0 : ℝ) t₁,

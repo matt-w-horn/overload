@@ -351,9 +351,12 @@ failures are slow and apportionment is remaining-deadline; re-armed per-try
 timeouts re-open it.
 -/
 
-/-- Slow failure + remaining-deadline apportionment ⟹ the truncated-geometric
-response through the deadline-capped attempt count is identically 1: no
-amplification, whatever the failure probability. -/
+/-- At the slow-failure boundary (`T 0 = D`) under remaining-deadline
+apportionment — positive latencies, nonnegative backoffs, at least one
+attempt available (`1 ≤ n`) — the truncated-geometric response through the
+deadline-capped attempt count is identically 1: no amplification, whatever
+the failure probability. Strictly slower failures drop the count to `0`
+(`neff_eq_zero_of_strictly_slow`), not to `1`. -/
 theorem amp_eq_one_of_slow_remaining {T B : ℕ → ℝ} {D : ℝ} {n : ℕ}
     (hT0 : T 0 = D) (hTpos : ∀ j, 0 < T j) (hB : ∀ j, 0 ≤ B j)
     (hn : 1 ≤ n) (p : ℝ) : expAttempts p (neff T B D n) = 1 := by
@@ -514,8 +517,10 @@ theorem stepLoop_F_of_ge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A) {Λ :
   ring
 
 /-- **The bistable band, existence side**: for `λ < C ≤ λ·A` the stylized
-loop is bistable — the healthy equilibrium `λ` and a congested equilibrium
-`≥ C` coexist, certified by two point evaluations. -/
+loop is bistable on its envelope — the `BistableOn` order gap, certified by
+two point evaluations. The equilibrium levels are identified by the
+siblings: `stepLoop_lfpIcc_of_lt` puts the lower extreme at `λ`,
+`stepLoop_gfpIcc_of_ge` the upper at `λ·A ≥ C`. -/
 theorem stepLoop_bistable {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
     (hband_lo : C ≤ lam * A) (hband_hi : lam < C) :
     BistableOn (stepLoop lam C A (le_of_lt hlam) hA).F 0 (lam * A) :=

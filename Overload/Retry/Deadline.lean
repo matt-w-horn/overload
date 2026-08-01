@@ -200,8 +200,9 @@ theorem neff_rearmed {τ : ℝ} (hτ : 0 < τ) (hD : 0 ≤ D) (n : ℕ) :
     neff (fun _ => τ) (fun _ => 0) D n = min n ⌊D / τ⌋₊ := by
   simpa using neff_const hτ le_rfl hD n
 
-/-- Re-armed timeouts sustain amplification: two sub-deadlines in the budget
-means at least two attempts. This is sustaining mechanism 2 in one line. -/
+/-- Re-armed timeouts sustain amplification: two sub-deadlines in the
+budget, with the retry cap admitting two (`2 ≤ n`), means at least two
+attempts. This is sustaining mechanism 2 in one line. -/
 theorem two_le_neff_rearmed {τ : ℝ} (hτ : 0 < τ) (h2 : 2 * τ ≤ D)
     (hn : 2 ≤ n) : 2 ≤ neff (fun _ => τ) (fun _ => 0) D n := by
   have hD : 0 ≤ D := by linarith
@@ -428,8 +429,9 @@ theorem neff_geom_backoff_le {r : ℝ} (hr : 1 < r) (hb : 0 < b)
     linarith
 
 /-- Pin of the square-root lever: with unit linear backoff and an 8-second
-deadline, at most `5` attempts fit however large the configured cap — here
-`100`, twenty times the bound. -/
+deadline, at most `5` attempts fit at the configured cap `100`, twenty
+times the bound (`neff_linear_backoff_le` gives the same `5` at every
+cap). -/
 theorem neff_linear_backoff_le_pin :
     (neff (fun _ => (1 : ℝ)) (fun j => ((j : ℝ) + 1) * 1) 8 100 : ℝ) ≤ 5 := by
   refine (neff_linear_backoff_le one_pos (fun _ => zero_le_one)

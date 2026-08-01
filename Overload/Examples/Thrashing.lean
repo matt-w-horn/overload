@@ -84,9 +84,7 @@ theorem thrashing_inflow : (20 : ℝ) ≤ thrashingLoop.F 20 := by
 /-- **Thrashing is bistable.** Working-set demand 6 against memory
 capacity 20 with fault-retry cap 4: the healthy state (everything
 resident, `F = 6`) coexists with a congested state (`F(20) = 24 ≥ 20` —
-fault storms sustain themselves once memory saturates). A trigger that
-pushes resident demand past capacity leaves the system thrashing after
-the trigger ends. -/
+fault storms sustain themselves once memory saturates). -/
 theorem thrashing_bistable : BistableOn thrashingLoop.F 0 24 := by
   refine thrashingLoop.bistableOn_of_two_points (x := 6) (y := 20)
     (by norm_num) ?_ thrashing_inflow (by norm_num) ?_

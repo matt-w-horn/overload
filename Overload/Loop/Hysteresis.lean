@@ -409,11 +409,12 @@ theorem stepLoop_sweep_down_ge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A)
   rwa [stepLoop_gfpIcc_of_ge hlam hA hge] at h
 
 /-- **The congestion edge of the stylized loop is exactly `C/A`.** The
-congested set in offered load is precisely `[C/A, ∞)` —
-`clamp_band_lower` gives the forward inclusion, the band's congested
-equilibrium the reverse — so the infimum evaluates in closed form, and on
-this family the edge is attained. Closes the "bounds only" hedge of
-`congestionEdge_le`/`le_congestionEdge` on the concrete loop. -/
+statement carries the closed-form value of the infimum; inside the proof,
+`clamp_band_lower` bounds the congested set in offered load below by
+`C/A` and the band's congested equilibrium witnesses loads from `C/A`
+upward. Closes the "bounds only" hedge of
+`congestionEdge_le`/`le_congestionEdge` on the concrete loop — the value,
+not the set shape or attainment, which the statement does not assert. -/
 theorem stepLoop_congestionEdge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A)
     (hC : 0 < C) :
     (stepLoop lam C A hlam hA).congestionEdge C = C / A := by

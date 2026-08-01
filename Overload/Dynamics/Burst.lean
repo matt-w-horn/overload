@@ -176,10 +176,11 @@ theorem burst_safe_stepLoop_five :
     (by norm_num) (by norm_num) 5
   simpa using h
 
-/-- Numeric regression on the crossing side: on `stepLoop 1 2 3` a cohort of
-`6` released over a window of `4` lifts baseline `1/2` to exactly capacity
-`2`, inside the demand envelope `1·3`, so a congested equilibrium exists at
-`2`. -/
+/-- Numeric regression on the crossing side: `stepLoop 1 2 3` has a
+congested equilibrium at threshold `2`. The statement records only that;
+the proof reaches it through `stepLoop_burst_crosses` — a cohort of `6`
+released over a window of `4` lifts baseline `1/2` to exactly capacity
+`2`, inside the demand envelope `1·3`. -/
 theorem burst_crosses_stepLoop_two :
     (stepLoop 1 2 3 (by norm_num) (by norm_num)).CongestedEq 2 :=
   stepLoop_burst_crosses (Λ₀ := 1/2) (B := 6) (w := 4) (by norm_num)

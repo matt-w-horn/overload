@@ -3,7 +3,11 @@ name: ci
 on:
   push:
     branches: [main]
+  # labeled/unlabeled are included so applying silencing-signed-off to an
+  # already-open PR re-evaluates the guard job's skip condition — the
+  # default event types only carry the labels present at open or push.
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   workflow_dispatch:
 
 permissions:
@@ -34,6 +38,9 @@ jobs:
 
   build:
     name: lake build
+    # A label toggle should re-run the cheap guard job above, not this
+    # full build; skipped counts as success for required checks.
+    if: github.event.action != 'labeled' && github.event.action != 'unlabeled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

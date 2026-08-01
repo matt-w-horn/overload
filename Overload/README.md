@@ -10,6 +10,7 @@ total order `dirOrder` and fails on any import running backwards through
 
 Each directory has its own README. Three modules sit at the top level,
 outside the order: `Basic.lean` (the shared root import), `Lint.lean`
-(registers the two enabled Batteries linters, theorem docstrings and iff
-plicity), and `AxiomAudit.lean` (the build-time axiom audit over every
+(registers enabled copies of two Batteries linters, `docBlameThm` and
+`explicitVarsOfIff`), and `AxiomAudit.lean` (the build-time axiom audit over
+every
 declaration in the namespace).

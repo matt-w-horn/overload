@@ -36,8 +36,9 @@ drift, not kernel bugs. `make nanoda` is the independent watcher:
 [lean4export](https://github.com/leanprover/lean4export) writes the
 library's full dependency cone, Mathlib included, and
 [Nanoda](https://github.com/ammkrn/nanoda_lib), a Lean kernel written
-from scratch in Rust, re-checks it with exactly `propext`,
-`Classical.choice`, and `Quot.sound` permitted. The case for a second
+from scratch in Rust, re-checks it declaration by declaration. Axiom
+discipline stays with the build-time audit; the second kernel
+contributes independent type-checking. The case for a second
 implementation is Leonardo de Moura's
 [Who Watches the Provers?](https://leodemoura.github.io/blog/2026-3-16-who-watches-the-provers/):
 a kernel bug replays identically in the kernel's own checker, and an

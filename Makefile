@@ -177,10 +177,16 @@ leanchecker:
 # at the same time. Pins: lean4export at its v4.32.0-toolchain rev with
 # this repo's lean-toolchain copied over it (the export runtime must
 # match the oleans it reads, and a patch release is source-compatible);
-# nanoda_lib at the Lean Kernel Arena's rev. The config whitelists
-# exactly the three classical axioms and hard-errors on any other; the
-# nat/string kernel extensions are nanoda's own implementations, which
-# is the point. Checkouts, config, and the export live OUTSIDE the
+# nanoda_lib at the Lean Kernel Arena's rev. Axiom policy is
+# deliberately open (the Arena's own setting): the export necessarily
+# declares Lean core's own axioms (trustCompiler, ofReduceBool, sorryAx)
+# and core meta-code references them, so a whitelist either hard-errors
+# on the declarations or panics on the dangling references — both
+# demonstrated 2026-08-01. Library axiom discipline is
+# #axiom_budget_all's job, per declaration at build time; this leg
+# contributes independent TYPE-CHECKING, and the nat/string kernel
+# extensions are nanoda's own implementations, which is the point.
+# Checkouts, config, and the export live OUTSIDE the
 # working tree, under ~/.cache: anything that treats the tree as
 # disposable (a clean checkout, a sync, a worktree) clobbers a nested
 # clone's .git, after which git commands inside it silently answer for
@@ -211,8 +217,8 @@ watcher-tools:
 	  '  "use_stdin": true,' \
 	  '  "nat_extension": true,' \
 	  '  "string_extension": true,' \
-	  '  "permitted_axioms": ["propext", "Classical.choice", "Quot.sound"],' \
-	  '  "unpermitted_axiom_hard_error": true,' \
+	  '  "unsafe_permit_all_axioms": true,' \
+	  '  "unpermitted_axiom_hard_error": false,' \
 	  '  "print_success_message": true,' \
 	  '  "num_threads": 4' \
 	  '}' > $(WATCHERS)/nanoda-config.json

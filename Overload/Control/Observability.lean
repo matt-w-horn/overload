@@ -21,7 +21,7 @@ system differs.
   such an instrument is a property of the instrument, not the system.
 * `intent_refines` — carrying failure origin (an `intent` label) alongside
   the wire code separates exactly the states the wire label conflated. This is
-  the design prescription (a simulator, or a dashboard, must carry
+  the design prescription (a simulator, or a dashboard, should carry
   ground-truth origin separately from the wire code) stated as a theorem.
 
 This is the mathematics behind a dashboard that shows "no errors" for traffic

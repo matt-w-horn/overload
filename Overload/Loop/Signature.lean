@@ -72,7 +72,7 @@ both sides: the scalar `λ·Amax` does not decide congestion or the
 two-equilibria phase (this file), while the dimensionless pair
 `(ρ₀ = λ/C, A)` decides the phase regions exactly
 (`phase_matches_of_rho_eq`). (`Scheme`'s `(p, cap)` scheme signature is a
-different object. "Signature" here is the fan-in contract scalar.)
+different object. Here "signature" is the fan-in contract scalar.)
 -/
 
 @[expose] public section

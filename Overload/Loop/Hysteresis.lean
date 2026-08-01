@@ -346,7 +346,7 @@ offered load the whole way to the band's upper edge — and at the crossing
 `C·(A−1)` where collapse begins. Strict `1 < A` and `0 < C` are what make
 the jump a jump: at `A = 1` the loop has a unique equilibrium
 (`noSustaining_unique_eq`) and at `C = 0` both branches sit at zero, so the
-first conjunct — the gap `C < C·A` — is false. -/
+first conjunct — the gap `C < C·A` — would be false. -/
 theorem stepLoop_jump_up {C A : ℝ} (hC : 0 < C) (hA : 1 < A) :
     C < C * A ∧
     (∀ lam, ∀ hlam : 0 ≤ lam, lam < C →

@@ -87,7 +87,7 @@ The gain side, eigenvalue-free as in `Coupling.lean`:
   (`certificate_fixedPoint_unique`, consumed here as
   `Star.gain_unique_eq`).
 
-Honest boundaries, stated. The entries `Lᵢ`, `ℓ_D` of the gain matrix
+Honest boundaries, stated: The entries `Lᵢ`, `ℓ_D` of the gain matrix
 are Lipschitz surrogates for the derivative products `λᵢhᵢ'g_D'` —
 modeling inputs, the same status as the mesh example's coupling entries.
 The signature `σᵢ` forgets the shape of `hᵢ`, so a contract certifies

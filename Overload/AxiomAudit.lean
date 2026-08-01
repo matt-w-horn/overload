@@ -115,7 +115,7 @@ disagreed on 2026-07-29 (914 against 919) and nothing caught it, because
 two printed totals with no comparison between them are not checked.
 
 `private`, deliberately: the three commands below are its only readers, and
-a public root-level name here lands an unqualified `inAuditedNamespace`
+a public root-level name here would land an unqualified `inAuditedNamespace`
 in the namespace of anyone who writes `import Overload`. Either way it sits
 outside the sweeps it powers — its name root is not `Overload` — so the
 gates on it are this docstring and `tests/negative/PrivateSorryFixture.lean`,

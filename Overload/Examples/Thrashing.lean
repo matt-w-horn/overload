@@ -45,7 +45,7 @@ instance of this library's phase diagram. The mapping:
   `Λ` against memory capacity `M` (stylized units: working-set slots).
 * **The load-coupled kernel** = the fault storm: below `M`, working sets
   fit and faults are rare, while at and above `M` every quantum faults —
-  `stepKernel M`, the saturated cartoon (a fault-rate curve is the
+  `stepKernel M`, the saturated cartoon (a fault-rate curve would be the
   `mm1Kernel`-style refinement).
 * **Retries** = fault-driven re-execution: a faulting quantum is retried
   after paging, up to a cap (here 4 — the stylized number of times a

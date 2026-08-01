@@ -68,7 +68,7 @@ def expAttempts (p : ℝ) (n : ℕ) : ℝ := ∑ k ∈ Finset.range n, p ^ k
 
 /-- `expAttempts` unfolded to the finite geometric sum it is defined as, so
 call sites can reach Mathlib's `geom_sum_*` family. Deliberately not `@[simp]`:
-a simp registration unfolds `expAttempts` library-wide. Name it at the site
+a simp registration would unfold `expAttempts` library-wide. Name it at the site
 instead. -/
 theorem expAttempts_def (p : ℝ) (n : ℕ) :
     expAttempts p n = ∑ k ∈ Finset.range n, p ^ k := rfl

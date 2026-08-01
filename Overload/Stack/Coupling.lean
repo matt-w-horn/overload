@@ -50,19 +50,19 @@ local loop gains, off-diagonals are spill sensitivities.
 Instead of eigenvalue analysis, everything here runs on a **certificate**: a
 nonnegative `J` together with a positive weight vector `w` satisfying
 `J·w < w` componentwise (the Collatz–Wielandt witness that the spectral
-radius is below one — the certificate is what the theorems consume, and it is
-*checkable by evaluating `k` inequalities* plus the entry signs). The sign
+radius is below one). The certificate is what the theorems consume, and it is
+*checkable by evaluating `k` inequalities* plus the entry signs. The sign
 condition is part of the certificate and not a side condition on the
 consumers: at a *signed* `J` the weight inequalities say nothing about the
 spectral radius (`!![9/10, 1; 1, -10]` contracts `w = (21, 2)` — the rows
-give `20.9 < 21` and `1 < 2` — and has `ρ ≈ 10.09`), so a sign-free
-certificate would not certify stability.
+give `20.9 < 21` and `1 < 2` — and has `ρ ≈ 10.09`). A sign-free
+certificate therefore does not certify stability.
 Classically this is the sub-invariant-weight
 condition — weighted diagonal dominance, the finite-dimensional shadow of
 `ρ(J) < 1` — familiar from M-matrix theory and Lyapunov-style weighted norms.
-Perron–Frobenius is deliberately not used: Mathlib does not carry it, the
+Perron–Frobenius is deliberately not used: Mathlib does not carry it, and the
 certificate direction (`J·w < w ⟹` stability) needs only the induction in
-`certificate_decay`, and a weight vector is auditable where a spectral radius
+`certificate_decay`. A weight vector is auditable where a spectral radius
 is not.
 
 * `two_site_certificate_iff` — for a nonnegative gain matrix over two sites
@@ -83,7 +83,7 @@ is not.
 * `spill_floor_blocks_weights` / `spill_floor_blocks` — **the spill floor**: a
   deterministic coupling floor at or above the margin product admits no
   contracting positive weight vector at all, and therefore blocks every
-  certificate; no adaptivity restores stability without reducing the floor
+  certificate. No adaptivity restores stability without reducing the floor
   itself. The weight-level form is the stronger one: `¬Certificate` alone is
   dischargeable by the sign clause at a signed diagonal, so it is
   `spill_floor_blocks_weights` that carries the "no weights work" reading.
@@ -202,8 +202,9 @@ theorem certificate_rate [NeZero k] (hcert : Certificate J) :
       (div_lt_one (hw i)).mpr (hJw i)
 
 /-- **Uniqueness of the coupled equilibrium**, by a finite maximum principle:
-if two equilibria differed, the coordinate maximizing the weighted deviation
-would strictly contract under `J`, contradicting invariance. No limits. -/
+if two equilibria differ, the coordinate that maximizes the weighted
+deviation contracts strictly under `J`, which contradicts invariance.
+No limits. -/
 theorem certificate_fixedPoint_unique [NeZero k]
     (hcert : Certificate J) {c x y : Fin k → ℝ}
     (hx : affine J c x = x) (hy : affine J c y = y) : x = y := by
@@ -362,7 +363,7 @@ theorem two_site_equilibrium_exists_pin :
 /-- **Diagonal dominance certifies any number of sites**: for a nonnegative
 gain matrix, strictly sub-unit row sums make the uniform weight vector a
 certificate — `k` additions and the entry signs to check, no eigenvalues.
-Dropping the sign check would admit `!![0, 0; 0, -5]` (row sums `0 < 1`,
+Dropping the sign check admits `!![0, 0; 0, -5]` (row sums `0 < 1`,
 spectral radius `5`). -/
 theorem certificate_of_row_sums {J : Matrix (Fin k) (Fin k) ℝ}
     (hJ : ∀ i j, 0 ≤ J i j) (h : ∀ i, ∑ j, J i j < 1) : Certificate J := by

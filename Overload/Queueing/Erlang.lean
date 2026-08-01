@@ -42,7 +42,7 @@ import Mathlib.Topology.Sheaves.Init
 # The Erlang loss law: stable recursion, closed form, and the blocking
 kernel
 
-The loss model: `c` servers, no queue, offered load `a`; an arrival
+The loss model: `c` servers, no queue, offered load `a`. An arrival
 finding all servers busy is blocked. The blocking probability is Erlang's
 `B(c, a)`, and practitioners compute it by the numerically stable
 recursion
@@ -57,8 +57,8 @@ recursion as the definition (`erlangB`) and proves:
   identity that makes the stable computation trustworthy.
 * `erlangB_mem_Icc` — blocking is a probability, for every load and
   server count.
-* `erlangB_antitone_servers` — adding servers never increases blocking;
-  the load-bearing step is `erlangB_carried_le`: **carried load
+* `erlangB_antitone_servers` — adding servers never increases blocking.
+  The load-bearing step is `erlangB_carried_le`: **carried load
   `a·(1 − B)` never exceeds the server count** — no more than `c`
   servers' worth of work can be carried by `c` servers.
 * `erlangB_mono_load` — more offered load never decreases blocking.
@@ -66,13 +66,13 @@ recursion as the definition (`erlangB`) and proves:
   attempt rate `Λ` over per-server rate `μ` is an admissible load-coupled
   failure kernel (in `[0,1]`, monotone), so retries against a loss system
   instantiate the loop framework via the generic truncated-geometric
-  constructor, and the attempt-cap clamp certificate transfers
+  constructor. The attempt-cap clamp certificate transfers
   (`erlangLoop_no_congestedEq`).
 
 Modeling status, same discipline as `mm1Kernel`: the *queueing* reading —
 that `B` is the stationary blocking probability of the M/M/c/c system
-seen by Poisson arrivals — lives in this docstring, not in a theorem;
-what is proved is the arithmetic: recursion–closed-form equality, bounds,
+seen by Poisson arrivals — lives in this docstring, not in a theorem.
+What is proved is the arithmetic: recursion–closed-form equality, bounds,
 monotonicities, and kernel admissibility. Erlang C (queueing rather than
 loss) and M/M/1/K are not attempted.
 -/
@@ -234,8 +234,8 @@ theorem erlangB_eq_closed {a : ℝ} (ha : 0 ≤ a) (c : ℕ) :
 
 Reading the blocking probability at attempt rate `Λ` over per-server
 service rate `μ` (offered load `Λ/μ`) gives a load-coupled failure
-kernel satisfying both kernel hypotheses of the loop framework — the
-quasi-static reading, same status as `mm1Kernel`'s.
+kernel satisfying both kernel hypotheses of the loop framework. This is
+the quasi-static reading, same status as `mm1Kernel`'s.
 -/
 
 /-- The Erlang blocking kernel: attempt rate → blocking probability of a

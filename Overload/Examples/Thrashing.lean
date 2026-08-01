@@ -44,8 +44,8 @@ instance of this library's phase diagram. The mapping:
 * **Offered load** = multiprogramming level: resident working-set demand
   `Λ` against memory capacity `M` (stylized units: working-set slots).
 * **The load-coupled kernel** = the fault storm: below `M`, working sets
-  fit and faults are rare; at and above `M`, every quantum faults —
-  `stepKernel M`, the saturated cartoon (a fault-rate curve would be the
+  fit and faults are rare, while at and above `M` every quantum faults —
+  `stepKernel M`, the saturated cartoon (a fault-rate curve is the
   `mm1Kernel`-style refinement).
 * **Retries** = fault-driven re-execution: a faulting quantum is retried
   after paging, up to a cap (here 4 — the stylized number of times a
@@ -60,8 +60,8 @@ instance of this library's phase diagram. The mapping:
   discipline (Denning-era reading), rediscovered by every generation as
   "shed load to escape thrashing".
 
-Honest scope: numbers are stylized illustrations; no page-replacement
-policy, no locality model, no fault-rate curve is formalized — the claims
+Honest scope: numbers are stylized illustrations. No page-replacement
+policy, no locality model, no fault-rate curve is formalized. The claims
 are about the structure (bistability, the clamp, the waste accounting),
 which is exactly what transfers from the distributed-systems reading.
 -/
@@ -109,7 +109,7 @@ theorem thrashing_mpl_control :
 /-- Work accounting for a thrashing window: 100 CPU units over the window,
 40 useful, 45 destroyed as paging overhead, 15 idle (I/O stalls). Paging
 is the waste channel *and* the supply degradation: the CPU the storm eats
-is the CPU that would have retired work. -/
+is the CPU that otherwise retires work. -/
 noncomputable def thrashingAcct : Accounting where
   capacity := 100
   time := 1

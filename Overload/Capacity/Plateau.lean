@@ -43,8 +43,8 @@ import Mathlib.Topology.Sheaves.Init
 # The plateau theorem: no waste, no cliff
 
 The uniform-loss closed loop: heterogeneous request classes share a
-bottleneck of capacity `C`; at loss level `p` every attempt is accepted with
-probability `1 - p`; each class `j` offers `lam j` requests per unit time and
+bottleneck of capacity `C`. At loss level `p` every attempt is accepted with
+probability `1 - p`. Each class `j` offers `lam j` requests per unit time and
 retries to its cap `cap j`.
 
 **Plateau theorem** (`plateau`): at *any* equilibrium of this loop, goodput is
@@ -55,7 +55,7 @@ cliff. Contrapositive (`cliff_implies_waste`): any observed down-slope of
 goodput under overload is a statement about a *waste channel* (duplicates,
 post-abandonment work, stale-first queueing, costly rejection, failed
 cancellation — see `Overload/Capacity/Conservation.lean`), not about retries
-per se.
+themselves.
 `cliff_implies_wasted` is the bridge that states that conclusion in the
 accounting's own units, as strictly positive `wasted` work.
 

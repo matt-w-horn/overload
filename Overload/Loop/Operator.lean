@@ -50,7 +50,7 @@ instances:
   bracket every fixed point in the interval. `lfpIcc` is the *healthy*
   equilibrium, `gfpIcc` the *congested* one.
 * `BistableOn F a b` — the two differ. Metastability is lattice
-  non-degeneracy; no crossing-counting or derivative is ever needed.
+  non-degeneracy. No crossing-counting or derivative is ever needed.
 * `lfpIcc_mono_of_le` / `gfpIcc_mono_of_le` — parameter monotonicity: a
   pointwise-larger map has larger extremal fixed points, by
   prefixed/postfixed-set inclusion. The primitive the hysteresis results
@@ -58,10 +58,10 @@ instances:
 * `bistableOn_of_certificate` — a **two-point certificate**: one point pushed
   down (`F x ≤ x`), one pushed up (`y ≤ F y`), `x < y`, and the order gap
   follows. Checking two inequalities replaces solving for equilibria — but
-  the order gap is all it gives; `exists_two_fixedPts_of_certificate` is the
+  the order gap is all it gives. `exists_two_fixedPts_of_certificate` is the
   version that carries `MonotoneOn`/`MapsTo` and concludes about equilibria.
 * `iterate_le_lfpIcc` — iterates from the bottom never overshoot the healthy
-  equilibrium (safe ramp-up; convergence claims would need continuity and are
+  equilibrium (safe ramp-up: convergence claims need continuity and are
   deliberately not made here).
 * `lfpIcc_eq_lfp_restrict` / `gfpIcc_eq_gfp_restrict` — compatibility
   bridges: on the subtype `Set.Icc a b` (a complete lattice once `a ≤ b`),
@@ -141,10 +141,10 @@ Once `a ≤ b`, the subtype `Set.Icc a b` is a complete lattice
 (`Set.Icc.completeLattice`), so Mathlib's `OrderHom.lfp`/`OrderHom.gfp` apply
 to the restricted map. The bespoke `lfpIcc`/`gfpIcc` exist because the loop
 theorems consume plain-`ℝ` statements with explicit hypotheses — the ambient
-line is not a complete lattice — but nothing diverges: on the subtype, the two
+line is not a complete lattice. Nothing diverges: on the subtype, the two
 constructions coincide. The fixed-point theorems `isFixedPt_lfpIcc`/
 `isFixedPt_gfpIcc` below are read off these bridges, so the Knaster–Tarski
-argument itself lives in Mathlib; only the `sInf`/`sSup` bookkeeping that
+argument itself lives in Mathlib. Only the `sInf`/`sSup` bookkeeping that
 plain-`ℝ` statements need is proved here.
 -/
 
@@ -348,7 +348,7 @@ theorem exists_two_fixedPts_of_certificate (hm : MonotoneOn F (Set.Icc a b))
     hz₂mem.1, lt_of_le_of_lt hz₁mem.2 (lt_of_lt_of_le hxy hz₂mem.1)⟩
 
 /-- Ramping up from the bottom never overshoots the healthy equilibrium.
-(Convergence *to* it would need continuity; deliberately not claimed.) -/
+(Convergence *to* it needs continuity and is deliberately not claimed.) -/
 theorem iterate_le_lfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (n : ℕ) :
     F^[n] a ≤ lfpIcc F a b := by
@@ -363,8 +363,8 @@ theorem iterate_le_lfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
 
 /-- Draining from the top never undershoots the congested equilibrium —
 the downward mirror of `iterate_le_lfpIcc`: iterates started at the
-ceiling stay at or above `gfpIcc`. (Convergence *to* it would need
-continuity; deliberately not claimed.) -/
+ceiling stay at or above `gfpIcc`. (Convergence *to* it needs continuity
+and is deliberately not claimed.) -/
 theorem gfpIcc_le_iterate (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (n : ℕ) :
     gfpIcc F a b ≤ F^[n] b := by
@@ -383,7 +383,7 @@ theorem gfpIcc_le_iterate (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
 The order-theoretic core of the separatrix and trigger-set
 reframing: monotone dynamics never cross a fixed point. A burst that leaves
 the state at or below the (middle) fixed point can never reach the
-congested branch; a state at or past a postfixed point ratchets upward.
+congested branch. A state at or past a postfixed point ratchets upward.
 -/
 
 /-- Monotone iterates never cross a fixed point from below — the basin

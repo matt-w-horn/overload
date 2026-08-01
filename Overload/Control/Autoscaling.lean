@@ -59,10 +59,10 @@ positions at once (`stepLoop_floor_certifies`,
 `cappedLoop_floor_certifies`).
 
 The bound that remains is modeling, not mathematics: everything here
-holds offered load fixed — these are statements for peak `λ` against the
+holds offered load fixed. These are statements for peak `λ` against the
 floor capacity, so a floor sized only for trough load certifies nothing.
 The autoscaler as a *feedback controller* (reactions on lagged or
-miscoded signals) is deliberately not modeled; the `Observability.lean`
+miscoded signals) is deliberately not modeled. The `Observability.lean`
 theorems carry that lesson.
 -/
 
@@ -76,7 +76,7 @@ variable (L : ClosedLoop)
 
 /-- **Congestion transfers up the kernel order** — the kernel-side mirror
 of `congestedEq_mono_lam`: a congested equilibrium under a
-pointwise-smaller kernel (fewer failures, e.g. more capacity) is a
+pointwise-smaller kernel (fewer failures, for example more capacity) is a
 postfixed point of the reference loop, and Knaster–Tarski re-supplies a
 genuine equilibrium above it. Contrapositive: safety of the reference
 loop covers every smaller-kernel sibling. -/

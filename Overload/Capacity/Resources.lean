@@ -41,7 +41,7 @@ import Mathlib.Topology.Sheaves.Init
 /-!
 # Multi-resource limits: hops, slots, bandwidth
 
-The single scalar bottleneck is this library's default frame; a real
+The single scalar bottleneck is this library's default frame. A real
 request path consumes a *vector* of resources — issue slots, memory on
 intermediate hops, bandwidth, bottleneck service — and retry amplification
 multiplies demand on every hop it crosses. This module is the arithmetic of
@@ -50,7 +50,7 @@ which resource binds.
 * `vector_goodput_bound` — per-resource capacity bound.
 * `hop_amplification_bound` — the asymmetry that matters: every *attempt*
   costs `r k` at hop `k`, while only the accepted attempt costs `s` at the
-  bottom. Hops see the full amplification `A`; the bottom sees accepted
+  bottom. Hops see the full amplification `A`. The bottom sees accepted
   work only.
 * `binding_shift` — the iff: past the computable threshold
   `(C k · s)/(Cbot · r k)`, amplification makes hop `k` bind *before* the
@@ -58,7 +58,7 @@ which resource binds.
   configuration audit must cover every hop, not just the bottom.
 
 Statements are per-resource (`∀ k`-shaped) on plain ℝ with explicit
-hypotheses. Nothing here needs the equilibrium machinery; conversely, a
+hypotheses. Nothing here needs the equilibrium machinery. Conversely, a
 per-resource `ClosedLoop` is just a different `(g, C)` denomination (see
 `coupledLoop`'s docstring in `Overload/Stack/CoupledStack.lean`). A
 componentwise vector `CongestedEq` is deliberately not attempted here —
@@ -108,7 +108,7 @@ theorem binding_shift_at_amp_five :
   binding_shift (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
 /-- Numeric regression, the threshold crossed: at `A = 5` the hop caps the
-system at 800 while the bottom would still allow 1000. -/
+system at 800 while the bottom still allows 1000. -/
 theorem hop_binds_at_amp_five : (4000 : ℝ) / (5 * 1) < 1000 / 1 := by norm_num
 
 /-- Numeric regression at the no-amplification endpoint, the other side of

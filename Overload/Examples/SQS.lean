@@ -44,7 +44,7 @@ import Mathlib.Topology.Sheaves.Init
 
 A message queue in the style of AWS SQS, from public documented semantics: a
 consumer receives a message, which becomes invisible for the **visibility
-timeout** `τᵥ`; if the consumer fails to delete it in time, the queue makes it
+timeout** `τᵥ`. If the consumer fails to delete it in time, the queue makes it
 visible again and redelivers. Redelivery repeats until the message's
 **retention period** `D` expires, or until a **redrive policy** moves it to a
 dead-letter queue after `maxReceiveCount` receives.
@@ -75,7 +75,7 @@ The mapping into this library, and the point of the example:
   mitigation with a stated boundary, not a cure.
 * Two workloads sharing one consumer fleet contend by *attempt* volume, not by
   intent: a bulk workload at half the interactive rate but redelivering
-  30× takes 15× the goodput under storm (`sqs_bulk_outranks`), and for any
+  30× takes 15× the goodput under storm (`sqs_bulk_outranks`). For any
   target share there is a redelivery amplification that starves the
   interactive class below it (`sqs_inversion_instance`).
 
@@ -95,7 +95,7 @@ namespace Overload
 
 /-- **11520 deliveries by default.** A message that consistently fails
 processing, under a 30 s visibility timeout and the default 4-day (345600 s)
-retention with no redrive policy (cap shown: 20000, i.e. effectively
+retention with no redrive policy (cap shown: 20000, that is, effectively
 unbounded), is delivered 11520 times — the first delivery plus 11519
 redeliveries. The deadline arithmetic of `Deadline.lean`, with the *server* re-arming
 the sub-deadline. -/

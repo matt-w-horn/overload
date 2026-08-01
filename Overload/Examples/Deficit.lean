@@ -36,11 +36,11 @@ import Mathlib.Topology.Sheaves.Init
 /-!
 # Capacity deficit as a coupled site: supply degradation in the J-matrix
 
-The fourth sustaining mechanism (M4, supply degradation — cold caches after
-restarts, GC pressure, compaction debt, connection re-establishment) as a
-coupling instance, giving M4 the concrete witness the other three
-mechanisms already have (SQS for re-armed timeouts, Thrashing for the
-clamp, CoupledStack for spill-in coupling).
+This file states the fourth sustaining mechanism (M4, supply degradation —
+cold caches after restarts, GC pressure, compaction debt, connection
+re-establishment) as a coupling instance. It gives M4 the concrete witness
+the other three mechanisms already have (SQS for re-armed timeouts,
+Thrashing for the clamp, CoupledStack for spill-in coupling).
 
 Alongside the demand deviation (site 0), track the **capacity deficit**
 (site 1) as its own state. Overload erodes supply — the demand → deficit
@@ -58,7 +58,7 @@ mechanism M4).
   sustains the overload, whatever the demand side does.
 
 The auditable pair is (deficit → demand sensitivity, demand → deficit
-erosion); reading a real system's numbers into the matrix entries is the
+erosion). Reading a real system's numbers into the matrix entries is the
 modeling step, as in `Coupling.lean`.
 -/
 

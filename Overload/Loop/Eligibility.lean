@@ -51,7 +51,7 @@ retry-eligible. The demand-side translation into the loop framework:
 * `eligibleLoop_congestedEq_mono_mass` — chaining the two: the congested
   set of the eligibility-coded loop weakly enlarges as the mass grows.
 * `miscoding_opens_amplification` — the corollary: with the eligible set
-  empty the loop is `NoSustaining` (`h ≡ 1`); recoding any positive
+  empty the loop is `NoSustaining` (`h ≡ 1`). Recoding any positive
   failure mass as retry-eligible under a real retry budget yields `1 < h`
   at kernel saturation. A label rewrite, with load, kernel, and budget
   untouched, manufactures the sustaining mechanism the `noSustaining`

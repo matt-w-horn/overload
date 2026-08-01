@@ -47,10 +47,10 @@ probability → expected attempts per request). Steady state is a fixed point
 of `F(Λ) = λ·h(g(Λ))`.
 
 The model splits in two. `BoundedLoop` is the boundedness core (kernel in
-`[0,1]`, response under `Amax` — nothing else); the safety certificates live
+`[0,1]`, response under `Amax` — nothing else). The safety certificates live
 there, so batching kernels and backpressure clients inherit them without
 being monotone or amplifying. `ClosedLoop` extends it with monotonicity and
-the `1 ≤ h` floor; everything order-theoretic lives there.
+the `1 ≤ h` floor. Everything order-theoretic lives there.
 
 Headline results:
 
@@ -66,7 +66,7 @@ Headline results:
   under remaining-deadline apportionment by `Deadline.neff_slow_remaining`),
   the loop has spill-free structure (built into `F = λ·h∘g`), and the
   threshold is undegraded capacity, then `λ < C` leaves *no* congested
-  equilibrium: overload without a sustaining mechanism is transient, not
+  equilibrium. Overload without a sustaining mechanism is transient, not
   metastable. Contrapositive: a bistable loop exhibits fast-fail
   amplification, re-armed timeouts, spill-in coupling, or supply degradation.
 * `bistableOn_of_two_points` / `two_fixedPts_of_two_points` — the loop-level
@@ -74,7 +74,7 @@ Headline results:
   (`F_le`), so an instance supplies only its two point evaluations of `F`.
 * `stepLoop_bistable` / `stepLoop_congestedEq` / `stepLoop_two_fixedPts` —
   the bistable band `[C/A, C)` on the stylized saturated kernel, with the
-  order gap upgraded to two genuine equilibria, and `clamp_band_lower`: any
+  order gap upgraded to two genuine equilibria. `clamp_band_lower`: any
   clamp `h ≤ K` pushes the band's lower edge up to `C/K`. On the stylized
   loop that edge is exact (`stepLoop_congestedEq_iff`), which prices added
   offered load at `C/A - lam` (`stepLoop_injectable_load`).
@@ -146,7 +146,7 @@ the closed-loop side: *every* `ClosedLoop` satisfies it there, because
 `Θ ≤ 0 ≤ lam` puts the loop in the congested-only region
 (`ClosedLoop.congestedEq_of_nonpos_threshold`, `Universality.lean`). That
 route is Knaster–Tarski and needs monotonicity, so it does not extend to a
-bare `BoundedLoop`, whose `F` may have no fixed point at all and then fail
+bare `BoundedLoop`, whose `F` can have no fixed point at all and then fail
 `CongestedEq` at every `Θ`. Read closed-loop congestion statements at a
 positive threshold. -/
 def CongestedEq (Θ : ℝ) : Prop := ∃ Λ, 0 ≤ Λ ∧ L.F Λ = Λ ∧ Θ ≤ Λ
@@ -355,7 +355,7 @@ end ClosedLoop
 
 Connecting `Deadline` to `ClosedLoop`: an amplification response built from
 the deadline-capped attempt count collapses to `NoSustaining` exactly when
-failures are slow and apportionment is remaining-deadline; re-armed per-try
+failures are slow and apportionment is remaining-deadline. Re-armed per-try
 timeouts re-open it.
 -/
 

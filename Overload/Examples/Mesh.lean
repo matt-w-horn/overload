@@ -56,17 +56,18 @@ altitudes of the library compose:
 inputs, not theorems. The worked instance reads each region's local gain
 as its amplified worst-case utilization `γᵣ := λᵣ·∏capᵢ/Cᵣ` — the same
 number the stack-budget certificate bounds — and the off-diagonals as
-failover fractions. Everything downstream of that reading is certified;
-the reading itself is the modeling step (the same interface stance as
+failover fractions. Everything downstream of that reading is certified.
+The reading itself is the modeling step (the same interface stance as
 `mm1Kernel` and PASTA). Worst-case stacks are taken at `p = 1`, where a
 layer's amplification *equals* its cap (Mathlib's `one_geom_sum`), so the cap
 product is attained, not just an upper bound.
 
 Worked instance: region 1 at `λ = 2` with tier caps `3 × 2` against
-`C = 20` (`γ₁ = 2·6/20 = 3/5`); region 2 at `λ = 3/2` with caps `2 × 2`
-against `C = 20` (`γ₂ = 3/2·4/20 = 3/10`); failover spill `1/5` each way.
+`C = 20` (`γ₁ = 2·6/20 = 3/5`), region 2 at `λ = 3/2` with caps `2 × 2`
+against `C = 20` (`γ₂ = 3/2·4/20 = 3/10`), and failover spill `1/5` each
+way.
 
-* `region1Stack` / `region2Stack` — the worst-case stacks; their
+* `region1Stack` / `region2Stack` — the worst-case stacks. Their
   amplifications close to `6` and `4` by the eval lemma.
 * `mesh_certified` — spill product `1/25` against margin product
   `(2/5)(7/10) = 7/25`: the mesh is jointly stable, by uniform weights.

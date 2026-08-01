@@ -45,11 +45,11 @@ topology, because none of them appear in the hypotheses.
 
 The `wasted` field aggregates the five waste channels, each separately
 measurable in a real system:
-1. processed duplicates (retry and hedge races);
-2. work completed after caller abandonment (deadline-expired service);
+1. processed duplicates (retry and hedge races).
+2. work completed after caller abandonment (deadline-expired service).
 3. queue occupancy ordered against usefulness (stale-first service under
-   overload);
-4. rejection cost paid downstream of the scarce resource;
+   overload).
+4. rejection cost paid downstream of the scarce resource.
 5. cancellation latency and failure (signal sent ≠ resource reclaimed).
 -/
 
@@ -108,8 +108,8 @@ capacity·time is wasted, then `G·sbar ≤ (1-w)·C - I/T`. Both subtractions a
 sharp — the conclusion is the useful-work hypothesis re-expressed through
 conservation, with `wasted` and `idle` named instead of `useful`. That is
 the whole content: the waste fraction relabels the ceiling, it does not
-tighten it, so a statement dropping the idle term (`G·sbar ≤ (1-w)·C`) would
-be strictly weaker than its own hypothesis. The point of the decomposition
+tighten it, so a statement that drops the idle term (`G·sbar ≤ (1-w)·C`) is
+strictly weaker than its own hypothesis. The point of the decomposition
 is that `w` is separately measurable channel by channel, which `useful`
 is not. -/
 theorem goodput_le_of_waste {G sbar w : ℝ}

@@ -37,14 +37,14 @@ import Mathlib.Topology.Sheaves.Init
 # Bursts vs. basins: the trigger-size arithmetic, and jitter as trigger-avoidance
 
 The deterministic core of the trigger story: a synchronized cohort of `B`
-requests released over a window `w` adds a spike `B/w` to the baseline demand `Λ₀`,
-and what matters is only which side of the middle fixed point (the
+requests released over a window `w` adds a spike `B/w` to the baseline
+demand `Λ₀`. What matters is only which side of the middle fixed point (the
 separatrix) the spiked demand `Λ₀ + B/w` lands on.
 
 * `jitter_window_avoids` — **jitter is trigger-avoidance**: any window at
   least `B/(z − Λ₀)` keeps the spike at or below the separatrix `z`. This is
-  the sizing inequality behind "add jitter": spreading the cohort does not
-  reduce its demand, it reduces its *rate*, and the required spread is
+  the sizing inequality behind "add jitter": spreading the cohort reduces
+  not its demand but its *rate*, and the required spread is
   computable from the basin gap.
 * `ClosedLoop.burst_safe` — the safe side, on the loop: a spiked demand at
   or below a fixed point never crosses it under iteration
@@ -57,7 +57,7 @@ separatrix) the spiked demand `Λ₀ + B/w` lands on.
   sized: a spike that closes the gap to the threshold and is postfixed there
   certifies a congested equilibrium at the threshold. On the stylized loop
   the postfixed hypothesis becomes arithmetic — reach capacity, stay inside
-  the demand envelope — and the minimum burst *rate* `C − Λ₀` is the same
+  the demand envelope. The minimum burst *rate* `C − Λ₀` is the same
   basin gap that sizes the minimum jitter *window* in
   `jitter_window_avoids`.
 
@@ -65,7 +65,7 @@ What is deliberately **not** claimed: nothing stochastic (no cohort-arrival
 distribution, no synchronization dynamics, no exit times — the omitted
 list's territory). The return-time side of a burst — the backlog draining
 after the spike — is the continuous drain bound in `Calculus.lean`
-(`fluid_drain_clears`); no theorem links it to the demand iterates here,
+(`fluid_drain_clears`). No theorem links it to the demand iterates here,
 and the bridge between the two readings is a modeling step, not a lemma.
 -/
 

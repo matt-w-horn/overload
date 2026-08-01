@@ -36,19 +36,19 @@ import Mathlib.Topology.Sheaves.Init
 /-!
 # Signature incompleteness: the exported number does not decide the phase
 
-The fan-in contract (`Star.lean`) exports one scalar per server; this file
+The fan-in contract (`Star.lean`) exports one scalar per server. This file
 studies its single-loop form — the signature `σ = λ·Amax`, offered load times the
-declared response bound (unit fan-out; cf. `Star.signature`, the weighted
+declared response bound (unit fan-out — see `Star.signature`, the weighted
 `λᵢKᵢrᵢ`). `σ < Θ` certifies safety (`signature_lt_no_congestedEq`, the
-clamp theorem at `K = Amax`), and this file proves the matching
+clamp theorem at `K = Amax`). This file proves the matching
 impossibility: no certificate that factors through `σ` — equal-signature
-loops, equal verdicts; equivalently any `Q ∘ signature`
+loops, equal verdicts, equivalently any `Q ∘ signature`
 (`factorsThroughSignature_iff`) — decides congestion at a threshold inside
 the envelope, or the two-equilibria phase structure. The instrument is an
 equal-signature pair of plain `stepLoop`s splitting one σ two ways: base
 load `λ` amplifying to `A` behind capacity (the threshold split) versus
 base load `λ·A` amplifying not at all (the flat split). Same signature,
-same kernel, same capacity; the signature forgets the split.
+same kernel, same capacity. The signature forgets the split.
 
 * `BoundedLoop.signature` — the exported scalar `σ = λ·Amax`.
 * `FactorsThroughSignature` / `factorsThroughSignature_iff` — the
@@ -64,7 +64,7 @@ same kernel, same capacity; the signature forgets the split.
   (`signature_gap_witnessed`).
 
 Beside `Tightness`: there, safety under a fixed kernel certifies nothing
-about sibling kernels; here, the exported scalar certifies nothing about
+about sibling kernels. Here, the exported scalar certifies nothing about
 the phase of a fixed loop. Neither weakens the positive direction —
 `σ < Θ` still certifies safety, and over the kernel-quantified family the
 pointwise clamp is exact. The coarsest-summary question is bracketed from
@@ -72,7 +72,7 @@ both sides: the scalar `λ·Amax` does not decide congestion or the
 two-equilibria phase (this file), while the dimensionless pair
 `(ρ₀ = λ/C, A)` decides the phase regions exactly
 (`phase_matches_of_rho_eq`). (`Scheme`'s `(p, cap)` scheme signature is a
-different object; "signature" here is the fan-in contract scalar.)
+different object. "Signature" here is the fan-in contract scalar.)
 -/
 
 @[expose] public section

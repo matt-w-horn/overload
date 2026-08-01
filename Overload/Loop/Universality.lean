@@ -38,14 +38,14 @@ import Mathlib.Topology.Sheaves.Init
 
 The thesis candidate: retry systems over fixed capacity form a
 universality class — the phase diagram (healthy-only, bistable, congested-only)
-is a function of a small set of dimensionless groups, so two systems matching
+is a function of a small set of dimensionless groups. Two systems matching
 the groups sit at the same point regardless of implementation.
 
 What is actually proved here, precisely scoped:
 
 * The three **phase regions** are defined by two inequalities in `(λ, A, C)`:
   `HealthyOnly` (`λ·A < C`), `BistableBand` (`λ < C ≤ λ·A`), `CongestedOnly`
-  (`C ≤ λ`). `phase_trichotomy` shows they cover the parameter space; on the
+  (`C ≤ λ`). `phase_trichotomy` shows they cover the parameter space. On the
   physical region `0 ≤ λ`, `1 ≤ A` the disjointness lemmas make them pairwise
   disjoint (for `A < 1`, healthy-only and congested-only can overlap — the
   regions partition only where amplification is at least one).
@@ -61,7 +61,7 @@ What is actually proved here, precisely scoped:
 * **Scale invariance**: each region predicate is invariant under
   `(λ, C) ↦ (cλ, cC)`, and `phase_matches_of_rho_eq` states the transfer
   claim exactly: two systems with equal `ρ₀ = λ/C` and equal amplification `A`
-  are in the same phase. Absolute capacity never matters; only the groups do.
+  are in the same phase. Absolute capacity never matters. Only the groups do.
 
 The claim deliberately **not** made: that the groups determine cliff depth or
 hysteresis width quantitatively for arbitrary kernels — that

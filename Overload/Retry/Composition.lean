@@ -43,11 +43,11 @@ import Std.Tactic.BVDecide.Normalize.Prop
 /-!
 # Composition of amplification across layers
 
-A request enters a stack of retry mechanisms; each attempt at a layer spawns
-attempts at the layer below. This file establishes the multiplicative
-composition law and its honest failure conditions, working with
-finite expectations as weighted `Finset` sums — the deadline bounds every
-attempt count, so no measure theory is needed.
+A request enters a stack of retry mechanisms, and each attempt at a layer
+spawns attempts at the layer below. This file establishes the
+multiplicative composition law and its honest failure conditions, working
+with finite expectations as weighted `Finset` sums. The deadline bounds
+every attempt count, so no measure theory is needed.
 
 * `wald_bounded` — the **constant-cost core of Wald's identity**:
   `E[K·μ] = E[K]·μ` for a finitely-supported count `K` and a fixed per-item
@@ -57,7 +57,7 @@ attempt count, so no measure theory is needed.
 * `branching_wald` / `branching_wald_single` — the **two-level identity,
   derived**: `E[∑_{j<K} Xⱼ] = E[K]·E[X]` from an explicit joint model, with
   the per-slot product form of the joint as the load-bearing independence
-  hypothesis, and `coupled_weight_breaks_wald` the numeric joint whose own
+  hypothesis. `coupled_weight_breaks_wald` is the numeric joint whose own
   marginals violate the conclusion.
 * `stackAmp` — layered composition as the **modeling definition**:
   `∏ E[Kᵢ]` bottom attempts per request, with the bounds `one_le_stackAmp`
@@ -71,7 +71,7 @@ attempt count, so no measure theory is needed.
   to retries.
 * `shared_budget_breaks_wald` — a concrete two-request model where a shared
   budget couples the counts, so the joint attempt total falls strictly below
-  the sum of the independent per-request totals: per-request marginal
+  the sum of the independent per-request totals. Per-request marginal
   accounting (the product/sum-of-marginals bookkeeping behind `stackAmp`)
   overcounts under shared stopping state.
 -/
@@ -218,12 +218,12 @@ theorem shared_budget_breaks_wald_pin :
 `wald_bounded` is the constant-cost bookkeeping identity. This section
 derives the genuine two-level form `E[∑_{j<K} Xⱼ] = E[K]·E[X]` from an
 explicit finite joint model. The total cost is decomposed per attempt slot
-(`∑ⱼ Xⱼ·1_{j<K}` — pure linearity, valid for every joint law), and the
+(`∑ⱼ Xⱼ·1_{j<K}` — pure linearity, valid for every joint law). The
 probabilistic content enters as the **per-slot product form** of the joint
 weight (`w j k i = P k · Q i`: the count never reads a slot's cost draw).
 That hypothesis is real: `coupled_weight_breaks_wald` exhibits a joint whose
 own marginals violate the conclusion. The k-layer product `stackAmp` remains
-the modeling definition; this is its finite honest core.
+the modeling definition. This section is its finite honest core.
 -/
 
 /-- Expectation of a cost `x` under a finitely-supported weight `Q` on `s`.

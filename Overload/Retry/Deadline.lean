@@ -43,7 +43,7 @@ import Overload.Retry.Amplification
 The end-to-end deadline `D` is the request's total budget. With
 per-attempt failure latencies `T j` and backoff waits `B j` (indexed from `0`),
 `k` attempts are *feasible* when their latencies plus the `k - 1` interleaved
-waits fit in `D`, and `neff` is the largest feasible count under the cap `n`.
+waits fit in `D`. `neff` is the largest feasible count under the cap `n`.
 
 Headline results:
 
@@ -52,9 +52,9 @@ Headline results:
   Amplification therefore concentrates on the *fast* tail of the
   failure-latency distribution.
 * `neff_ge_of_fast` / `neff_le` — **the fast-fail/cap tension**: for any
-  target attempt count below the cap there is a rejection latency cheap enough
-  to admit it, and never more than the cap, which bounds the count whatever
-  the latency. Cheap rejection buys attempts up to `n` and not past it. It is
+  target attempt count below the cap, some rejection latency is cheap enough
+  to admit it, and the count never passes the cap, whatever the latency.
+  Cheap rejection buys attempts up to `n` and not past it. It is
   supply-side efficient and demand-side dangerous *by arithmetic*, not by
   implementation.
 * `neff_slow_remaining` / `neff_le_one_of_slow` — **remaining-deadline + slow
@@ -195,7 +195,7 @@ theorem neff_const (ht : 0 < t) (hb : 0 ≤ b) (hD : 0 ≤ D) (n : ℕ) :
 
 /-- **Re-armed per-try timeout** (fixed sub-deadline `τ`, no backoff): the
 deadline admits `min n ⌊D/τ⌋` attempts — of the *same* slow failure that
-remaining-deadline apportionment would have stopped after one. -/
+remaining-deadline apportionment stops after one. -/
 theorem neff_rearmed {τ : ℝ} (hτ : 0 < τ) (hD : 0 ≤ D) (n : ℕ) :
     neff (fun _ => τ) (fun _ => 0) D n = min n ⌊D / τ⌋₊ := by
   simpa using neff_const hτ le_rfl hD n

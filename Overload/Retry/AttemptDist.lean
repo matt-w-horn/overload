@@ -42,14 +42,14 @@ import Mathlib.Topology.Sheaves.Init
 
 `expAttempts` is *defined* as the finite geometric sum — total,
 hypothesis-free, and what every closed loop consumes. This file certifies
-that the definition is a genuine expectation: on `0 ≤ p ≤ 1` the
+that the definition is a genuine expectation. On `0 ≤ p ≤ 1` the
 `attemptWeight` masses form a probability mass function on `Fin n`
 (Mathlib's `PMF`), and the Bochner integral of the attempt count against its
-measure is exactly `expAttempts p n`. Nothing downstream consumes this file;
-it is the bridge for readers arriving from the stochastic side.
+measure is exactly `expAttempts p n`. Nothing downstream consumes this file.
+It is the bridge for readers arriving from the stochastic side.
 
-* `attemptDist` — the truncated-geometric attempt count as a `PMF (Fin n)`;
-  outcome `j` reads "the final attempt is number `j + 1`".
+* `attemptDist` — the truncated-geometric attempt count as a `PMF (Fin n)`.
+  Outcome `j` reads "the final attempt is number `j + 1`".
 * `attemptDist_apply` — the mass function is `attemptWeight`, on the nose.
 * `integral_attemptDist` — **`expAttempts` is an expectation**:
   `∫ j, (j + 1) d(attemptDist) = expAttempts p n`.

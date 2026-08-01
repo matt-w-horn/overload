@@ -47,7 +47,7 @@ fair shares, plain FIFO queues — and a theory pinned to any one of them
 does not transfer. This module states the interface they all implement: a
 `Discipline` is *any* feasible, work-conserving split of capacity across
 classes. Theorems stated on the interface transfer across every allocation
-language; theorems about a specific language attach to its instance.
+language. Theorems about a specific language attach to its instance.
 
 Two instances close the loop with `Overload/Control/Priority.lean`, whose
 two regimes turn out to be two disciplines:
@@ -57,7 +57,7 @@ two regimes turn out to be two disciplines:
   here (`top_class_isolation`).
 * `propDiscipline` — attempts-proportional: each class receives its demand
   scaled by the common acceptance `min 1 (C/total)`. This is what a FIFO
-  queue implements under storm; at offered attempts it *is* the
+  queue implements under storm. At offered attempts it *is* the
   uniform-loss `sharedGoodput` regime — the identity is
   `propDiscipline_alloc_eq_sharedGoodput` — where amplification is de
   facto priority (`effective_priority`) and floors come only from budgets
@@ -65,7 +65,7 @@ two regimes turn out to be two disciplines:
 
 The discipline-agnostic content: work conservation (`sum_alloc`,
 `sum_alloc_le`) and the **per-class certificate**
-(`Discipline.class_clamp_no_congestedEq`): whatever the allocation
+(`Discipline.class_clamp_no_congestedEq`). Whatever the allocation
 language, a class running as a closed loop over its grant, clamped below
 that grant, has no congested equilibrium there —
 `borg_batch_over_residual` is its strict-priority instance.
@@ -73,10 +73,10 @@ that grant, has no congested equilibrium there —
 Also here, because service *order* is a discipline too: the stale-first
 waste channel. `fifo_head_expired` — backlog beyond `D·C` puts the FIFO
 sojourn past the deadline, so a unit admitted there expires before
-service, and under sustained backlog the unit now served is already
-expired (the per-unit reading lives in `fifoSojourn`'s definition);
+service. Under sustained backlog the unit now served is already
+expired (the per-unit reading lives in `fifoSojourn`'s definition).
 `lifoSojourn`/`lifo_fresh` record the newest-first contrast (the model
-content is the definition; the inequality is bookkeeping). Adaptive LIFO
+content is the definition — the inequality is bookkeeping). Adaptive LIFO
 and controlled-delay queueing are the practice counterparts.
 
 Max-min fairness (water-filling) is the named next instance, deliberately

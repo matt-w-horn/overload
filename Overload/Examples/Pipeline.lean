@@ -60,7 +60,7 @@ load-coupled failure kernel is asserted (mispredict rates do not, to first
 order, rise with occupancy in this stylized reading), so **no bistability
 is claimed and none of the metastability machinery applies**. What
 transfers is the audit vocabulary — waste accounting, amplification
-envelopes, the hedging reading of speculation — and the negative claim is
+envelopes, the hedging reading of speculation. The negative claim is
 itself the point: the framework says where it does *not* bind. Numbers are
 stylized illustrations.
 -/

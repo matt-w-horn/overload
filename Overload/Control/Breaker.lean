@@ -38,9 +38,9 @@ import Mathlib.Topology.Sheaves.Init
 
 The breaker as a mitigation: a client-side switch that, once tripped,
 answers attempts locally instead of sending them to the shared resource.
-This file proves the *open-state safety side only*: while open, the
+This file proves the *open-state safety side only*. While open, the
 amplification response is clipped at `K` attempts per request
-(`breakerResponse`), a bounded loop wearing the breaker is again a bounded
+(`breakerResponse`). A bounded loop wearing the breaker is again a bounded
 loop (`BoundedLoop.breakerLoop`), and `λ·K < Θ` deletes every congested
 equilibrium through the clamp theorem (`breaker_no_congestedEq`). The
 same certificate re-denominated in attempts per unit time is a server-side
@@ -50,7 +50,7 @@ What is deliberately **not** claimed: the breaker's dynamics. Trip/settle
 thresholds, the half-open probe, flapping, and the breaker limit cycle —
 the closed orbit when a breaker re-closes into a still-congested resource —
 stay omitted. Nothing here says the breaker *reaches* or *stays in*
-the open state; while open, the congested equilibrium does not exist.
+the open state. While open, the congested equilibrium does not exist.
 -/
 
 @[expose] public section

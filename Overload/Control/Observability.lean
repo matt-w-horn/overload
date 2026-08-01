@@ -11,7 +11,7 @@ Between layers sits a translation map taking downstream outcomes to the code a
 layer emits upward. An instrument built on the *wire* label — the
 emitted code — sees only what that label preserves. Miscoding (a timeout
 emitted as a generic error, an overload as unavailability, a throttle as
-spillover) collapses distinct ground-truth states into one wire class, and any
+spillover) collapses distinct ground-truth states into one wire class. Any
 instrument reading that class **cannot** separate them, however the underlying
 system differs.
 
@@ -21,11 +21,11 @@ system differs.
   such an instrument is a property of the instrument, not the system.
 * `intent_refines` — carrying failure origin (an `intent` label) alongside
   the wire code separates exactly the states the wire label conflated. This is
-  the design prescription (a simulator, or a dashboard, should carry
+  the design prescription (a simulator, or a dashboard, must carry
   ground-truth origin separately from the wire code) stated as a theorem.
 
 This is the mathematics behind a dashboard that shows "no errors" for traffic
-that is in fact taking failures: the graph is a function of a lossy label, so
+that is in fact taking failures. The graph is a function of a lossy label, so
 its silence is uninformative about the states that label merges.
 -/
 

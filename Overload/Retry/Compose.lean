@@ -46,10 +46,10 @@ layer's retries (probability `fᵢ₊₁^{nᵢ₊₁}`):
 
 `fᵢ = 1 - (1 - ℓᵢ)(1 - fᵢ₊₁^{nᵢ₊₁})`.
 
-`composeFail` is that one-layer law; the retry cap in its exponent belongs
+`composeFail` is that one-layer law. The retry cap in its exponent belongs
 to the layer *below*. `Overload/Stack/CoupledStack.lean` consumes it (with
 its `Icc` and monotonicity lemmas), building its recursions over own-cap
-pairs `(ℓᵢ, nᵢ)` (the power applied on invocation exit) — the shape that
+pairs `(ℓᵢ, nᵢ)` (the power applied on invocation exit). That shape
 makes the amplification inductions clean.
 -/
 

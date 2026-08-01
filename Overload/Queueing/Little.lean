@@ -56,14 +56,14 @@ disciplines (LIFO, priorities) are covered. Under
 
 the long-run time-average number in system exists and equals `λ·Wbar`
 (`SamplePath.little`): `area t / t → Wbar/τ`, where `area t` is cumulative
-occupancy before `t`, expressed customer-by-customer — each summand
+occupancy before `t`, expressed customer-by-customer. Each summand
 `timeIn t n` is the length of `[aₙ, dₙ) ∩ [0, t)`, so `area` is the area
 under the number-in-system step function with no integral required.
 
 No distributions, no independence, no stationarity, no ergodicity. The
-technical care sits exactly where the classical proof puts it: departures
+technical care sits exactly where the classical proof puts it. Departures
 need not be monotone, so the departed side runs through the longest
-fully-departed *prefix* (`departedPrefix`), and the count asymptotics are
+fully-departed *prefix* (`departedPrefix`). The count asymptotics are
 proved once, for any counting function satisfying two one-sided bounds
 (`count_div_tendsto`) — by squeeze and composition, with no ε-management.
 Byproducts stated separately: the Cesàro tail bound `W n / n → 0`
@@ -73,8 +73,8 @@ Byproducts stated separately: the Cesàro tail bound `W n / n → 0`
 Brumelle's generalization `H = λG` rides the same sandwich: give
 customer `n` a nonnegative weight `g n` — value accrued at constant
 rate while in system — and the weighted occupancy time-average
-equals `λ·Gbar` (`SamplePath.brumelle`), with the value analogue of H2
-as the one extra hypothesis; `little` is recovered at unit weight
+equals `λ·Gbar` (`SamplePath.brumelle`). The value analogue of H2 is
+the one extra hypothesis. `little` is recovered at unit weight
 (`little_of_brumelle`).
 
 What this does **not** claim: connecting these time averages to the
@@ -97,7 +97,7 @@ structure SamplePath where
   /-- Arrival instant of customer `n`. -/
   a : ℕ → ℝ
   /-- Departure instant of customer `n`. No ordering is assumed:
-  customers may overtake. -/
+  customers can overtake. -/
   d : ℕ → ℝ
   /-- Time starts at zero. -/
   a_nonneg : ∀ n, 0 ≤ a n
@@ -267,7 +267,7 @@ noncomputable def arrivals (t : ℝ) : ℕ := sInf {n | t ≤ P.a n}
 /-- The least index whose departure time exceeds `t`: everything below it
 has departed (junk `0` when every customer departs by `t`, per the
 totality convention; `lt_d_departedPrefix` supplies the nonemptiness that
-makes it maximal). With overtaking, customers beyond the prefix may also
+makes it maximal). With overtaking, customers beyond the prefix can also
 have departed — the prefix is what the lower sandwich needs, and it needs
 no order on departures. -/
 noncomputable def departedPrefix (t : ℝ) : ℕ := sInf {n | t < P.d n}
@@ -459,7 +459,7 @@ def valueSum (g : ℕ → ℝ) (n : ℕ) : ℝ :=
 /-- Cumulative value in system before `t`: each arrived customer
 contributes its time in system so far, scaled by its weight — the area
 under the value-in-system step function, mirroring `area` (customers at
-or beyond `arrivals t` would contribute zero). -/
+or beyond `arrivals t` contribute zero). -/
 noncomputable def valueArea (g : ℕ → ℝ) (t : ℝ) : ℝ :=
   ∑ k ∈ Finset.range (P.arrivals t), g k * P.timeIn t k
 

@@ -53,7 +53,7 @@ Three commands enforce the honesty claims the docstrings cannot:
   compiler-generated equation/match lemmas included).
 * `#omitted_audit Overload` is the negative-space complement: the results the
   library deliberately *omits* rather than axiomatizes must actually be
-  absent — no declaration under the namespace may carry one of the
+  absent — no declaration under the namespace carries one of the
   omitted-result name tokens.
 
 The axiom commands fail the build unless every axiom the declaration depends
@@ -70,12 +70,12 @@ Two limits, both covered outside `lake build`:
 
 * The environment holds only what this file *imports*, and the import list
   above is hand-maintained — a module missing from it is silently unswept.
-  Nothing in `lake build` enforces the list; the `import-roots` check in
+  Nothing in `lake build` enforces the list. The `import-roots` check in
   `OverloadTest/Main.lean` does, by requiring every module under
   `Overload/` to appear in both this file and `Overload.lean`. The imports
   are `import all` because a plain `import` resolves at the exported level,
   which omits `private` declarations from the environment entirely — a
-  `sorry` behind `private` would be invisible rather than caught
+  `sorry` behind `private` is then invisible rather than caught
   (`tests/negative/PrivateSorryFixture.lean` holds this shut, together with
   `inAuditedNamespace` below).
 * Lean never adds an `example` to the environment, so no name-based sweep can
@@ -86,8 +86,8 @@ Two limits, both covered outside `lake build`:
 -/
 
 -- `public` without `@[expose]`: nothing here is proof-relevant, and an
--- unexposed public body may reference the `private` predicate below where
--- an exposed one may not.
+-- unexposed public body can reference the `private` predicate below where
+-- an exposed one cannot.
 public section
 
 -- The audit commands run at elaboration time, so under the module system
@@ -98,24 +98,24 @@ meta section
 /-- Whether a constant belongs to the audited namespace. Private
 declarations reach the environment mangled as `_private.<Module>.<n>.<Name>`,
 whose root is `_private` and which `isInternal` reports true, so a bare
-`n.getRoot == root` check silently skips them —
+`n.getRoot == root` check silently skips them.
 `Lean.privateToUserName` un-mangles first. It is the identity on non-private
 names, so this is a strict widening of the old rule and leaves today's count
 unmoved. Load-bearing only once the library is on the module system, where a
-`private` declaration is what a `sorry` could hide behind; measured
-2026-07-29 against a probe module, where the old rule saw 1 of 2
+`private` declaration is what a `sorry` can hide behind. Measured
+2026-07-29 against a probe module: the old rule saw 1 of 2
 declarations and reported the `sorry`-tainted one as clean.
 
 `OverloadTest/Coverage.lean`'s `auditRule` carries a copy of these two
 lines (read by the coverage gate and the test driver), because the module
-system's phase separation runs both ways: a `meta` definition may not
+system's phase separation runs both ways: a `meta` definition cannot
 reference a non-meta one, so this cannot be hoisted out of the section
 below for a plain `def` to share. The copy must agree with this one — they
 disagreed on 2026-07-29 (914 against 919) and nothing caught it, because
 two printed totals with no comparison between them are not checked.
 
 `private`, deliberately: the three commands below are its only readers, and
-a public root-level name here would land an unqualified `inAuditedNamespace`
+a public root-level name here lands an unqualified `inAuditedNamespace`
 in the namespace of anyone who writes `import Overload`. Either way it sits
 outside the sweeps it powers — its name root is not `Overload` — so the
 gates on it are this docstring and `tests/negative/PrivateSorryFixture.lean`,
@@ -160,8 +160,8 @@ declaration in the environment whose name root is the given namespace,
 skipping internal auxiliaries but *not* private declarations (see
 `inAuditedNamespace`). No registration step is needed for
 a new declaration, but the environment reaches only what this file imports and
-never contains an `example` (see the module docstring); the checked count is
-reported so the sweep's reach is visible in the build log. -/
+never contains an `example` (see the module docstring). The checked count is
+reported so that the sweep's reach is visible in the build log. -/
 elab "#axiom_budget_all " pfx:ident : command => do
   let env ← getEnv
   let root := pfx.getId
@@ -183,7 +183,7 @@ open Lean Elab Command in
 given namespace root carries one of `Overload.overloadOmittedTokens` in its
 name.
 Complement of `#axiom_budget_all`: that sweep checks that everything present
-is honestly proved; this one checks that what the documentation declares
+is honestly proved. This one checks that what the documentation declares
 absent is actually absent — "omitted, never axiomatized" as a build fact. -/
 elab "#omitted_audit " pfx:ident : command => do
   let env ← getEnv
@@ -192,9 +192,9 @@ elab "#omitted_audit " pfx:ident : command => do
   for (n, _) in env.constants.toList do
     if inAuditedNamespace root n then
       -- Test the un-mangled name, matching the membership test above: the
-      -- mangled `_private.<Module>.…` form carries the module path, so a
-      -- file whose name contains a token would fail every private
-      -- declaration inside it with a message naming the declaration.
+      -- mangled `_private.<Module>.…` form carries the module path, so
+      -- testing it fails every private declaration in a file whose name
+      -- contains a token, with a message naming the declaration.
       for tok in Overload.overloadOmittedTokens do
         if ((toString (privateToUserName n)).splitOn tok).length != 1 then
           throwError "omitted-name audit failed: `{n}` carries the omitted-result token `{tok}`"

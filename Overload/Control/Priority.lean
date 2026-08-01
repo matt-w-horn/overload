@@ -39,9 +39,10 @@ import Mathlib.Topology.Sheaves.Init
 Several request classes share one bottleneck of capacity `C`. Class `j` offers
 `lam j` requests per unit time and amplifies each by `A j` (its expected
 attempts per request). This module is the multi-class consequence of the
-capacity-conservation invariant: channel-3 demand lands on *shared* capacity, so when the resource
-cannot discriminate under storm, class outcomes order by offered **attempts**
-`lam j · A j`, not by intended priority.
+capacity-conservation invariant: channel-3 demand lands on *shared*
+capacity. When the resource cannot discriminate under storm, class
+outcomes order by offered **attempts** `lam j · A j`, not by intended
+priority.
 
 Two contention regimes, each with theorems:
 
@@ -76,11 +77,12 @@ Plus:
 * `eligibility_gate` — a class whose retries are disabled (`cap = 1`) has
   `A = 1`: "this class never retries" as a machine-checked fact.
 * `admission_bound` / `admission_needs_clamp` — **admission denomination**: a
-  cap on admitted *requests* bounds attempt load iff amplification is clamped;
-  request-denominated admission control is blind to amplification behind it.
+  cap on admitted *requests* bounds attempt load iff amplification is
+  clamped. Request-denominated admission control is blind to amplification
+  behind it.
 
-Neutral queueing vocabulary throughout; the multi-tenant reading lives only in
-`Examples/Borg.lean`.
+Neutral queueing vocabulary throughout. The multi-tenant reading lives only
+in `Examples/Borg.lean`.
 
 **Composing with the equilibrium machinery**: the allocation side hands each
 class a capacity (`alloc`/`residual`), and each class then runs as its own
@@ -91,7 +93,7 @@ batch band's residual capacity).
 
 **Priority is one allocation language among several.** The interface both
 of this module's regimes implement — any feasible, work-conserving split —
-lives in `Overload/Control/Discipline.lean`: strict priority
+lives in `Overload/Control/Discipline.lean`. Strict priority
 (`strictDiscipline`) and the undiscriminating/attempts-proportional regime
 (`propDiscipline`, what a FIFO queue does under storm) are its two
 instances, and the
@@ -199,7 +201,7 @@ theorem budget_floor {lam A β : Fin k → ℝ} (hlam : ∀ j, 0 ≤ lam j)
 
 Strict-priority residual allocation: class `0` (highest priority) is served
 first from capacity `C`, class `1` from what remains, and so on. Classes are
-indexed by `ℕ` (zero-extended demand); the served set is `0, …, k-1`.
+indexed by `ℕ` (zero-extended demand). The served set is `0, …, k-1`.
 Amplification is irrelevant here — allocation is driven by the *intent*
 demand, not the wire attempt rate.
 -/

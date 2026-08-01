@@ -70,7 +70,7 @@ Results:
   *forces* the geometric solution.
 * `global_balance_iff_cutFlow_succ` / `stationaryWeight_unique_of_global_balance`
   — global balance *is* constancy of the cut flow, and summability collapses
-  that constant to zero, so under the stability condition `0 ≤ λ < μ` the
+  that constant to zero. Under the stability condition `0 ≤ λ < μ` the
   geometric form is derived from the second-order balance equations rather
   than assumed.
 * `meanQueue_eq` — **`L = ρ/(1-ρ)`**, the utilization law.
@@ -467,7 +467,7 @@ capacity, delay blows up, and any fixed timeout `τ` is eventually crossed.
 `mm1Kernel` packages that as a failure kernel — the M/M/1 sojourn tail
 `P(S > τ) = e^{-(C-Λ)τ}` below capacity, saturated at and above it. The
 sojourn *distribution* is not derived here (that needs the stochastic
-process); the tail form is a **modeling definition**, and what is proved is
+process). The tail form is a **modeling definition**. What is proved is
 everything downstream of it: kernel structure, monotone load coupling, and
 the bistability of the resulting closed loop on the real kernel rather than
 the step cartoon. The designated route for eventually *deriving* it is

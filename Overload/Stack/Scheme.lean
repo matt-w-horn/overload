@@ -42,23 +42,22 @@ import Mathlib.Topology.Sheaves.Init
 
 The scheme-agnostic formalism: a retry scheme at any point
 in the stack is a tuple `(trigger, stop, timing, scope)`. Its quantitative
-content, for everything downstream, is a single number — the amplification it
-contributes — obtained by feeding its timing rule through the deadline
-arithmetic (`Deadline.neff`) to a cap, then through the truncated-geometric
-mean (`Amplification.expAttempts`).
+content, for everything downstream, is a single number — the amplification
+it contributes. That number is obtained by feeding its timing rule through
+the deadline arithmetic (`Deadline.neff`) to a cap, then through the
+truncated-geometric mean (`Amplification.expAttempts`).
 
 The payoff of this file is `stackToLoop`: a whole stack of schemes composes
 multiplicatively into a single amplification number `layersAmp S`, and the
 resulting **constant-response loop** is again a bounded demand operator
-(`Bistability.BoundedLoop`). This is the *worst-case envelope*
-composite: its response ignores the failure level, so the clamp-side theorems
-apply verbatim (`stack_budget_no_congestedEq` certifies the whole
+(`BoundedLoop`, in `ClosedLoop.lean`). This is the *worst-case envelope*
+composite: its response ignores the failure level, so the clamp-side
+theorems apply verbatim. `stack_budget_no_congestedEq` certifies the whole
 architecture with one product inequality, for every kernel — in min-plus
 network-calculus language, `λ·∏capᵢ < C` is an arrival-curve statement:
 the retry stack's worst-case output envelope stays under the service
-capacity), while
-bistability — which needs a load-*coupled* response — cannot arise in this
-composite by construction. The load-coupled composite lives in
+capacity. Bistability — which needs a load-*coupled* response — cannot
+arise in this composite by construction. The load-coupled composite lives in
 `Overload/Stack/CoupledStack.lean` (`coupledLoop`): failure composition fed
 through `expAttempts` into a non-constant response, where both phase
 directions are expressible. Code-level retry loops and the architecture
@@ -146,7 +145,7 @@ theorem layersAmp_le_prod_cap (S : List Layer) :
 /-- **The code ↔ architecture composition, worst-case form.** A whole stack
 of retry schemes assembles into a single `BoundedLoop` whose amplification
 response is the *constant* composite `layersAmp S` — the product of the
-per-layer amplifications, i.e. the saturated worst case. The composite
+per-layer amplifications, that is, the saturated worst case. The composite
 anchors on the boundedness core: the clamp-side certificates
 (`clamp_no_congestedEq` and its corollaries) consume only boundedness, so
 no kernel monotonicity is asked for, and because the response is constant

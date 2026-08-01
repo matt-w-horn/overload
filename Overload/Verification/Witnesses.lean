@@ -48,7 +48,7 @@ import Std.Tactic.BVDecide.Normalize.Prop
 The kernel checks proofs, not relevance: a theorem whose hypothesis bundle
 cannot be satisfied is vacuously true and worthless. Statement-first
 repositories guard against this with explicit test instances (the
-formal-conjectures `category test` discipline); this file is the same guard
+formal-conjectures `category test` discipline). This file is the same guard
 for the hypothesis-heavy structures here that the examples do not already
 instantiate.
 

@@ -47,7 +47,7 @@ import Mathlib.Topology.Sheaves.Init
 # Calculus: stability by slope, and recovery times by integration
 
 The order-theoretic results read the loop through inequalities on `F`
-itself; this module reads the same loop through derivatives:
+itself. This module reads the same loop through derivatives:
 
 * **Amplification sensitivity** `expAttemptsDeriv p n`, the derivative of
   the truncated-geometric response `expAttempts · n` at `p`. At `0 ≤ p` it
@@ -56,7 +56,7 @@ itself; this module reads the same loop through derivatives:
   raised by every retry response with `2 ≤ n` (`expAttemptsDeriv_pos`).
 * **Loop gain** `deriv F Λ`, computed by the chain rule as `λ·h'(g Λ)·g'(Λ)`
   (`BoundedLoop.hasDerivAt_F`). Gain above `1` around an equilibrium makes
-  the equilibrium repelling (`gain_gt_one_repels`); gain below `1` across
+  the equilibrium repelling (`gain_gt_one_repels`). Gain below `1` across
   the demand envelope leaves at most one equilibrium
   (`fixedPt_unique_of_gain_lt_one`) and excludes the bistable band outright
   (`ClosedLoop.not_bistableOn_of_gain_lt_one`).
@@ -72,9 +72,9 @@ itself; this module reads the same loop through derivatives:
   (`one_lt_mm1BandLoop_gain`).
 * **Continuous time**: for a trajectory `x` hypothesized to satisfy
   `x' t = F (x t) - x t`, the clamp condition forces strict decrease at or
-  above the threshold (`BoundedLoop.clamp_fluid_strictAnti`); a drift bound
+  above the threshold (`BoundedLoop.clamp_fluid_strictAnti`). A drift bound
   `−δ` drains the backlog to zero within `x t₀ / δ` seconds
-  (`fluid_drain_le`, `fluid_drain_clears`); gain at most `L` above an
+  (`fluid_drain_le`, `fluid_drain_clears`). Gain at most `L` above an
   equilibrium decays the excursion at rate `1 − L`
   (`fluid_decay_of_gain_le`, derivative-read as `fluid_decay_of_deriv_le`,
   witnessed tight by `fluid_decay_witness`), and the spike is back within
@@ -82,7 +82,7 @@ itself; this module reads the same loop through derivatives:
   (`fluid_recovery_within`).
 * **The smooth loop's trajectory, supplied**: `x' = F(x) - x` has a local
   solution by Picard–Lindelöf (`smoothLoop_exists_trajectory`, through the
-  Lipschitz modulus `lipschitzOnWith_smoothLoop_F`), and under the clamp
+  Lipschitz modulus `lipschitzOnWith_smoothLoop_F`). Under the clamp
   condition `λ·A < Θ` that trajectory, while at or above the threshold,
   loses at least `Θ − λ·A` per second (`smoothLoop_fluid_drain`, pinned by
   `smoothDemoLoop_fluid_drain_pin`).
@@ -93,7 +93,7 @@ hypothesis. For the smooth loop the trajectory is supplied:
 `x' = F(x) - x` by Picard–Lindelöf, with `lipschitzOnWith_smoothLoop_F` as
 the modulus. Uniqueness, extension past the local interval, and existence
 for any other loop are not claimed.
-Derivative hypotheses use Mathlib's `deriv` and `HasDerivAt`; a strict
+Derivative hypotheses use Mathlib's `deriv` and `HasDerivAt`. A strict
 lower bound on `deriv F` implies differentiability (a non-differentiable
 point has `deriv F x = 0`), so only the gain-below-one results carry an
 explicit differentiability hypothesis.
@@ -214,7 +214,7 @@ theorem gain_gt_one_repels_pin :
 open interval and `F` continuous on the closed one and differentiable
 inside, `F - id` is strictly decreasing, so `[a, b]` holds at most one
 fixed point. Differentiability is a genuine hypothesis here — a
-non-differentiable point has `deriv F x = 0 < 1` and would satisfy the gain
+non-differentiable point has `deriv F x = 0 < 1` and satisfies the gain
 bound vacuously. -/
 theorem fixedPt_unique_of_gain_lt_one {F : ℝ → ℝ} {a b : ℝ}
     (hcont : ContinuousOn F (Set.Icc a b))
@@ -461,7 +461,7 @@ theorem hasDerivAt_mm1Loop_F {lam C τ Λ : ℝ} {m : ℕ} (hlam : 0 ≤ lam)
   (mm1Loop lam C τ m hlam hτ hm).hasDerivAt_F (hasDerivAt_mm1Kernel hΛ)
     (hasDerivAt_expAttempts _ m)
 
-/-- The streamlined check, safe side, on the band instance: at the healthy
+/-- The simplified check, safe side, on the band instance: at the healthy
 operating point (demand 31) the loop gain of `mm1BandLoop` is below one.
 The tail `p = e^{-69}` is at most `1/70` (`exp_neg_le_inv_one_add`), so the
 gain `30·(1 + 2p + 3p²)·p` is far below one. -/
@@ -494,7 +494,7 @@ theorem mm1BandLoop_gain_lt_one : deriv mm1BandLoop.F 31 < 1 := by
     mul_le_mul (by linarith) hp70 hp0.le (by norm_num)
   nlinarith [step]
 
-/-- The streamlined check, risky side, on the same instance: near capacity
+/-- The simplified check, risky side, on the same instance: near capacity
 (demand 99, headroom 1) the loop gain of `mm1BandLoop` exceeds one. The
 tail is `e^{-1} > 1/3` (from `exp_one_lt_d9`), the response sensitivity is
 at least `1` (`one_le_expAttemptsDeriv`), and `30·1·(1/3) = 10`. One loop,

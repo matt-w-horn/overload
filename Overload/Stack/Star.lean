@@ -48,7 +48,7 @@ The organizing observation is a worst-case, order-theoretic form of the
 flow-equivalent server: the sink's aggregate `y = ∑ rⱼΛⱼ` satisfies the
 *scalar* fixed-point equation `y = ∑ rᵢλᵢhᵢ(g_D y)`, so the whole star
 collapses to one closed loop (`Star.toLoop`) — exactly, for the safety
-question (`Star.congestedEq_iff`) — and any scalar equilibrium unpacks
+question (`Star.congestedEq_iff`). Any scalar equilibrium unpacks
 back into a genuine componentwise vector equilibrium
 (`Star.isVectorEq`).
 
@@ -59,8 +59,8 @@ The assume-guarantee reading:
 * `Star.signature` — the one number a team exports: `σᵢ = λᵢKᵢrᵢ`.
 * `Star.no_congestedEq_of_signatures` — **the star clamp: contracts
   compose by addition.** `∑ σᵢ < Θ` removes every congested equilibrium
-  at the sink, for any sink kernel — each team checks only its own row,
-  and fan-in aggregation is a sum (as within-server aggregation is a
+  at the sink, for any sink kernel — each team checks only its own row.
+  Fan-in aggregation is a sum (as within-server aggregation is a
   `min`, `Resources.lean`'s `binding_shift`, and down-stack aggregation is
   a product, `capProd`).
 * `starWitness` — a heterogeneous two-server star over the saturated
@@ -76,7 +76,7 @@ The gain side, eigenvalue-free as in `Coupling.lean`:
 
 * `rankOne_certificate_iff` — for `J = a·bᵀ` with nonnegative factors, a
   positive strictly contracting weight (`Certificate`) exists **iff** the
-  pairing sum `∑ bⱼaⱼ < 1` — the certificate form of "a rank-one
+  pairing sum `∑ bⱼaⱼ < 1`. This is the certificate form of "a rank-one
   nonnegative matrix's sole nonzero eigenvalue is `⟨b, a⟩`", with the
   weight `w = a + ε` explicit and the converse by pairing with `b`.
 * `Star.gainMatrix_certificate_iff` — the star's linearized coupling
@@ -87,15 +87,15 @@ The gain side, eigenvalue-free as in `Coupling.lean`:
   (`certificate_fixedPoint_unique`, consumed here as
   `Star.gain_unique_eq`).
 
-Honest boundaries, stated: the entries `Lᵢ`, `ℓ_D` of the gain matrix
+Honest boundaries, stated. The entries `Lᵢ`, `ℓ_D` of the gain matrix
 are Lipschitz surrogates for the derivative products `λᵢhᵢ'g_D'` —
-modeling inputs, the same status as the mesh example's coupling entries;
-the signature `σᵢ` forgets the shape of `hᵢ`, so a contract certifies
+modeling inputs, the same status as the mesh example's coupling entries.
+The signature `σᵢ` forgets the shape of `hᵢ`, so a contract certifies
 *absence* of congestion, one direction, and no certificate reading only
 the exported sum decides congestion at the sink
-(`star_signature_not_decide_congestedEq`);
-and the reduction is clamp-side — the order-theoretic existence results
-would need a monotone aggregate with an amplification floor, which the
+(`star_signature_not_decide_congestedEq`).
+The reduction is clamp-side: the order-theoretic existence results
+need a monotone aggregate with an amplification floor, which the
 star does not assume.
 -/
 
@@ -461,9 +461,9 @@ theorem starWitnessLight_no_congestedEq :
 decide congestion or the phase. The same limit binds the number this file
 exports. A one-server star at unit fan-out has the demand operator of the
 loop it wraps (`ClosedLoop.toStar`) and exports that loop's own signature
-(`ClosedLoop.toStar_signature`), so the equal-signature pair of
-`Signature.lean` transports to the fan-in vocabulary as a genuine pair of
-stars rather than an analogy.
+(`ClosedLoop.toStar_signature`). The equal-signature pair of
+`Signature.lean` therefore transports to the fan-in vocabulary as a genuine
+pair of stars rather than an analogy.
 -/
 
 namespace ClosedLoop

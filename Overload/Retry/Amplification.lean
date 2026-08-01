@@ -48,12 +48,12 @@ One retry mechanism, i.i.d. per-attempt failure probability `p`, attempt cap
 *amplification* of the mechanism — is the finite geometric sum
 `E[K] = ∑_{k<n} pᵏ`, with closed form `(1 - pⁿ)/(1 - p)` away from `p = 1`.
 
-Design note: `expAttempts` is *defined* as the sum, so it is total; the
+Design note: `expAttempts` is *defined* as the sum, so it is total. The
 closed-form quotient is Mathlib's `geom_sum_eq` (hypothesis `p ≠ 1`, oriented
 `(pⁿ - 1)/(p - 1)` upstream), reached through `expAttempts_def`.
 The distributional facts (`sum_attemptWeight`, `sum_mul_attemptWeight`) are
-ring identities — true for every real `p` — because the weights telescope;
-probability hypotheses (`0 ≤ p ≤ 1`) enter only for nonnegativity, bounds, and
+ring identities — true for every real `p` — because the weights telescope.
+Probability hypotheses (`0 ≤ p ≤ 1`) enter only for nonnegativity, bounds, and
 monotonicity.
 -/
 
@@ -68,7 +68,8 @@ def expAttempts (p : ℝ) (n : ℕ) : ℝ := ∑ k ∈ Finset.range n, p ^ k
 
 /-- `expAttempts` unfolded to the finite geometric sum it is defined as, so
 call sites can reach Mathlib's `geom_sum_*` family. Deliberately not `@[simp]`:
-that would unfold `expAttempts` library-wide. Name it at the site instead. -/
+a simp registration unfolds `expAttempts` library-wide. Name it at the site
+instead. -/
 theorem expAttempts_def (p : ℝ) (n : ℕ) :
     expAttempts p n = ∑ k ∈ Finset.range n, p ^ k := rfl
 
@@ -88,9 +89,10 @@ theorem one_sub_mul_expAttempts (p : ℝ) (n : ℕ) :
 ## The attempt-count distribution
 
 `attemptWeight p n j` is `P(K = j + 1)`, indexed by the number `j` of failed
-attempts before the final one: `pʲ(1-p)` while another attempt remains
-(`j + 1 < n`), `p^{n-1}` at the cap (the request stops there regardless of the
-final outcome), `0` outside the support. Indexing by `j` rather than `k = j+1`
+attempts before the final one. The mass is `pʲ(1-p)` while another attempt
+remains (`j + 1 < n`), `p^{n-1}` at the cap (the request stops there
+regardless of the final outcome), and `0` outside the support.
+Indexing by `j` rather than `k = j+1`
 avoids ℕ-subtraction throughout.
 -/
 

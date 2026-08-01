@@ -47,7 +47,7 @@ kernel — the half of the loop an operator does not control — the pointwise
 clamp condition is *equivalent* to safety.
 
 * `BoundedLoop.withKernel` / `constLoop` — kernel surgery: the same demand
-  profile `(λ, h, Amax)` over a replaced kernel; the constant kernel is the
+  profile `(λ, h, Amax)` over a replaced kernel. The constant kernel is the
   adversarial instrument.
 * `constLoop_congestedEq` — **the tightness witness**: any response level the
   profile reaches at or above the threshold is a congested equilibrium of the
@@ -63,7 +63,7 @@ clamp condition is *equivalent* to safety.
 * `spikeLoop_*` — **the fixed-kernel gap**: a loop can be safe under its own
   kernel while the pointwise clamp condition fails — and a sibling kernel
   then congests the same profile. Kernel quantification is exactly what the
-  iff buys; against a *fixed* kernel the clamp stays one-directional.
+  iff buys. Against a *fixed* kernel the clamp stays one-directional.
 -/
 
 @[expose] public section
@@ -110,7 +110,7 @@ def constLoop (p₀ : ℝ) (hp₀ : p₀ ∈ Set.Icc (0 : ℝ) 1) : BoundedLoop 
 /-- **The tightness witness.** Any nonnegative threshold at or below the
 parked response `λ·h(p₀)` is a congested equilibrium threshold of the
 sibling loop whose kernel parks there: `F ≡ λ·h(p₀)` is its own fixed
-point. (On a bare `BoundedLoop` the response may be negative, so `0 ≤ Θ`
+point. (On a bare `BoundedLoop` the response can be negative, so `0 ≤ Θ`
 is load-bearing.) -/
 theorem constLoop_congestedEq {p₀ Θ : ℝ} (hp₀ : p₀ ∈ Set.Icc (0 : ℝ) 1)
     (hΘ0 : 0 ≤ Θ) (hΘ : Θ ≤ L.lam * L.h p₀) :
@@ -267,7 +267,7 @@ theorem coupled_budget_tight_pin :
 
 Against a *fixed* kernel the pointwise clamp condition is not necessary:
 the spike profile below is safe under its own kernel (which never lands
-where the response spikes) even though the condition fails — and the
+where the response spikes) even though the condition fails. The
 constant kernel parked at the spike congests the very same profile. The
 kernel quantification in `forall_kernel_no_congestedEq_iff` is therefore
 exactly what completeness costs.

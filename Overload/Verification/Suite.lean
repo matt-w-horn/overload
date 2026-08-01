@@ -45,22 +45,22 @@ A simulator (or an instrumented production system) of this class is
 wrong if it violates any of a short list of conservation laws and reduction
 identities, *regardless of how well it fits data*. This file states the suite
 as a reusable `Prop`-bundle over a measured-facts interface, so "our simulator
-satisfies the suite" is a single proposition, and each field names the
+satisfies the suite" is a single proposition. Each field names the
 falsifiable check it encodes.
 
 The suite's tests map to this library as follows:
 
 * Test 1 (flow balance per edge)     — `VerificationSuite.flow_balance`.
 * Test 2 (work conservation)         — carried by `Accounting.conserve` inside
-  `SystemFacts.acct`; the goodput bound is `VerificationSuite.goodput_bound`.
+  `SystemFacts.acct`. The goodput bound is `VerificationSuite.goodput_bound`.
 * Test 3 (Little's law per station)  — `VerificationSuite.little`.
 * Test 4 (deadline budget)           — `VerificationSuite.deadline_budget`.
 * Test 5 (stopping consistency)      — `VerificationSuite.stopping` and
   `VerificationSuite.tokens`.
 * Test 6 (PASTA)                     — **interface-only**: the `pasta` field
-  carries a caller-supplied proposition; the PASTA theorem itself is not
-  formalized here, and the field exists so the claim is an explicit hypothesis
-  rather than ambient folklore.
+  carries a caller-supplied proposition. The PASTA theorem itself is not
+  formalized here, and the field exists so that the claim is an explicit
+  hypothesis rather than ambient folklore.
 * Test 8 (truncated-geometric histogram under exogenous `p`) —
   `sum_attemptWeight` / `sum_mul_attemptWeight`
   (`Overload/Retry/Amplification.lean`).
@@ -75,19 +75,20 @@ The suite's tests map to this library as follows:
   checks outside this development's scope. This list is their record: they
   are named here rather than silently dropped.
 
-**Scope honesty.** The suite's identities are per-station and per-request;
-nothing here cross-links per-request attempt counts to the aggregate flow
+**Scope honesty.** The suite's identities are per-station and per-request.
+Nothing here cross-links per-request attempt counts to the aggregate flow
 totals ("per request *and* in aggregate" is only partially captured).
 A run whose `sent`/`rate` fields are fabricated independently of its
-`attempts` fields can satisfy every constraint below — ground the flow
-fields in the same instrumentation as the per-request counts, or add that
-linkage as an extra invariant when your request population is enumerable.
+`attempts` fields can satisfy every constraint below. Ground the flow
+fields in the same instrumentation as the per-request counts, or, when
+your request population is enumerable, add that linkage as an extra
+invariant.
 
 **Intent/processed dual accounting** (the signal-channel reading):
 `SystemFacts` carries failure counts jointly by ground-truth *origin* and
 emitted *wire code*. The suite demands both marginals match the joint
 (`origin_marginal`, `wire_marginal`), so miscoding is a measurable object (the
-joint matrix) rather than an untracked loss —
+joint matrix) rather than an untracked loss.
 `Overload/Control/Observability.lean` proves why instruments built on the
 wire label alone cannot see it.
 -/

@@ -36,7 +36,7 @@ import Mathlib.Topology.Sheaves.Init
 /-!
 # Hysteresis: equilibrium selection under a load sweep
 
-The bistable band holds two equilibria; which one a
+The bistable band holds two equilibria. Which one a
 system occupies depends on where it came from — collapse at the band's upper
 edge, recovery only at its lower edge. This file proves the order-theoretic
 core of that story, with no dynamics beyond monotone iteration:
@@ -49,7 +49,7 @@ core of that story, with no dynamics beyond monotone iteration:
 * `congestedEq_mono_lam` / `not_congestedEq_of_le` — **the congested set is
   an up-set in `λ`**: collapse persists under rising load, and safety at a
   high load certifies every lower load. `congestionEdge` names the least
-  congesting load as an infimum, with two-sided bounds; attainment at the
+  congesting load as an infimum, with two-sided bounds. Attainment at the
   edge is not claimed in general, and on the stylized loop the edge
   evaluates exactly: `congestionEdge = C/A` (`stepLoop_congestionEdge`).
 * `stepLoop_lfpIcc_of_lt` / `stepLoop_gfpIcc_of_ge` /
@@ -57,14 +57,14 @@ core of that story, with no dynamics beyond monotone iteration:
   for both extremal equilibria of the stylized loop in every phase region,
   packaged as `stepLoop_equilibrium_trichotomy`.
 * `stepLoop_jump_up` / `stepLoop_jump_down` — **the hysteresis loop**: the
-  healthy branch tracks `λ` until the upper edge `C` and jumps by `C·(A−1)`;
-  the congested branch holds `λ·A` down to the lower edge `C/A` (where it
+  healthy branch tracks `λ` until the upper edge `C` and jumps by `C·(A−1)`.
+  The congested branch holds `λ·A` down to the lower edge `C/A` (where it
   still sustains exactly `C`) and only then collapses to `λ`. Collapse and
   recovery happen at *different* loads — path dependence in equilibrium
   selection.
 * `stepLoop_sweep_up_le` — the upward sweep from empty never overshoots the
   healthy equilibrium (`iterate_le_lfpIcc`). Sweep *dynamics* — rates,
-  jitter, trajectories — remain simulator territory; these are the
+  jitter, trajectories — remain simulator territory. These are the
   order-theoretic endpoints any sweep must respect.
 -/
 
@@ -346,7 +346,7 @@ offered load the whole way to the band's upper edge — and at the crossing
 `C·(A−1)` where collapse begins. Strict `1 < A` and `0 < C` are what make
 the jump a jump: at `A = 1` the loop has a unique equilibrium
 (`noSustaining_unique_eq`) and at `C = 0` both branches sit at zero, so the
-first conjunct — the gap `C < C·A` — would be false. -/
+first conjunct — the gap `C < C·A` — is false. -/
 theorem stepLoop_jump_up {C A : ℝ} (hC : 0 < C) (hA : 1 < A) :
     C < C * A ∧
     (∀ lam, ∀ hlam : 0 ≤ lam, lam < C →
@@ -444,8 +444,8 @@ theorem stepLoop_congestionEdge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A
 ## Numeric instances of the selection results
 
 All on one band loop — offered load `2`, capacity `5`, amplification `4`, so
-`λ = 2 < 5 ≤ 8 = λ·A` — except the jump lemmas, which quantify over the load
-themselves and are pinned at `C = 5`, `A = 4`.
+`λ = 2 < 5 ≤ 8 = λ·A`. The jump lemmas are the exception: they quantify over
+the load themselves and are pinned at `C = 5`, `A = 4`.
 -/
 
 /-- Pin of the trichotomy's band leg: at load `2` under capacity `5` the two

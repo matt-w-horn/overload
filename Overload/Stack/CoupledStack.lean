@@ -61,18 +61,18 @@ and its *own* retry cap — deliberately bare pairs rather than proof-carrying
   the head retries against the composed failure below it, and each head
   attempt spawns one full invocation of the sublist. The product across
   layers is the per-layer Wald modeling assumption (same status as
-  `stackAmp`; `Composition.lean`'s branching-Wald section is its finite
+  `stackAmp` — `Composition.lean`'s branching-Wald section is its finite
   honest core). Locally-failing attempts are charged a full downstream
-  invocation — the worst case; fail-fast refinements only reduce it.
+  invocation — the worst case. Fail-fast refinements only reduce it.
 
 `coupledLoop` assembles the composite into a `ClosedLoop` over an arbitrary
-kernel `g` — the binding resource may be a serving fleet or an intermediate
+kernel `g` — the binding resource can be a serving fleet or an intermediate
 hop's memory or bandwidth, denominated in attempts against it. Because the
 response is genuinely load-coupled, both phase directions are expressible:
 `coupled_budget_no_congestedEq` certifies collapse-freedom with one product
 inequality, and `coupled_two_layer_bistable` exhibits a bistable two-layer
 composite over the step kernel. `composeFail`'s exponent is the cap of the
-layer *below*; the recursions here pair each layer with its own cap
+layer *below*. The recursions here pair each layer with its own cap
 instead — the pairing that makes the inductions clean.
 -/
 
@@ -284,7 +284,7 @@ theorem coupledAmp_at_one (layers : List (ℝ × ℕ)) :
 
 /-- **The code ↔ architecture composition, load-coupled form.** A whole
 stack of retry layers over an arbitrary kernel `g` — the binding resource
-may be a serving fleet or an intermediate hop's memory or bandwidth,
+can be a serving fleet or an intermediate hop's memory or bandwidth,
 denominated in attempts against it — assembles into a `ClosedLoop` whose
 amplification response genuinely depends on the failure level. Both phase
 directions now apply: the clamp side (`coupled_budget_no_congestedEq`) and
@@ -327,7 +327,7 @@ Layers `[(1/2, 2), (1/2, 2)]` over `stepKernel 24` at offered load `8`.
 Healthy side (`p = 0`): the inner layer's invocation fails with probability
 `(1/2)² = 1/4`, the head's per-attempt failure is
 `composeFail (1/2) (1/4) 1 = 5/8`, and the composite amplification is
-`(1 + 5/8)·(1 + 1/2) = 39/16`, so `F(39/2) = 8·39/16 = 39/2` — an exact
+`(1 + 5/8)·(1 + 1/2) = 39/16`. Then `F(39/2) = 8·39/16 = 39/2` — an exact
 fixed point strictly below capacity, with genuinely load-coupled healthy
 amplification (`39/16 > 1`, not the trivial envelope). Congested side:
 `F(24) = 8·capProd = 32 ≥ 24`.

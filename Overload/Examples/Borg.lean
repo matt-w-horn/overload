@@ -44,17 +44,17 @@ import Mathlib.Topology.Sheaves.Init
 
 A cluster scheduler in the style of Borg (Verma et al., "Large-scale cluster
 management at Google with Borg", EuroSys 2015 — public paper): tenants submit
-jobs into **priority bands** (production above batch above best-effort), a
-higher band may **preempt** a lower band's tasks, preempted tasks are
-**rescheduled** — a retry performed by the architecture — and admission is
+jobs into **priority bands** (production above batch above best-effort). A
+higher band can **preempt** a lower band's tasks, and preempted tasks are
+**rescheduled** — a retry performed by the architecture. Admission is
 controlled by **quota** denominated in resources at a priority. Task startup
 is expensive (Verma et al. report a median around 25 s), so an eviction destroys
 real invested work.
 
 This file is the one place in the library that discusses **multi-tenant
 fairness** explicitly, because Borg's public design is the canonical instance
-of the open problem — *who gets the retries when the budget
-binds?* — and the theorems answer its two halves:
+of the open problem: *who gets the retries when the budget
+binds?* The theorems answer its two halves:
 
 * **Without cooperation from the resource** (the scheduler cannot or will not
   discriminate): per-band reschedule budgets alone give every band an explicit
@@ -64,7 +64,7 @@ binds?* — and the theorems answer its two halves:
   conservation gives the production band full isolation — its allocation is
   `min(demand, C)` *whatever any lower band's retry storm does*
   (`borg_prod_immune`) — while no capacity is ever stranded
-  (`borg_no_stranding`, `borg_batch_borrows`): lower bands borrow every idle
+  (`borg_no_stranding`, `borg_batch_borrows`). Lower bands borrow every idle
   unit. The classic utilization objection to strict priority, answered as a
   theorem. And the allocation composes with the equilibrium theory: each
   band runs as its own closed loop over its allocated capacity
@@ -91,7 +91,7 @@ The overload story, mapped mechanism by mechanism:
 * **Quota is admission denominated in requests**: quota bounds *submissions*,
   but the scheduler serves *placement attempts*. Without a reschedule clamp,
   a fixed quota bounds nothing (`borg_quota_needs_clamp`, instantiating
-  `admission_needs_clamp`); with a per-task
+  `admission_needs_clamp`). With a per-task
   replacement clamp it bounds attempt load exactly (`borg_quota_bound`).
 
 Numbers are stylized illustrations of the public design (except the ~25 s

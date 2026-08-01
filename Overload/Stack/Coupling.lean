@@ -361,10 +361,10 @@ theorem two_site_equilibrium_exists_pin :
   two_site_equilibrium_exists (by norm_num)
 
 /-- **Diagonal dominance certifies any number of sites**: for a nonnegative
-gain matrix, strictly sub-unit row sums make the uniform weight vector a
-certificate — `k` additions and the entry signs to check, no eigenvalues.
-Dropping the sign check admits `!![0, 0; 0, -5]` (row sums `0 < 1`,
-spectral radius `5`). -/
+gain matrix, strictly sub-unit row sums yield a certificate (the proof's
+witness is the uniform weight vector) — `k` row sums and the entry signs
+to check, no eigenvalues. Dropping the sign check admits `!![0, 0; 0, -5]`
+(row sums `0` and `-5`, both `< 1`; spectral radius `5`). -/
 theorem certificate_of_row_sums {J : Matrix (Fin k) (Fin k) ℝ}
     (hJ : ∀ i j, 0 ≤ J i j) (h : ∀ i, ∑ j, J i j < 1) : Certificate J := by
   refine ⟨hJ, fun _ => 1, fun _ => one_pos, fun i => ?_⟩

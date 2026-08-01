@@ -192,10 +192,12 @@ theorem flat_split_fixedPt_unique {lam C : ℝ} (hlam : 0 ≤ lam) {z : ℝ}
 ## The band regime: congestion agrees, the phase splits
 -/
 
-/-- **In-band agreement.** Inside the band both splits of one signature are
-congested at the capacity threshold: the threshold split by the band
-theorem (`stepLoop_congestedEq`), the flat split because its constant
-demand `λ·A` already sits at or above `C`. -/
+/-- **Envelope agreement.** Whenever the shared envelope reaches capacity
+(`C ≤ λ·A` — the band's upper conjunct alone; no lower edge is assumed, so
+this covers the congested-only region too), both splits of one signature
+are congested at the capacity threshold: the threshold split by
+`stepLoop_congestedEq`, the flat split because its constant demand `λ·A`
+already sits at or above `C`. -/
 theorem band_pair_both_congestedEq {lam A C : ℝ} (hlam : 0 < lam)
     (hA : 1 ≤ A) (hlamA : 0 ≤ lam * A) (hband_lo : C ≤ lam * A) :
     (stepLoop lam C A (le_of_lt hlam) hA).CongestedEq C ∧
@@ -313,8 +315,12 @@ theorem signature_not_decide_congestedEq_three :
   signature_not_decide_congestedEq (lam := 1) (A := 4) (C := 5) (Θ := 3)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
-/-- Numeric regression: the phase form is inhabited inside the band at
-`λ = 1`, `A = 4`, `C = 3`. -/
+/-- The phase-form incompleteness with its band hypotheses discharged: no
+certificate factoring through the signature is equivalent to the
+two-equilibria property — the conclusion of
+`signature_not_decide_two_fixedPts`, with the witness band entered at
+`λ = 1`, `A = 4`, `C = 3` inside the proof (the name's `_three` records
+that route; the numerals leave no trace in the statement). -/
 theorem signature_not_decide_two_fixedPts_three :
     ∀ P : ClosedLoop → Prop, FactorsThroughSignature P →
     ¬∀ L : ClosedLoop,

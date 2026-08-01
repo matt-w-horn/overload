@@ -372,8 +372,9 @@ theorem amp_eq_one_of_slow_remaining {T B : ℕ → ℝ} {D : ℝ} {n : ℕ}
   exact geom_sum_one p
 
 /-- Re-armed per-try timeouts re-open amplification: with two sub-deadlines
-in the budget, the response is at least `1 + p` — strictly amplifying on any
-load-coupled channel. -/
+in the budget, the retry cap admitting two (`2 ≤ n`), no backoff between
+attempts, and nonnegative failure probability `p`, the response is at
+least `1 + p`. -/
 theorem one_add_le_amp_of_rearmed {τ D : ℝ} {n : ℕ}
     (h2 : 2 * τ ≤ D) (hn : 2 ≤ n) {p : ℝ} (hp : 0 ≤ p) :
     1 + p ≤ expAttempts p (neff (fun _ => τ) (fun _ => 0) D n) :=
@@ -387,12 +388,20 @@ theorem amp_eq_one_of_slow_remaining_pin :
     (by norm_num) (1 / 2)
 
 /-- Pin of the re-armed re-opening at `τ = 1, D = 2, n = 2, p = 1/2`: two
-sub-deadlines fit and the response is at least `3/2` — attained exactly
-(`expAttempts (1/2) 2 = 3/2`), so the bound is sharp here. -/
+sub-deadlines fit, the response is at least `3/2`, and the bound is
+attained exactly — the response equals `3/2`, so the bound is sharp
+here. -/
 theorem one_add_le_amp_of_rearmed_pin :
     (1 : ℝ) + 1 / 2
-      ≤ expAttempts (1 / 2) (neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 2 2) :=
-  one_add_le_amp_of_rearmed (by norm_num) le_rfl (by norm_num)
+        ≤ expAttempts (1 / 2) (neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 2 2) ∧
+      expAttempts (1 / 2) (neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 2 2)
+        = 3 / 2 := by
+  have hneff : neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 2 2 = 2 := by
+    rw [neff_rearmed (by norm_num) (by norm_num)]
+    norm_num
+  refine ⟨one_add_le_amp_of_rearmed (by norm_num) le_rfl (by norm_num), ?_⟩
+  rw [hneff]
+  norm_num [expAttempts, Finset.sum_range_succ]
 
 /-!
 ## The bistable band on the stylized saturated kernel

@@ -2192,7 +2192,8 @@
           0 ≤ p → 1 + p ≤ Overload.expAttempts p (Overload.neff (fun x => τ) (fun x => 0) D n)
 
 #### Overload.one_add_le_amp_of_rearmed_pin : theorem
-  1 + 1 / 2 ≤ Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 2 2)
+  1 + 1 / 2 ≤ Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 2 2) ∧
+    Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 2 2) = 3 / 2
 
 #### Overload.one_add_le_expAttempts : theorem
   ∀ {p : ℝ}, 0 ≤ p → ∀ {n : ℕ}, 2 ≤ n → 1 + p ≤ Overload.expAttempts p n

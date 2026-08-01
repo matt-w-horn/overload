@@ -527,7 +527,8 @@ def negativeFixtures : List (String × String) :=
    ("PrivateSorryFixture.lean", "privateSorryProbe depends on sorryAx"),
    ("NativeDecideFixture.lean", "._native.native_decide.ax"),
    ("OmittedTokenFixture.lean", "carries the omitted-result token `exitTime`"),
-   ("CoverageFixture.lean", "uncovered (C0)")]
+   ("CoverageFixture.lean", "uncovered (C0)"),
+   ("SilencingMarkersFixture.lean", "CARRY GATE-SILENCING MARKERS")]
 
 def scannerFixtures : List String :=
   ["ExampleSorryFixture.lean", "StringSorryFixture.lean",

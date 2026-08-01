@@ -39,7 +39,11 @@ test:
 # import-all list, replayed into the lake test log) and the runtime driver
 # (manifest-tally, from importModules). Two printed totals with no
 # comparison between them are two unchecked numbers — the 914-vs-919
-# lesson — so compare the suffixes character-for-character.
+# lesson — so compare the suffixes character-for-character. The audit
+# count has the same shape: `inAuditedNamespace` (Overload/AxiomAudit.lean)
+# and its documented copy `auditRule` (OverloadTest/Coverage.lean) each
+# print a declaration count, and the 914-vs-919 disagreement WAS those two
+# predicates drifting — so the second block compares them too.
 tally-sync:
 	@gate=$$(grep '#coverage_report: ' .verify/test.log | tail -1 | sed 's/.*#coverage_report: //'); \
 	driver=$$(grep 'manifest-tally: ' .verify/test.log | tail -1 | sed 's/.*manifest-tally: //'); \
@@ -52,6 +56,17 @@ tally-sync:
 	  exit 1; \
 	fi; \
 	echo "tally-sync: gate and driver agree — $$driver"
+	@audit=$$(grep -oE '#axiom_budget_all: [0-9]+ declarations' .verify/build.log | grep -oE '[0-9]+' | head -1); \
+	rule=$$(grep -oE 'audit-rule count [0-9]+' .verify/test.log | grep -oE '[0-9]+' | tail -1); \
+	if [ -z "$$audit" ]; then echo "tally-sync: no #axiom_budget_all count in .verify/build.log" >&2; exit 1; fi; \
+	if [ -z "$$rule" ]; then echo "tally-sync: no audit-rule count in .verify/test.log" >&2; exit 1; fi; \
+	if [ "$$audit" != "$$rule" ]; then \
+	  echo "tally-sync: build-time axiom audit and driver audit-rule counts disagree:" >&2; \
+	  echo "  #axiom_budget_all: $$audit" >&2; \
+	  echo "  audit-rule count:  $$rule" >&2; \
+	  exit 1; \
+	fi; \
+	echo "tally-sync: audit counts agree — $$audit"
 
 # Stamp the verified tree and scope the semantic passes. `git stash create`
 # snapshots tracked+staged content without touching anything; at a clean
@@ -72,20 +87,31 @@ scope:
 # that adds a gate-silencing token to the library needs a deliberate
 # sign-off (SKIP=silencing-guard), never a silent landing — the linter
 # configuration is only as strong as the review gate on changes to it.
-# Two sweeps: added .lean lines against the token list (tests/negative/ is
+# Four sweeps: added .lean lines against the token list (tests/negative/ is
 # the fixtures' home for these tokens and OverloadTest names what it scans
-# for, so both are excluded), and any touched linter line in lakefile.toml,
-# where removing an option silences it just as surely as a set_option.
+# for, so both are excluded); any touched linter line in lakefile.toml,
+# where removing an option silences it just as surely as a set_option;
+# any touched line at all in the gate carriers that nothing else watches
+# (.pre-commit-config.yaml, the workflows, Overload/Lint.lean — rare-change
+# files, so the sign-off friction is a few times a month at most); and the
+# two load-bearing lines other gates rest on — checks.py's token regex and
+# AxiomAudit's axiom allowlist.
 silencing-guard:
 	@hits=$$(git diff $(GUARD_DIFF) -U0 -- 'Overload.lean' 'Overload/*.lean' 'Overload/**/*.lean' 'tests/positive/*.lean' \
 	  | grep -E '^\+[^+]' \
 	  | grep -E 'set_option +(linter|debug)\.|set_option +[A-Za-z.]*maxHeartbeats|@\[nolint|@\[implemented_by|@\[extern|^\+ *((private|protected|public|noncomputable) +)*(axiom|unsafe|partial) '; true); \
 	tomlhits=$$(git diff $(GUARD_DIFF) -U0 -- lakefile.toml | grep -E '^[-+].*linter\.'; true); \
-	if [ -n "$$hits$$tomlhits" ]; then \
-	  echo "silencing-guard: diff $(GUARD_DIFF) touches gate-silencing tokens;" >&2; \
+	gatehits=$$(git diff $(GUARD_DIFF) -U0 -- .pre-commit-config.yaml '.github/workflows/*' Overload/Lint.lean \
+	  | grep -E '^[-+][^-+]'; true); \
+	surfhits=$$(git diff $(GUARD_DIFF) -U0 -- scripts/checks.py Overload/AxiomAudit.lean \
+	  | grep -E '^[-+][^-+]' | grep -E 'TOKEN_RE|re\.compile| r"|allowed'; true); \
+	if [ -n "$$hits$$tomlhits$$gatehits$$surfhits" ]; then \
+	  echo "silencing-guard: diff $(GUARD_DIFF) touches gate-silencing tokens or gate files;" >&2; \
 	  echo "sign off with SKIP=silencing-guard if deliberate" >&2; \
 	  if [ -n "$$hits" ]; then echo "$$hits" >&2; fi; \
 	  if [ -n "$$tomlhits" ]; then echo "lakefile.toml linter lines:" >&2; echo "$$tomlhits" >&2; fi; \
+	  if [ -n "$$gatehits" ]; then echo "gate-carrier lines:" >&2; echo "$$gatehits" >&2; fi; \
+	  if [ -n "$$surfhits" ]; then echo "token-regex / allowlist lines:" >&2; echo "$$surfhits" >&2; fi; \
 	  exit 1; \
 	fi; \
 	echo "silencing-guard: no gate-silencing tokens in diff $(GUARD_DIFF)"
@@ -114,9 +140,14 @@ leanchecker:
 	@set -e; \
 	if [ -n "$(LEANCHECKER_WORKERS)" ]; then n="$(LEANCHECKER_WORKERS)"; \
 	else \
-	  mem_gb=$$(( $$(sysctl -n hw.memsize) / 1073741824 )); \
+	  if command -v sysctl >/dev/null 2>&1 && sysctl -n hw.memsize >/dev/null 2>&1; then \
+	    mem_gb=$$(( $$(sysctl -n hw.memsize) / 1073741824 )); \
+	    ncpu=$$(sysctl -n hw.ncpu); \
+	  else \
+	    mem_gb=$$(( $$(awk '/MemTotal/ {print $$2}' /proc/meminfo) / 1048576 )); \
+	    ncpu=$$(nproc); \
+	  fi; \
 	  n=$$(( mem_gb / 5 )); \
-	  ncpu=$$(sysctl -n hw.ncpu); \
 	  if [ "$$n" -lt 1 ]; then n=1; fi; \
 	  if [ "$$n" -gt "$$ncpu" ]; then n=$$ncpu; fi; \
 	fi; \

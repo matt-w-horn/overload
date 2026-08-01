@@ -571,6 +571,7 @@ Overload.signature_not_decide_congestedEq | bb0900847569ce9d | 79a44a0cd9510402 
 Overload.signature_not_decide_congestedEq_three | 3ffb5cb3a61f8674 | baeea840f2e2984 | d16141018c4c6d03 | supported | 2026-07-31
 Overload.signature_not_decide_two_fixedPts | 6174011ac7124124 | bb7f19aa3c397e37 | d4b47dd0e81249e1 | supported | 2026-07-31
 Overload.signature_not_decide_two_fixedPts_three | 34cc5bb90303d1e0 | 7df13f553ead3f12 | ac91ee6b38ed6a82 | supported | 2026-07-31
+Overload.silencingMarkers | 63015b71e0f57f2f | 6d70db260a76475c | 89133354f2041b41 | supported | 2026-08-01
 Overload.smoothDemoLoop_fixedPt_unique_pin | 8f39252e9e18bfa3 | 89e23ff7a9aeaf3c | 466ddd9a9395e7a8 | supported | 2026-07-30
 Overload.smoothDemoLoop_fluid_drain_pin | 893fafe3f7e51d35 | 42095b7790c222a9 | 7a27306791a492b3 | supported | 2026-07-30
 Overload.smoothDemoLoop_not_bistableOn | 6b73e5b6efb9d97e | 6730bab21b723348 | 3d541e35764b273f | supported | 2026-07-30

@@ -7,5 +7,5 @@ Work conservation at the bottleneck.
   concurrency-pool rate bound.
 - `Plateau.lean`: the plateau theorem at uniform-loss equilibria, and
   cliff implies waste.
-- `Resources.lean`: multi-resource request paths; hops see full
+- `Resources.lean`: multi-resource request paths. Hops see full
   amplification, and the binding resource can shift.

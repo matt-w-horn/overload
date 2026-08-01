@@ -1,6 +1,7 @@
 # Overload/
 
-The library, grouped into subject directories in Mathlib's style. The
+This directory holds the library, grouped into subject directories in
+Mathlib's style. The
 layering is a property of the import graph, machine-checked by the
 `dir-layers` stage of `lake test`: no import runs backwards through
 

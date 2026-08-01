@@ -10,12 +10,12 @@ its order theory.
   `CongestedEq`, and the clamp certificates) and `ClosedLoop` (adds
   monotonicity and the `1 ≤ h` floor), with the concrete constructors
   `kernelLoop`, `stepLoop`, and `cappedLoop`.
-- `Universality.lean`: phase regions on `(λ, A, C)`; the healthy and
-  congested legs are universal over any loop, the bistable leg is
+- `Universality.lean`: phase regions on `(λ, A, C)`. The healthy and
+  congested legs are universal over any loop. The bistable leg is
   existential.
-- `Hysteresis.lean`: equilibrium selection under a load sweep; collapse
+- `Hysteresis.lean`: equilibrium selection under a load sweep: collapse
   at the band's upper edge, recovery only at its lower edge.
-- `Eligibility.lean`: demand-side miscoding; congestion transfers up the
-  response order, and the eligible-mass loop family.
+- `Eligibility.lean`: demand-side miscoding (congestion transfers up the
+  response order) and the eligible-mass loop family.
 - `Signature.lean`: the contract scalar `σ = λ·Amax` and its
   incompleteness.

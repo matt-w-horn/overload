@@ -1,8 +1,9 @@
 # Overload
 
-Machine-checked mathematics of retry amplification and congestion collapse
-over fixed capacity: a Lean 4 + Mathlib library with zero `sorry`, zero
-custom axioms, and a build that fails if either claim stops being true.
+Overload is machine-checked mathematics of retry amplification and
+congestion collapse over fixed capacity. It is a Lean 4 + Mathlib library
+with zero `sorry` and zero custom axioms. The build fails if either claim
+stops being true.
 
 ## Build
 
@@ -13,13 +14,13 @@ lake build               # library + examples + axiom audit
 make verify              # every gate, then a stamp of the verified tree
 ```
 
-`lake build` runs the structural axiom audit as part of the default target
-and elaborates every module under Mathlib's standard syntax linter set;
-`lake test` runs the statement lock, the linter-coverage check, the
-negative fixtures, and the source scans; `lake lint` runs the environment
-linters, and `lake exe lint-style` the text-based ones. `make verify` runs
-all of them with warnings promoted to failures, and `make leanchecker`
-replays every module through the kernel.
+`lake build` runs the structural axiom audit as part of the default
+target, and it elaborates every module under Mathlib's standard syntax
+linter set. `lake test` runs the statement lock, the linter-coverage
+check, the negative fixtures, and the source scans. `lake lint` runs the
+environment linters, and `lake exe lint-style` runs the text-based ones.
+`make verify` runs all of them and promotes warnings to failures.
+`make leanchecker` replays every module through the kernel.
 
 ## History
 

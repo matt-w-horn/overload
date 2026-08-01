@@ -7,5 +7,5 @@ plus the claims-review tooling.
   `lake test` shells out to.
 - `claims.py`: the claims ledger's only writer.
 - `claim-probe.sh`: elaborates Lean read from stdin against the built
-  library; the blinded claims review's one probe command.
+  library. It is the blinded claims review's one probe command.
 - `nolints-style.txt`: the style-lint exception list.

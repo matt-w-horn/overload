@@ -385,7 +385,7 @@ theorem coupled_two_layer_bistable : BistableOn twoLayerLoop.F 0 32 := by
 equilibrium — a fixed point at or above `24` (here `F(32) = 32`) — by the
 inflow certificate. -/
 theorem coupled_two_layer_congestedEq : twoLayerLoop.CongestedEq 24 :=
-  twoLayerLoop.congestedEq_of_inflow (by norm_num) twoLayer_inflow
+  twoLayerLoop.congestedEq_of_inflow twoLayer_inflow
 
 /-- Numeric regression on the budget certificate, the same two layers at a
 lighter load: `5 · 4 = 20` under a threshold of `21` removes every congested

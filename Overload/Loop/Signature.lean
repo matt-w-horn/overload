@@ -197,11 +197,10 @@ congested at the capacity threshold: the threshold split by the band
 theorem (`stepLoop_congestedEq`), the flat split because its constant
 demand `λ·A` already sits at or above `C`. -/
 theorem band_pair_both_congestedEq {lam A C : ℝ} (hlam : 0 < lam)
-    (hA : 1 ≤ A) (hlamA : 0 ≤ lam * A) (hband_lo : C ≤ lam * A)
-    (hC : 0 < C) :
+    (hA : 1 ≤ A) (hlamA : 0 ≤ lam * A) (hband_lo : C ≤ lam * A) :
     (stepLoop lam C A (le_of_lt hlam) hA).CongestedEq C ∧
       (stepLoop (lam * A) C 1 hlamA le_rfl).CongestedEq C := by
-  refine ⟨stepLoop_congestedEq hlam hA hband_lo hC,
+  refine ⟨stepLoop_congestedEq hlam hA hband_lo,
     lam * A, hlamA, ?_, hband_lo⟩
   rw [stepLoop_F_of_ge hlamA le_rfl hband_lo, mul_one]
 
@@ -330,6 +329,6 @@ theorem band_pair_both_congestedEq_three :
     (stepLoop 1 3 4 (by norm_num) (by norm_num)).CongestedEq 3 ∧
       (stepLoop (1 * 4) 3 1 (by norm_num) le_rfl).CongestedEq 3 :=
   band_pair_both_congestedEq (lam := 1) (A := 4) (C := 3)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
 end Overload

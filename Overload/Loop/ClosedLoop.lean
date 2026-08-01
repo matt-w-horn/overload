@@ -58,9 +58,9 @@ Headline results:
   amplification clamp `h ≤ K` with `λ·K < Θ` removes every congested
   equilibrium. *No timing, backoff, latency, kernel-shape, or monotonicity
   hypotheses.* Budget (`K = 1+β`) and attempt-cap (`K = n`) corollaries.
-* `congestedEq_of_inflow` — the **inflow certificate**: a nonnegative
-  threshold with `Θ ≤ F(Θ)` (attempt inflow at the threshold meets it)
-  produces a genuine congested equilibrium by Knaster–Tarski.
+* `congestedEq_of_inflow` — the one-inequality **inflow certificate**:
+  `Θ ≤ F(Θ)` (attempt inflow at the threshold meets it) produces a genuine
+  congested equilibrium by Knaster–Tarski.
 * `noSustaining_no_congestedEq` — **the sustaining-mechanisms audit**: if the
   amplification response is trivial (`h ≡ 1` — discharged for slow failures
   under remaining-deadline apportionment by `Deadline.neff_slow_remaining`),
@@ -254,16 +254,24 @@ theorem two_fixedPts_of_two_points {x y : ℝ} (hx0 : 0 ≤ x)
   exact exists_two_fixedPts_of_certificate L.F_monotoneOn_Icc L.F_mapsTo
     ⟨hx0, hxy.le.trans hyb⟩ hFx ⟨hy0, hyb⟩ hyF hxy
 
-/-- **The inflow certificate**: if a nonnegative threshold's attempt inflow
-already meets it (`0 ≤ Θ`, `Θ ≤ F Θ`), a genuine congested equilibrium
-exists (by Knaster–Tarski above `Θ`). Two inequalities to check. -/
-theorem congestedEq_of_inflow {Θ : ℝ} (hΘ0 : 0 ≤ Θ) (hΘ : Θ ≤ L.F Θ) :
+/-- **The inflow certificate**: if attempt inflow at the threshold already
+meets the threshold (`Θ ≤ F Θ`), a genuine congested equilibrium exists —
+Knaster–Tarski above a nonnegative threshold, and any envelope fixed point
+when the threshold is negative. One inequality to check. -/
+theorem congestedEq_of_inflow {Θ : ℝ} (hΘ : Θ ≤ L.F Θ) :
     L.CongestedEq Θ := by
-  have hΘM : Θ ≤ L.lam * L.Amax := le_trans hΘ (L.F_le hΘ0)
-  obtain ⟨z, hzmem, hzfix⟩ := exists_fixedPt_ge (F := L.F)
-    (a := 0) (b := L.lam * L.Amax) L.F_monotoneOn_Icc L.F_mapsTo
-    ⟨hΘ0, hΘM⟩ hΘ
-  exact ⟨z, le_trans hΘ0 hzmem.1, hzfix, hzmem.1⟩
+  rcases le_total 0 Θ with hΘ0 | hneg
+  · have hΘM : Θ ≤ L.lam * L.Amax := le_trans hΘ (L.F_le hΘ0)
+    obtain ⟨z, hzmem, hzfix⟩ := exists_fixedPt_ge (F := L.F)
+      (a := 0) (b := L.lam * L.Amax) L.F_monotoneOn_Icc L.F_mapsTo
+      ⟨hΘ0, hΘM⟩ hΘ
+    exact ⟨z, le_trans hΘ0 hzmem.1, hzfix, hzmem.1⟩
+  · have hA0 : (0 : ℝ) ≤ L.Amax := le_trans zero_le_one L.one_le_Amax
+    have hab : (0 : ℝ) ≤ L.lam * L.Amax := mul_nonneg L.lam_nonneg hA0
+    exact ⟨lfpIcc L.F 0 (L.lam * L.Amax),
+      (lfpIcc_mem_Icc hab L.F_mapsTo).1,
+      isFixedPt_lfpIcc hab L.F_monotoneOn_Icc L.F_mapsTo,
+      hneg.trans (lfpIcc_mem_Icc hab L.F_mapsTo).1⟩
 
 /-!
 ## The sustaining-mechanisms audit
@@ -366,10 +374,10 @@ theorem amp_eq_one_of_slow_remaining {T B : ℕ → ℝ} {D : ℝ} {n : ℕ}
 /-- Re-armed per-try timeouts re-open amplification: with two sub-deadlines
 in the budget, the response is at least `1 + p` — strictly amplifying on any
 load-coupled channel. -/
-theorem one_add_le_amp_of_rearmed {τ D : ℝ} {n : ℕ} (hτ : 0 < τ)
+theorem one_add_le_amp_of_rearmed {τ D : ℝ} {n : ℕ}
     (h2 : 2 * τ ≤ D) (hn : 2 ≤ n) {p : ℝ} (hp : 0 ≤ p) :
     1 + p ≤ expAttempts p (neff (fun _ => τ) (fun _ => 0) D n) :=
-  one_add_le_expAttempts hp (two_le_neff_rearmed hτ h2 hn)
+  one_add_le_expAttempts hp (two_le_neff_rearmed h2 hn)
 
 /-- Pin of the slow-remaining collapse at `T ≡ 1 = D`, cap 3: the deadline
 admits one attempt and the response is exactly one at `p = 1/2`. -/
@@ -384,7 +392,7 @@ sub-deadlines fit and the response is at least `3/2` — attained exactly
 theorem one_add_le_amp_of_rearmed_pin :
     (1 : ℝ) + 1 / 2
       ≤ expAttempts (1 / 2) (neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 2 2) :=
-  one_add_le_amp_of_rearmed one_pos (by norm_num) le_rfl (by norm_num)
+  one_add_le_amp_of_rearmed (by norm_num) le_rfl (by norm_num)
 
 /-!
 ## The bistable band on the stylized saturated kernel
@@ -533,10 +541,9 @@ theorem stepLoop_bistable {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
 /-- The congested equilibrium of the band is genuine (a fixed point at or
 above `C`), via the inflow certificate. -/
 theorem stepLoop_congestedEq {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
-    (hband_lo : C ≤ lam * A) (hC : 0 < C) :
+    (hband_lo : C ≤ lam * A) :
     (stepLoop lam C A (le_of_lt hlam) hA).CongestedEq C := by
-  refine (stepLoop lam C A (le_of_lt hlam) hA).congestedEq_of_inflow
-    (le_of_lt hC) ?_
+  refine (stepLoop lam C A (le_of_lt hlam) hA).congestedEq_of_inflow ?_
   rw [stepLoop_F_of_ge (le_of_lt hlam) hA le_rfl]
   exact hband_lo
 
@@ -578,8 +585,7 @@ rearranges to `C ≤ lam * A` and `stepLoop_congestedEq` supplies the
 equilibrium. The equivalence is specific to `stepLoop`. `clamp_band_lower`
 stays one-directional in general, because a response bounded by `K` need not
 attain `K`. -/
-theorem stepLoop_congestedEq_iff {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
-    (hC : 0 < C) :
+theorem stepLoop_congestedEq_iff {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A) :
     (stepLoop lam C A hlam.le hA).CongestedEq C ↔ C / A ≤ lam := by
   have hA0 : (0 : ℝ) < A := lt_of_lt_of_le zero_lt_one hA
   constructor
@@ -587,7 +593,7 @@ theorem stepLoop_congestedEq_iff {lam C A : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
     exact clamp_band_lower (stepLoop lam C A hlam.le hA).toBoundedLoop hA0
       (stepLoop lam C A hlam.le hA).h_le_Amax hcong
   · intro h
-    exact stepLoop_congestedEq hlam hA ((div_le_iff₀ hA0).mp h) hC
+    exact stepLoop_congestedEq hlam hA ((div_le_iff₀ hA0).mp h)
 
 /-- **Added offered load reaches the congested band exactly at `C / A - lam`.**
 Adding `δ` to a baseline offered load `lam` gives the stylized loop a
@@ -600,11 +606,11 @@ deliverable; that the congested equilibrium is *reached* from a given
 starting demand (the crossing arithmetic is `Burst.lean`); and nothing about
 the failure kernel, which the added load leaves untouched. -/
 theorem stepLoop_injectable_load {lam C A δ : ℝ} (hlam : 0 < lam) (hA : 1 ≤ A)
-    (hC : 0 < C) (hδ0 : 0 ≤ δ) :
+    (hδ0 : 0 ≤ δ) :
     (stepLoop (lam + δ) C A (by positivity) hA).CongestedEq C ↔
       C / A - lam ≤ δ := by
   have key := stepLoop_congestedEq_iff (lam := lam + δ) (C := C) (A := A)
-    (by linarith) hA hC
+    (by linarith) hA
   constructor
   · intro hcong
     have := key.mp hcong
@@ -619,12 +625,11 @@ theorem stepLoop_injectable_load_pin :
     (stepLoop (1 + 1) 10 5 (by positivity) (by norm_num)).CongestedEq 10 ∧
       ¬(stepLoop (1 + 1 / 2) 10 5 (by positivity)
           (by norm_num)).CongestedEq 10 :=
-  ⟨(stepLoop_injectable_load (by norm_num) (by norm_num) (by norm_num)
+  ⟨(stepLoop_injectable_load (by norm_num) (by norm_num)
       (by norm_num)).mpr (by norm_num),
    fun h => by
      have := (stepLoop_injectable_load (lam := 1) (C := 10) (A := 5)
-       (δ := 1 / 2) (by norm_num) (by norm_num) (by norm_num)
-       (by norm_num)).mp h
+       (δ := 1 / 2) (by norm_num) (by norm_num) (by norm_num)).mp h
      norm_num at this⟩
 
 end Overload

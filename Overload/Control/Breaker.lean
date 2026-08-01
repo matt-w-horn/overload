@@ -130,7 +130,7 @@ noncomputable abbrev breakerDemoLoop : ClosedLoop :=
 /-- Non-vacuity, congested side: without the breaker the demonstration
 loop sustains a congested equilibrium at capacity `10`. -/
 theorem breakerDemoLoop_congestedEq : breakerDemoLoop.CongestedEq 10 :=
-  stepLoop_congestedEq (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+  stepLoop_congestedEq (by norm_num) (by norm_num) (by norm_num)
 
 /-- Non-vacuity, breaker side: the open breaker at allowance `K = 2` deletes
 that equilibrium — `λ·K = 6 < 10`. -/

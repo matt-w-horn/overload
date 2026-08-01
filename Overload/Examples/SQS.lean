@@ -116,10 +116,10 @@ capacity `C = 100` msg/s, saturated redelivery amplification `A = 11520`.
 noncomputable abbrev sqsUnclampedLoop : ClosedLoop :=
   stepLoop 1 100 11520 (by norm_num) (by norm_num)
 
-/-- With unbounded redelivery, the loop is **bistable**: the healthy
-equilibrium (1 msg/s of load against a 100 msg/s fleet) and a congested
-equilibrium coexist. A burst that tips the system into the congested basin
-stays there after the burst ends. -/
+/-- With unbounded redelivery, the loop is **bistable** on its envelope —
+the `BistableOn` order gap, whose extremes the stylized-loop closed forms
+place at the healthy `1` msg/s and the saturated `11520`
+(`stepLoop_lfpIcc_of_lt`, `stepLoop_gfpIcc_of_ge`). -/
 theorem sqs_unclamped_bistable : BistableOn sqsUnclampedLoop.F 0 (1 * 11520) :=
   stepLoop_bistable (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
@@ -127,7 +127,7 @@ theorem sqs_unclamped_bistable : BistableOn sqsUnclampedLoop.F 0 (1 * 11520) :=
 self-sustaining demand level at or above the fleet's capacity, fed entirely
 by server-side redelivery of failing messages. -/
 theorem sqs_unclamped_congestedEq : sqsUnclampedLoop.CongestedEq 100 :=
-  stepLoop_congestedEq (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+  stepLoop_congestedEq (by norm_num) (by norm_num) (by norm_num)
 
 /-!
 ## The redrive policy as the clamp

@@ -96,7 +96,7 @@ theorem thrashing_bistable : BistableOn thrashingLoop.F 0 24 := by
 point at or above capacity (here `F(24) = 24`) — by the inflow
 certificate. -/
 theorem thrashing_congestedEq : thrashingLoop.CongestedEq 20 :=
-  thrashingLoop.congestedEq_of_inflow (by norm_num) thrashing_inflow
+  thrashingLoop.congestedEq_of_inflow thrashing_inflow
 
 /-- **Multiprogramming-level control is the clamp theorem.** Suspending
 processes down to resident demand 3 (with the same fault-retry cap 4)

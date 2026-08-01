@@ -80,7 +80,7 @@ theorem ClosedLoop.congestedEq_mono_response (L : ClosedLoop)
       _ ≤ L.lam * L.h (L.g Λ) :=
           mul_le_mul_of_nonneg_left (hle _ (L.g_mem Λ hΛ0)) L.lam_nonneg
       _ = L.F Λ := rfl
-  exact (L.congestedEq_of_inflow hΛ0 hpost).mono hΘΛ
+  exact (L.congestedEq_of_inflow hpost).mono hΘΛ
 
 /-- **The congested set weakly enlarges with the attempt cap**: raising the
 cap of a truncated-geometric loop never removes a congested equilibrium —
@@ -194,22 +194,25 @@ theorem demoEligibleLoop_zero_no_congestedEq :
   (demoEligibleLoop 0 ⟨le_rfl, zero_le_one⟩).noSustaining_no_congestedEq
     eligibleLoop_zero_noSustaining (show (2 : ℝ) < 3 by norm_num)
 
-/-- Numeric regression, miscoded leg and chain: half the mass eligible
-already congests (inflow at `Θ = 3` is `2·expAttempts (1/2) 5 = 31/8 ≥ 3`),
-and it transfers up to full miscoding `e = 1`. -/
+/-- Numeric regression, miscoded leg: full miscoding `e = 1` is congested
+at `Θ = 3`. The proof routes through the half-mass loop — inflow there is
+`2·expAttempts (1/2) 5 = 31/8 ≥ 3` — and transfers up by
+`eligibleLoop_congestedEq_mono_mass`; the statement records the `e = 1`
+endpoint. -/
 theorem demoEligibleLoop_one_congestedEq :
     (demoEligibleLoop 1 ⟨zero_le_one, le_rfl⟩).CongestedEq 3 := by
   refine eligibleLoop_congestedEq_mono_mass (e := 1 / 2)
     (he := by constructor <;> norm_num) (by norm_num) ?_
-  refine ClosedLoop.congestedEq_of_inflow _ (by norm_num) ?_
+  refine ClosedLoop.congestedEq_of_inflow _ ?_
   change (3 : ℝ) ≤ 2 * expAttempts (1 / 2 * stepKernel 3 3) 5
   rw [stepKernel_of_ge le_rfl, mul_one]
   norm_num [expAttempts, Finset.sum_range_succ]
 
 /-- Numeric regression on the cap-side reading: a truncated-geometric loop
-whose offered load `2` already meets the threshold is congested at cap `1`,
-and raising the cap to `3` leaves it congested. Safety certified at a cap
-covers the smaller caps, not the larger ones. -/
+whose offered load `2` already meets the threshold is congested at cap `3`.
+The proof reaches it from the cap-`1` instance through
+`kernelLoop_congestedEq_mono_cap` — the cap-monotonicity this pins; the
+statement records the cap-`3` endpoint. -/
 theorem kernelLoop_congestedEq_mono_cap_pin :
     (kernelLoop 2 (stepKernel 2) 3 (by norm_num) (by norm_num)
       (stepKernel_mem 2) (stepKernel_monoOn 2)).CongestedEq 2 :=

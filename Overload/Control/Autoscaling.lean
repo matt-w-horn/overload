@@ -94,7 +94,7 @@ theorem congestedEq_mono_kernel {g' : ℝ → ℝ}
           (L.h_mono (hg'_mem Λ hΛ0) (L.g_mem Λ hΛ0) (hle Λ hΛ0))
           L.lam_nonneg
       _ = L.F Λ := rfl
-  exact (L.congestedEq_of_inflow hΛ0 hpost).mono hΘΛ
+  exact (L.congestedEq_of_inflow hpost).mono hΘΛ
 
 /-- **Certify at the scaled-in floor, general form.** Safety of the
 reference loop at threshold `Θ` extends to any pointwise-smaller kernel

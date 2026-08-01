@@ -203,12 +203,13 @@ theorem neff_rearmed {τ : ℝ} (hτ : 0 < τ) (hD : 0 ≤ D) (n : ℕ) :
 /-- Re-armed timeouts sustain amplification: two sub-deadlines in the
 budget, with the retry cap admitting two (`2 ≤ n`), means at least two
 attempts. This is sustaining mechanism 2 in one line. -/
-theorem two_le_neff_rearmed {τ : ℝ} (hτ : 0 < τ) (h2 : 2 * τ ≤ D)
+theorem two_le_neff_rearmed {τ : ℝ} (h2 : 2 * τ ≤ D)
     (hn : 2 ≤ n) : 2 ≤ neff (fun _ => τ) (fun _ => 0) D n := by
-  have hD : 0 ≤ D := by linarith
-  rw [neff_rearmed hτ hD]
-  refine le_min hn (Nat.le_floor ?_)
-  rw [le_div_iff₀ hτ]
+  classical
+  refine le_neff hn ?_
+  unfold fitsIn totalTime
+  simp only [Finset.sum_const_zero, add_zero, Finset.sum_const,
+    Finset.card_range, nsmul_eq_mul]
   push_cast
   linarith
 

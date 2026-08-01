@@ -163,7 +163,7 @@ theorem congestedEq_mono_lam {lam' Θ : ℝ} (hlam' : 0 ≤ lam')
   have hpost : Λ₀ ≤ (L.withLam lam' hlam').F Λ₀ :=
     calc Λ₀ = L.F Λ₀ := hfix.symm
       _ ≤ (L.withLam lam' hlam').F Λ₀ := L.F_le_withLam_F hlam' hle hΛ0
-  exact ((L.withLam lam' hlam').congestedEq_of_inflow hΛ0 hpost).mono hΘΛ
+  exact ((L.withLam lam' hlam').congestedEq_of_inflow hpost).mono hΘΛ
 
 /-- Dual reading: safety is a down-set in offered load — a loop safe at the
 higher load was already safe at every lower one. Healthy survives lowering
@@ -435,7 +435,7 @@ theorem stepLoop_congestionEdge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A
       refine ⟨hx0, ?_⟩
       rw [stepLoop_withLam hlam hA hx0]
       exact stepLoop_congestedEq (hCA.trans_le hx) hA
-        ((div_le_iff₀ hA0).mp hx) hC
+        ((div_le_iff₀ hA0).mp hx)
   change sInf {lam' | ∃ h : 0 ≤ lam',
       ((stepLoop lam C A hlam hA).withLam lam' h).CongestedEq C} = C / A
   rw [hedge, csInf_Ici]

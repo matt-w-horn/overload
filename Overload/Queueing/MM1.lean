@@ -574,12 +574,11 @@ the two point evaluations `mm1BandLoop_healthy` and `mm1BandLoop_inflow`. -/
 noncomputable abbrev mm1BandLoop : ClosedLoop :=
   mm1Loop 30 100 1 4 (by norm_num) (by norm_num) (by norm_num)
 
-/-- The healthy leg of the M/M/1 band: at demand 31 inflow stays within
-the level, `F(31) ≤ 31`. The margin lives inside the proof: the timeout
-probability is bounded by `e^{-69} ≤ 1/70`, so amplification is at most
-`70/69` and `30·70/69 < 31` closes the goal. -/
-theorem mm1BandLoop_healthy : mm1BandLoop.F 31 ≤ 31 := by
-  change (30 : ℝ) * expAttempts (mm1Kernel 100 1 31) 4 ≤ 31
+/-- The healthy leg of the M/M/1 band: at demand 31 inflow falls back,
+`F(31) < 31` — the timeout probability is at most `e^{-69} ≤ 1/70`, so
+amplification is at most `70/69` and `F(31) ≤ 30·70/69 < 31`. -/
+theorem mm1BandLoop_healthy : mm1BandLoop.F 31 < 31 := by
+  change (30 : ℝ) * expAttempts (mm1Kernel 100 1 31) 4 < 31
   have hp : mm1Kernel 100 1 31 ≤ (1 / 70 : ℝ) := by
     rw [mm1Kernel_of_lt (by norm_num)]
     have heq : -((100 - 31 : ℝ) * 1) = -(69 : ℝ) := by norm_num
@@ -612,7 +611,7 @@ on the real kernel, not only on the step cartoon. -/
 theorem mm1Loop_bistable :
     BistableOn (mm1Loop 30 100 1 4 (by norm_num) (by norm_num)
       (by norm_num)).F 0 120 := by
-  refine mm1BandLoop.bistableOn_of_two_points (by norm_num) mm1BandLoop_healthy
+  refine mm1BandLoop.bistableOn_of_two_points (by norm_num) mm1BandLoop_healthy.le
     mm1BandLoop_inflow (by norm_num) ?_
   change (30 : ℝ) * ((4 : ℕ) : ℝ) ≤ 120
   norm_num
@@ -621,7 +620,7 @@ theorem mm1Loop_bistable :
 fixed point at or above capacity 100, from the saturated leg via the inflow
 certificate. `mm1Loop_bistable` alone records only an order gap. -/
 theorem mm1Loop_congestedEq : mm1BandLoop.CongestedEq 100 :=
-  mm1BandLoop.congestedEq_of_inflow (by norm_num) mm1BandLoop_inflow
+  mm1BandLoop.congestedEq_of_inflow mm1BandLoop_inflow
 
 /-- **The M/M/1 band's equilibria are genuine.** The two point evaluations
 behind `mm1Loop_bistable` upgrade to two distinct fixed points of the
@@ -631,7 +630,7 @@ equilibria, not only about the `BistableOn` order gap. -/
 theorem mm1Loop_two_fixedPts :
     ∃ z₁ z₂, Function.IsFixedPt mm1BandLoop.F z₁ ∧
       Function.IsFixedPt mm1BandLoop.F z₂ ∧ z₁ ≤ 31 ∧ 100 ≤ z₂ ∧ z₁ < z₂ :=
-  mm1BandLoop.two_fixedPts_of_two_points (by norm_num) mm1BandLoop_healthy
+  mm1BandLoop.two_fixedPts_of_two_points (by norm_num) mm1BandLoop_healthy.le
     mm1BandLoop_inflow (by norm_num)
 
 open Filter in

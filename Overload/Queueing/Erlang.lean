@@ -208,22 +208,26 @@ theorem erlangB_mul_sum {a : ℝ} (ha : 0 < a) (c : ℕ) :
       div_eq_iff hD.ne']
     linear_combination a * ih - hT
 
-/-- **The stable recursion equals the textbook closed form** for positive
-offered load (`0 < a`): `B(c, a) = (a^c/c!) / ∑_{j≤c} a^j/j!`. The
-identity that makes computing by the recursion trustworthy — in machine
-arithmetic the naive closed form overflows long before real server
+/-- **The stable recursion equals the textbook closed form** for
+nonnegative offered load (`0 ≤ a`): `B(c, a) = (a^c/c!) / ∑_{j≤c} a^j/j!`.
+The identity that makes computing by the recursion trustworthy — in
+machine arithmetic the naive closed form overflows long before real server
 counts, the recursion does not, and here they provably agree. -/
-theorem erlangB_eq_closed {a : ℝ} (ha : 0 < a) (c : ℕ) :
+theorem erlangB_eq_closed {a : ℝ} (ha : 0 ≤ a) (c : ℕ) :
     erlangB a c
       = a ^ c / c.factorial
         / ∑ j ∈ Finset.range (c + 1), a ^ j / j.factorial := by
-  have hS : (0 : ℝ) < ∑ j ∈ Finset.range (c + 1), a ^ j / j.factorial :=
-    Finset.sum_pos
-      (fun j _ => div_pos (pow_pos ha j)
-        (by exact_mod_cast j.factorial_pos))
-      ⟨0, Finset.mem_range.mpr (Nat.succ_pos c)⟩
-  rw [eq_div_iff hS.ne']
-  exact erlangB_mul_sum ha c
+  rcases ha.lt_or_eq with hpos | rfl
+  · have hS : (0 : ℝ) < ∑ j ∈ Finset.range (c + 1), a ^ j / j.factorial :=
+      Finset.sum_pos
+        (fun j _ => div_pos (pow_pos hpos j)
+          (by exact_mod_cast j.factorial_pos))
+        ⟨0, Finset.mem_range.mpr (Nat.succ_pos c)⟩
+    rw [eq_div_iff hS.ne']
+    exact erlangB_mul_sum hpos c
+  · cases c with
+    | zero => simp [erlangB_zero]
+    | succ n => simp [erlangB_succ, Finset.sum_range_succ']
 
 /-!
 ## The blocking kernel: retries against a loss system

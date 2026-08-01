@@ -1,10 +1,14 @@
 # tests/negative/
 
-Ten expected-failure fixtures, run by `lake test`, in two classes.
+Eleven expected-failure fixtures, run by `lake test`, in two classes.
 
-Five must fail to elaborate: `SorryFixture`, `PrivateSorryFixture`,
-`NativeDecideFixture`, `OmittedTokenFixture`, and `CoverageFixture` (an
-unconsumed, unledgered theorem the coverage gate must reject).
+Six must fail to elaborate: `SorryFixture`, `PrivateSorryFixture`,
+`NativeDecideFixture`, `OmittedTokenFixture`, `CoverageFixture` (an
+unconsumed, unledgered theorem the coverage gate must reject), and
+`SilencingMarkersFixture` (one declaration per gate-silencing marker —
+`unsafe`, `partial`, `implemented_by`, `extern`, `nolint` — that the
+`silencingMarkers` environment linter must flag; its in-file `#lint` run
+is what fails elaboration).
 
 Five compile with at most a warning, and the source-level proof-token
 scan must reject them instead: `ExampleSorryFixture`,

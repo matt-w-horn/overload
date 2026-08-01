@@ -45,6 +45,7 @@ def terminalLedger : List (Lean.Name × String) :=
     (`Overload.docBlameThmEnabled, "enabled registration of Batteries' docBlameThm; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
     (`Overload.explicitVarsOfIffEnabled, "enabled registration of Batteries' explicitVarsOfIff; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
     (`Overload.invokeFail_nil, "base-case eval pin of the load-coupled recursion; rfl at the definition, so a consuming pin restates it"),
+    (`Overload.silencingMarkers, "this library's linter over the environment-visible gate-silencing markers; consumed by runLinter through the env_linter attribute at lint time, not by any proof"),
     (`Overload.signature_gap_witnessed, "terminal deliverable; billed in README; quantifies over the certificate predicate, so a pin supplies a predicate rather than numbers"),
     (`Overload.signature_not_decide_congestedEq_three, "numeric leg of the incompleteness theorem, congestion form; still quantifies over the certificate predicate, so a pin supplies a predicate rather than numbers"),
     (`Overload.signature_not_decide_two_fixedPts_three, "numeric leg of the incompleteness theorem, phase form; still quantifies over the certificate predicate, so a pin supplies a predicate rather than numbers"),

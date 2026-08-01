@@ -14,9 +14,12 @@ repos:
     hooks:
       # Anti-silencing gate: a staged diff that adds a gate-silencing token
       # (set_option linter./debug./maxHeartbeats, @[nolint, an axiom/unsafe/
-      # partial declaration, @[implemented_by, @[extern) or touches a linter
-      # line in lakefile.toml needs a deliberate sign-off — the linter
-      # configuration is only as strong as the review gate on changes to it.
+      # partial declaration, @[implemented_by, @[extern), touches a linter
+      # line in lakefile.toml, edits a gate carrier (this file, the
+      # workflows, Overload/Lint.lean, the Makefile), or touches checks.py's
+      # token regex or AxiomAudit's axiom allowlist needs a deliberate
+      # sign-off — the linter configuration is only as strong as the review
+      # gate on changes to it.
       # Sign off with SKIP=silencing-guard when the change is meant.
       - id: silencing-guard
         name: silencing-guard (no silent gate changes)

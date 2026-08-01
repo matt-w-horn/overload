@@ -1,0 +1,39 @@
+name: watchers
+
+# Kernel re-checks, independent of the elaboration that produced the
+# oleans. Weekly rather than per-push: a kernel bug is not a regression a
+# commit introduces, and both checks cost a full build first.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 1' # weekly, Mondays 05:00 UTC (gitleaks sweeps at 04:00)
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-watchers:
+    name: leanchecker + nanoda
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      # Builds the library with the pinned toolchain; restores the Mathlib
+      # olean cache automatically.
+      - uses: leanprover/lean-action@v1
+        with:
+          build-args: "--wfail"
+      # The toolchain's own checker: replays every Overload module's .olean
+      # through the kernel, imports trusted. Same kernel implementation and
+      # pin as the elaborator — the airtight replay, not an independent one.
+      - name: leanchecker
+        run: make leanchecker LEANCHECKER_WORKERS=2
+      # The independent watcher: lean4export exports the full dependency
+      # cone (Mathlib included) and Nanoda, a from-scratch Rust kernel with
+      # its own arithmetic, re-checks every declaration in it. Axiom
+      # discipline stays with the build-time audit (the export necessarily
+      # declares core's own axioms); this leg is independent type-checking.
+      # Self-calibrates against a doctored export every run; pins and
+      # config are in the Makefile.
+      - name: nanoda
+        run: make nanoda

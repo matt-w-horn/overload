@@ -5,7 +5,7 @@
   `lake exe overloadTest --update-lock` regenerates it.
 - `claims.lock`: docstring-vs-statement verdicts with the hashes they
   were judged at.
-- `negative/`: expected-failure fixtures. Five must fail to elaborate.
+- `negative/`: expected-failure fixtures. Six must fail to elaborate.
   The other five compile, and the proof-token scan must reject them.
 - `positive/`: `ScannerCorpus.lean`, hazard shapes the scanner must
   produce zero findings on.

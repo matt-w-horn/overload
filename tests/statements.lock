@@ -2426,6 +2426,10 @@
       ¬∀ (L : Overload.ClosedLoop),
           P L ↔ ∃ z₁ z₂, Function.IsFixedPt L.F z₁ ∧ Function.IsFixedPt L.F z₂ ∧ z₁ < z₂
 
+#### Overload.silencingMarkers : def
+  Batteries.Tactic.Lint.Linter
+  value-hash 5ab4be96d2e0af67
+
 #### Overload.smoothDemoLoop_fixedPt_unique_pin : theorem
   ¬(Function.IsFixedPt (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 10 ∧
       Function.IsFixedPt (Overload.smoothLoop 10 20 2 ⋯ ⋯ ⋯).F 20)

@@ -3,7 +3,11 @@ name: ci
 on:
   push:
     branches: [main]
+  # labeled/unlabeled are included so applying silencing-signed-off to an
+  # already-open PR re-evaluates the guard job's skip condition — the
+  # default event types only carry the labels present at open or push.
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   workflow_dispatch:
 
 permissions:
@@ -15,11 +19,13 @@ concurrency:
 
 jobs:
   # CI mirror of the pre-commit silencing-guard: a PR diff that adds a
-  # gate-silencing token or touches a linter line in lakefile.toml fails
-  # here even if the local hook was bypassed. No Lean needed.
+  # gate-silencing token, touches a linter line in lakefile.toml, or edits
+  # a gate carrier fails here even if the local hook was bypassed. No Lean
+  # needed. The CI sign-off is the silencing-signed-off label on the PR —
+  # the visible equivalent of the local SKIP=silencing-guard.
   silencing-guard:
     name: silencing-guard
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'silencing-signed-off')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -32,6 +38,9 @@ jobs:
 
   build:
     name: lake build
+    # A label toggle should re-run the cheap guard job above, not this
+    # full build; skipped counts as success for required checks.
+    if: github.event.action != 'labeled' && github.event.action != 'unlabeled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -47,8 +56,12 @@ jobs:
       # compile-time gates (axiom audit, coverage report); running it checks
       # the statement lock, the import roots, the negative fixtures, the
       # scanner corpus, and the prose-sync suite.
+      # One fixture worker: each expected-failure fixture is its own lean
+      # process loading the Mathlib oleans (~2.6 GB peak), and the driver's
+      # default of three alongside its own environment does not fit a 16 GB
+      # runner comfortably.
       - name: test
-        run: lake test
+        run: OVERLOAD_TEST_JOBS=1 lake test
       # Batteries' environment linters (simp normal form, unused arguments,
       # missing docstrings, explicit iff variables, ...) over every
       # declaration in the library.

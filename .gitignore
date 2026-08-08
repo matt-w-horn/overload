@@ -1,8 +1,19 @@
-.DS_Store
+# Lean / Lake build cache (github/gitignore Lean.gitignore)
 .lake/
-.env
-*.pyc
+
+# Python bytecode
+__pycache__/
+*.py[cod]
 
 # verify ritual artifacts (stamp, logs, reports) — the ritual itself
 # (scripts/) is tracked.
 .verify/
+
+# Secrets and local credentials (.env.example stays tracked).
+.env
+.env.*
+!.env.example
+
+# Claude Code working files (also global; repeated so clones get it too).
+.claude/
+CLAUDE.md

@@ -79,7 +79,7 @@ to hide it. That argument is Leonardo de Moura's, in
 ## History
 
 The library was developed privately before release; this repository's
-history was restarted on 2026-07-27.
+history was restarted on 2026-07-28.
 
 ## Related
 

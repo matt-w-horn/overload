@@ -88,11 +88,13 @@ open Classical in
 /-- The deadline-capped completed-attempt count: the largest `k ≤ n` whose
 attempts complete within `D` (junk `0` when none fits — `Nat.findGreatest`'s
 fallback, per the totality convention; the theorems supply the fitting
-hypothesis). Because `fitsIn` counts completed attempts, a request whose
-first attempt is still in flight at `D` (`D < T 0`) has `neff = 0` completed
-attempts while still initiating one attempt; passing `max 1 neff` (as in
-`amp_eq_one_of_slow_remaining`) or `min n (neff + 1)` into `Layer`/`ClosedLoop`
-accounts for the initiated attempt in flight when the deadline expires. -/
+hypothesis). Because `fitsIn` counts completed attempts, under nonnegative
+latencies and backoffs a request whose first attempt is still in flight at
+`D` (`D < T 0`) has `neff = 0` completed attempts
+(`neff_eq_zero_of_strictly_slow`) while still initiating one attempt; passing
+`max 1 neff` (as in `amp_eq_one_of_slow_remaining`) or `min n (neff + 1)` into
+`Layer`/`ClosedLoop` accounts for the initiated attempt in flight when the
+deadline expires. -/
 noncomputable def neff (T B : ℕ → ℝ) (D : ℝ) (n : ℕ) : ℕ :=
   Nat.findGreatest (fitsIn T B D) n
 
@@ -205,13 +207,14 @@ theorem neff_rearmed {τ : ℝ} (hτ : 0 < τ) (hD : 0 ≤ D) (n : ℕ) :
     neff (fun _ => τ) (fun _ => 0) D n = min n ⌊D / τ⌋₊ := by
   simpa using neff_const hτ le_rfl hD n
 
-/-- Re-armed timeouts sustain amplification: when a per-try timeout caps
-each attempt's duration at `τ` with two sub-deadlines in the budget
-(`2 * τ ≤ D`), the retry cap admitting two (`2 ≤ n`), and no backoff between
-attempts, at least two attempts fit. Pairing this with `neff_le_one_of_slow`
-(which bounds remaining-deadline apportionment to at most one attempt when the
-underlying failure satisfies `D ≤ T 0`) gives the separation for sustaining
-mechanism 2. -/
+/-- Re-armed timeouts sustain amplification: when every attempt runs to its
+per-try timeout `τ` (each attempt's duration is exactly `τ`) with two
+sub-deadlines in the budget (`2 * τ ≤ D`), the retry cap admitting two
+(`2 ≤ n`), and no backoff between attempts, at least two attempts fit. Pairing
+this with `neff_le_one_of_slow` (which bounds remaining-deadline apportionment
+to at most one attempt when the underlying failure satisfies `D ≤ T 0`, with
+positive latencies and nonnegative backoffs) gives the separation for
+sustaining mechanism 2. -/
 theorem two_le_neff_rearmed {τ : ℝ} (h2 : 2 * τ ≤ D)
     (hn : 2 ≤ n) : 2 ≤ neff (fun _ => τ) (fun _ => 0) D n := by
   classical

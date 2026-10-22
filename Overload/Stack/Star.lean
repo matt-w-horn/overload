@@ -114,7 +114,7 @@ bound. -/
 structure Star (k : ℕ) where
   /-- Fresh offered load at server `i`. -/
   lam : Fin k → ℝ
-  /-- Fan-out weight: the multiple of server `i`'s demand that lands on
+  /-- Fan-in weight: the multiple of server `i`'s demand that lands on
   the shared sink. -/
   r : Fin k → ℝ
   /-- Per-server amplification response: sink failure probability →

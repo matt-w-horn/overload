@@ -405,10 +405,11 @@ theorem iterate_le_of_le_fixedPt {z : ℝ} (hm : MonotoneOn F (Set.Icc a b))
       _ ≤ z := hfz
 
 /-- Monotone iterates never cross a postfixed point from above — the congested
-side of the basin boundary, mirroring `iterate_le_of_le_fixedPt`. A drain
-that starts at or above a postfixed point `z ≤ F z` (in particular, any fixed
-point `F z = z`) never crosses below `z` under monotone iteration alone;
-escaping downward needs a prefixed start, not merely monotonicity. -/
+side of the basin boundary, mirroring `iterate_le_of_le_fixedPt`. With `F`
+monotone on `[a, b]` and mapping `[a, b]` into itself, a drain that starts in
+`[a, b]` at or above a postfixed point `z ∈ [a, b]` with `z ≤ F z` (in
+particular, any fixed point `F z = z`) never crosses below `z`; escaping
+downward needs a prefixed start. -/
 theorem le_iterate_of_fixedPt_le {z : ℝ} (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hz : z ∈ Set.Icc a b)
     (hfz : z ≤ F z) (hx : x ∈ Set.Icc a b) (hzx : z ≤ x)

@@ -617,8 +617,8 @@ theorem fluid_drain_le {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ}
   linarith
 
 /-- **The recovery time, in dimensionless time units**: with drain rate at
-least `δ > 0`, the state `x t₀` is nonpositive once `x t₀ / δ` time units
-have passed on `[t₀, t₁]` — the recovery integral `T_rec = Q₀/(C − a_res)`
+least `δ > 0`, the state `x t` is nonpositive at every `t` in `[t₀, t₁]`
+once `x t₀ / δ` time units have passed — the recovery integral `T_rec = Q₀/(C − a_res)`
 priced on the trajectory itself, with no discrete ceiling and no simulation
 (non-vacuous whenever the interval horizon reaches `t₀ + x t₀ / δ ≤ t₁`).
 The drain rate is a lower bound, so `x t₀ / δ` is a sufficient time rather

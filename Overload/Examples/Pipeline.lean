@@ -69,33 +69,35 @@ stylized illustrations.
 
 namespace Overload
 
-/-- One cycle of an 8-wide machine: 5 slots retire useful work, 2 are
-squashed wrong-path µops (the processed-duplicates waste channel of
-speculation-as-hedging), 1 goes idle on a stall. -/
-noncomputable def pipelineAcct : Accounting where
+/-- One cycle of an 8-wide machine: 2 slots are squashed wrong-path µops (the
+processed-duplicates waste channel of speculation-as-hedging), 1 goes idle on a
+stall, and useful retired slots `U` obey conservation `U + 2 + 1 = 8 * 1`. -/
+noncomputable def pipelineAcct (U : ℝ) (hU : 0 ≤ U)
+    (hcons : U + 2 + 1 = 8 * 1) : Accounting where
   capacity := 8
   time := 1
-  useful := 5
+  useful := U
   wasted := 2
   idle := 1
   capacity_pos := by norm_num
   time_pos := by norm_num
-  useful_nonneg := by norm_num
+  useful_nonneg := hU
   wasted_nonneg := by norm_num
   idle_nonneg := by norm_num
-  conserve := by norm_num
+  conserve := hcons
 
 /-- Squash waste prices retirement: with a quarter of issue slots going to
-wrong-path work and one slot stalled, sustained IPC is capped at
-three-quarters of width less the stalled slot — 5 of 8. Disclosed:
-`pipelineAcct` is fully specified with closed numerals, so both the hypothesis
-and the conclusion evaluate to `G ≤ 5`; the symbolic decomposition
-`(1-w)·C - I/T` in `goodput_le_of_waste` is the transferable part. -/
-theorem pipeline_squash_caps_ipc {G : ℝ}
-    (huseful : G * pipelineAcct.time * 1 ≤ pipelineAcct.useful) :
-    G * 1 ≤ (1 - 1 / 4) * pipelineAcct.capacity
-      - pipelineAcct.idle / pipelineAcct.time :=
-  pipelineAcct.goodput_le_of_waste huseful (by unfold pipelineAcct; norm_num)
+wrong-path work and one slot stalled, any sustained IPC `G` covered by the
+conserved useful slots `U` (`G ≤ U` under `U + 2 + 1 = 8 * 1`) is capped at
+three-quarters of width less the stalled slot — 5 of 8 (`goodput_le_of_waste`). -/
+theorem pipeline_squash_caps_ipc {G U : ℝ} (hU : 0 ≤ U)
+    (hcons : U + 2 + 1 = 8 * 1)
+    (huseful : G * (pipelineAcct U hU hcons).time * 1 ≤
+      (pipelineAcct U hU hcons).useful) :
+    G * 1 ≤ (1 - 1 / 4) * (pipelineAcct U hU hcons).capacity
+      - (pipelineAcct U hU hcons).idle / (pipelineAcct U hU hcons).time :=
+  (pipelineAcct U hU hcons).goodput_le_of_waste huseful
+    (by unfold pipelineAcct; norm_num)
 
 /-- **The replay envelope**: with each µop consuming one fetch slot per
 attempt and a replay bound of 2 attempts, any decode rate the 8-wide fetch

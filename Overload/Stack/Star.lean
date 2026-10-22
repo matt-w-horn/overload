@@ -114,7 +114,7 @@ bound. -/
 structure Star (k : ℕ) where
   /-- Fresh offered load at server `i`. -/
   lam : Fin k → ℝ
-  /-- Fan-out weight: the multiple of server `i`'s demand that lands on
+  /-- Fan-in weight: the multiple of server `i`'s demand that lands on
   the shared sink. -/
   r : Fin k → ℝ
   /-- Per-server amplification response: sink failure probability →
@@ -166,7 +166,7 @@ def Contract (K : Fin k → ℝ) : Prop :=
   ∀ i, ∀ p ∈ Set.Icc (0 : ℝ) 1, S.h i p ≤ K i
 
 /-- The per-server signature: the one number a team exports under its
-contract — load times clamp times fan-out, `σᵢ = λᵢKᵢrᵢ`. -/
+contract — load times clamp times fan-in weight, `σᵢ = λᵢKᵢrᵢ`. -/
 def signature (K : Fin k → ℝ) (i : Fin k) : ℝ := S.lam i * K i * S.r i
 
 /-- Under contracts, the aggregate response is bounded by the signature
@@ -426,7 +426,7 @@ theorem starWitness_congestedEq : starWitness.CongestedEq 10 :=
     by norm_num⟩
 
 /-- Numeric regression on the vector unpacking: the witness's congested
-aggregate `24` comes back as per-server demands whose fan-out-weighted sum is
+aggregate `24` comes back as per-server demands whose fan-in-weighted sum is
 again `24`, each solving its own balance equation. -/
 theorem starWitness_isVectorEq :
     ∃ Λ : Fin 2 → ℝ, (∑ j, starWitness.r j * Λ j) = 24 ∧
@@ -468,7 +468,7 @@ pair of stars rather than an analogy.
 
 namespace ClosedLoop
 
-/-- **A loop as a one-server star.** Unit fan-out, the loop's response at
+/-- **A loop as a one-server star.** Unit fan-in weight, the loop's response at
 the single server, the loop's kernel at the sink. `aggResponse` collapses
 over `Fin 1` to `λ·h`, so the star's demand operator is the loop's own
 (`toStar_congestedEq_iff`). -/
@@ -537,7 +537,7 @@ theorem no_star_signature_cert_of_separating_pair {Φ : Star 1 → Prop}
 /-- **The fan-in export is incomplete too.** No certificate reading only
 the exported signature sum decides congestion at the sink at threshold `3`.
 The witnesses are the equal-signature pair of `Signature.lean` embedded at
-one server and unit fan-out: `headroomLoop.toStar` is safe there and
+one server and unit fan-in weight: `headroomLoop.toStar` is safe there and
 `flatLoop.toStar` is congested, and both export the sum `4` under their
 own response bounds as contracts.
 

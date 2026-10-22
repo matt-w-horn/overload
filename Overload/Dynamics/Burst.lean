@@ -47,8 +47,8 @@ separatrix) the spiked demand `Λ₀ + B/w` lands on.
   not its demand but its *rate*, and the required spread is
   computable from the basin gap.
 * `ClosedLoop.burst_safe` — the safe side, on the loop: a spiked demand at
-  or below a fixed point never crosses it under iteration
-  (`iterate_le_of_le_fixedPt`).
+  or below a prefixed point (`L.F z ≤ z`, in particular any fixed point)
+  never crosses it under iteration (`iterate_le_of_le_fixedPt`).
 * `ClosedLoop.burst_tips` — the tipping side: a spiked demand that is
   postfixed (`x ≤ F x`) ratchets upward under iteration — the storm feeds
   itself (`le_iterate_of_postfixed`, which this theorem gives its named
@@ -86,11 +86,11 @@ theorem jitter_window_avoids {B Λ₀ z w : ℝ} (hgap : Λ₀ < z)
 
 /-- **The safe side of the trigger threshold.** A nonnegative burst
 (`0 ≤ Λ₀`, `0 ≤ B`, `0 < w`) whose spiked demand `Λ₀ + B/w` lands at or
-below a fixed point `z` in the demand envelope never crosses it: every
-iterate of the demand map stays at or below `z`, so demand levels above
-`z` are unreachable from this burst. -/
+below a prefixed point `z` (`L.F z ≤ z`, in particular any fixed point) in
+the demand envelope never crosses it: every iterate of the demand map stays
+at or below `z`, so demand levels above `z` are unreachable from this burst. -/
 theorem ClosedLoop.burst_safe (L : ClosedLoop) {z Λ₀ B w : ℝ}
-    (hz : z ∈ Set.Icc 0 (L.lam * L.Amax)) (hfz : Function.IsFixedPt L.F z)
+    (hz : z ∈ Set.Icc 0 (L.lam * L.Amax)) (hfz : L.F z ≤ z)
     (hΛ₀ : 0 ≤ Λ₀) (hB : 0 ≤ B) (hw : 0 < w)
     (htrig : Λ₀ + B / w ≤ z) (n : ℕ) : L.F^[n] (Λ₀ + B / w) ≤ z :=
   iterate_le_of_le_fixedPt L.F_monotoneOn_Icc L.F_mapsTo hz hfz
@@ -158,22 +158,21 @@ theorem jitter_window_avoids_three :
   ⟨fun _w hw hw0 => jitter_window_avoids (by norm_num) hw hw0,
     by norm_num⟩
 
-/-- Numeric regression on the safe side: `stepLoop 1 2 3` has the healthy
-fixed point `z = 1` (and no middle fixed point before the jump at `C = 2`,
-while `burst_safe` requires an exact fixed point `z`); a burst of `1` over a
-window of `4` on sub-equilibrium baseline `1/2` spikes demand to `3/4 ≤ 1`,
-and the fifth iterate still sits at or below `1` (`burst_safe` gives the same
-at every iterate). -/
+/-- Numeric regression on the safe side: on `stepLoop 1 2 3`, every point
+`z ∈ [1, 2)` below the capacity jump is a prefixed point (`F z = 1 ≤ z`);
+starting from the healthy equilibrium `Λ₀ = 1`, a burst of `2` over a window
+of `4` spikes demand to `3/2 < 2`, and the fifth iterate still sits at or
+below the prefixed threshold `z = 3/2` (`burst_safe` gives the same at every
+iterate). -/
 theorem burst_safe_stepLoop_five :
-    (stepLoop 1 2 3 (by norm_num) (by norm_num)).F^[5] (1/2 + 1/4) ≤ 1 := by
-  have hfz : Function.IsFixedPt (stepLoop 1 2 3 (by norm_num)
-      (by norm_num)).F 1 := by
-    change (1 : ℝ) * (1 + stepKernel 2 1 * (3 - 1)) = 1
+    (stepLoop 1 2 3 (by norm_num) (by norm_num)).F^[5] (1 + 2 / 4) ≤ 3 / 2 := by
+  have hfz : (stepLoop 1 2 3 (by norm_num) (by norm_num)).F (3 / 2) ≤ 3 / 2 := by
+    change (1 : ℝ) * (1 + stepKernel 2 (3 / 2) * (3 - 1)) ≤ 3 / 2
     rw [stepKernel_of_lt (by norm_num)]
     norm_num
   have h := (stepLoop 1 2 3 (by norm_num) (by norm_num)).burst_safe
-    (z := 1) (Λ₀ := 1/2) (B := 1) (w := 4)
-    ⟨by norm_num, by change (1 : ℝ) ≤ 1 * 3; norm_num⟩ hfz (by norm_num)
+    (z := 3 / 2) (Λ₀ := 1) (B := 2) (w := 4)
+    ⟨by norm_num, by change (3 / 2 : ℝ) ≤ 1 * 3; norm_num⟩ hfz (by norm_num)
     (by norm_num)
     (by norm_num) (by norm_num) 5
   simpa using h

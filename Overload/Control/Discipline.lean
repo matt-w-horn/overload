@@ -285,14 +285,15 @@ theorem propDiscipline_sum_alloc_le_at_underload :
   norm_num [Fin.sum_univ_two, min_def]
 
 /-- Numeric regression on the discipline-agnostic per-class certificate: the
-top class's grant of `1` at those demands carries a class loop clamped at
-`λ·K = 1/2`, so that class has no congested equilibrium against its own
-grant — and the discipline's own theorems are not what makes it hold. -/
+top class's grant of `1` at those demands carries a class loop over capacity
+`1` clamped at `λ·K = 1/2`, so that class has no congested equilibrium against
+its own grant (`(propDiscipline 2).alloc ![3, 9] 4 0 = 1`) — and the
+discipline's own theorems are not what makes it hold. -/
 theorem class_clamp_at_overload :
-    ¬(stepLoop (1 / 4) 10 2 (by norm_num) (by norm_num)).CongestedEq
+    ¬(stepLoop (1 / 4) 1 2 (by norm_num) (by norm_num)).CongestedEq
       ((propDiscipline 2).alloc ![3, 9] 4 0) :=
   (propDiscipline 2).class_clamp_no_congestedEq (Kc := 2)
-    (stepLoop (1 / 4) 10 2 (by norm_num) (by norm_num)).toBoundedLoop
+    (stepLoop (1 / 4) 1 2 (by norm_num) (by norm_num)).toBoundedLoop
     (fun p hp => by
       change (1 : ℝ) + p * (2 - 1) ≤ 2
       linarith [hp.2])

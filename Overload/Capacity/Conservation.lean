@@ -128,9 +128,10 @@ theorem goodput_le_of_waste {G sbar w : ℝ}
 end Accounting
 
 /-- **Concurrency pools bound throughput**: with time-averaged
-in-flight equal to rate times sojourn (Little's identity, supplied as a
-hypothesis — the same interface stance as the suite's `little` field), a
-pool of `P` slots over sojourn `s` admits at most `P/s` throughput. A slow
+in-flight equal to rate times in-pool holding time (`sojourn`, via Little's
+identity `inflight = rate * sojourn`, supplied as a hypothesis — the same
+interface stance as the suite's `little` field), a pool of `P` slots over
+holding time `sojourn` admits at most `P / sojourn` throughput. A slow
 lower layer therefore saturates upper-layer pools whose capacity is
 concurrency, not work: the slots bind before the "real" bottleneck does. -/
 theorem pool_rate_bound {inflight rate sojourn P : ℝ}

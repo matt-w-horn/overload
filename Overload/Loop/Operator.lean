@@ -386,41 +386,40 @@ the state at or below the (middle) fixed point can never reach the
 congested branch. A state at or past a postfixed point ratchets upward.
 -/
 
-/-- Monotone iterates never cross a fixed point from below — the basin
+/-- Monotone iterates never cross a prefixed point from below — the basin
 boundary is absorbing. This is the safe side of the trigger-size threshold:
-a burst that stays at or below the middle fixed point never reaches the
-congested branch. (The tipping side needs a postfixed start —
-`le_iterate_of_postfixed`; monotonicity alone does not force states just
-above the fixed point to ratchet up.) -/
+a burst that stays at or below a prefixed point `F z ≤ z` (in particular, any
+fixed point `F z = z`) never crosses `z`. (The tipping side needs a postfixed
+start — `le_iterate_of_postfixed`; monotonicity alone does not force states
+just above a fixed point to ratchet up.) -/
 theorem iterate_le_of_le_fixedPt {z : ℝ} (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hz : z ∈ Set.Icc a b)
-    (hfz : Function.IsFixedPt F z) (hx : x ∈ Set.Icc a b) (hxz : x ≤ z)
+    (hfz : F z ≤ z) (hx : x ∈ Set.Icc a b) (hxz : x ≤ z)
     (n : ℕ) : F^[n] x ≤ z := by
   induction n with
   | zero => simpa using hxz
   | succ n ih =>
     rw [Function.iterate_succ_apply']
     have hmem := hf.iterate n hx
-    have hzeq : F z = z := hfz
     calc F (F^[n] x) ≤ F z := hm hmem hz ih
-      _ = z := hzeq
+      _ ≤ z := hfz
 
-/-- Monotone iterates never cross a fixed point from above — the congested
-side of the basin boundary, mirroring `iterate_le_of_le_fixedPt`. A drain
-that starts at or above the middle fixed point never reaches the healthy
-branch under monotone iteration alone; escaping downward needs a prefixed
-start, not merely monotonicity. -/
+/-- Monotone iterates never cross a postfixed point from above — the congested
+side of the basin boundary, mirroring `iterate_le_of_le_fixedPt`. With `F`
+monotone on `[a, b]` and mapping `[a, b]` into itself, a drain that starts in
+`[a, b]` at or above a postfixed point `z ∈ [a, b]` with `z ≤ F z` (in
+particular, any fixed point `F z = z`) never crosses below `z`; escaping
+downward needs a prefixed start. -/
 theorem le_iterate_of_fixedPt_le {z : ℝ} (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hz : z ∈ Set.Icc a b)
-    (hfz : Function.IsFixedPt F z) (hx : x ∈ Set.Icc a b) (hzx : z ≤ x)
+    (hfz : z ≤ F z) (hx : x ∈ Set.Icc a b) (hzx : z ≤ x)
     (n : ℕ) : z ≤ F^[n] x := by
   induction n with
   | zero => simpa using hzx
   | succ n ih =>
     rw [Function.iterate_succ_apply']
     have hmem := hf.iterate n hx
-    have hzeq : F z = z := hfz
-    calc z = F z := hzeq.symm
+    calc z ≤ F z := hfz
       _ ≤ F (F^[n] x) := hm hz hmem ih
 
 /-- From a postfixed state, monotone iterates ratchet upward — the formal

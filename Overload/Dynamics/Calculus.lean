@@ -73,18 +73,18 @@ itself. This module reads the same loop through derivatives:
 * **Continuous time**: for a trajectory `x` hypothesized to satisfy
   `x' t = F (x t) - x t`, the clamp condition forces strict decrease at or
   above the threshold (`BoundedLoop.clamp_fluid_strictAnti`). A drift bound
-  `−δ` drains the backlog to zero within `x t₀ / δ` seconds
+  `−δ` drains the state to zero within `x t₀ / δ` time units
   (`fluid_drain_le`, `fluid_drain_clears`). Gain at most `L` above an
   equilibrium decays the excursion at rate `1 − L`
   (`fluid_decay_of_gain_le`, derivative-read as `fluid_decay_of_deriv_le`,
   witnessed tight by `fluid_decay_witness`), and the spike is back within
-  `ε` after `log((x t₀ − Λ₀)/ε)/(1 − L)` seconds
+  `ε` after `log((x t₀ − Λ₀)/ε)/(1 − L)` time units
   (`fluid_recovery_within`).
 * **The smooth loop's trajectory, supplied**: `x' = F(x) - x` has a local
   solution by Picard–Lindelöf (`smoothLoop_exists_trajectory`, through the
   Lipschitz modulus `lipschitzOnWith_smoothLoop_F`). Under the clamp
   condition `λ·A < Θ` that trajectory, while at or above the threshold,
-  loses at least `Θ − λ·A` per second (`smoothLoop_fluid_drain`, pinned by
+  loses at least `Θ − λ·A` per unit time (`smoothLoop_fluid_drain`, pinned by
   `smoothDemoLoop_fluid_drain_pin`).
 
 Scope: the general trajectory statements take the trajectory as a
@@ -463,8 +463,9 @@ theorem hasDerivAt_mm1Loop_F {lam C τ Λ : ℝ} {m : ℕ} (hlam : 0 ≤ lam)
 
 /-- The simplified check, safe side, on the band instance: at the healthy
 operating point (demand 31) the loop gain of `mm1BandLoop` is below one.
-The tail `p = e^{-69}` is at most `1/70` (`exp_neg_le_inv_one_add`), so the
-gain `30·(1 + 2p + 3p²)·p` is far below one. -/
+With `τ = 1`, the kernel slope `τ·p` simplifies to `p = e^{-69} ≤ 1/70`
+(`exp_neg_le_inv_one_add`), so the gain `30·(1 + 2p + 3p²)·p` is far below
+one. -/
 theorem mm1BandLoop_gain_lt_one : deriv mm1BandLoop.F 31 < 1 := by
   have hd : HasDerivAt mm1BandLoop.F
       (30 * (expAttemptsDeriv (mm1Kernel 100 1 31) 4 *
@@ -495,10 +496,10 @@ theorem mm1BandLoop_gain_lt_one : deriv mm1BandLoop.F 31 < 1 := by
   nlinarith [step]
 
 /-- The simplified check, risky side, on the same instance: near capacity
-(demand 99, headroom 1) the loop gain of `mm1BandLoop` exceeds one. The
-tail is `e^{-1} > 1/3` (from `exp_one_lt_d9`), the response sensitivity is
-at least `1` (`one_le_expAttemptsDeriv`), and `30·1·(1/3) = 10`. One loop,
-both flags. -/
+(demand 99, headroom 1) the loop gain of `mm1BandLoop` exceeds one. With
+`τ = 1`, the kernel slope `τ·p` simplifies to `p = e^{-1} > 1/3` (from
+`exp_one_lt_d9`), the response sensitivity is at least `1`
+(`one_le_expAttemptsDeriv`), and `30·1·(1/3) = 10`. One loop, both flags. -/
 theorem one_lt_mm1BandLoop_gain : 1 < deriv mm1BandLoop.F 99 := by
   have hd : HasDerivAt mm1BandLoop.F
       (30 * (expAttemptsDeriv (mm1Kernel 100 1 99) 4 *
@@ -594,7 +595,7 @@ theorem clamp_fluid_strictAnti_pin :
       zero_le_one hderiv habove⟩
 
 /-- **The continuous drain bound**: a trajectory whose drift is at most
-`−δ` loses at least `δ` per second — `x t ≤ x t₀ − δ·(t − t₀)` — by the
+`−δ` loses at least `δ` per unit time — `x t ≤ x t₀ − δ·(t − t₀)` — by the
 mean value bound on the interval. -/
 theorem fluid_drain_le {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ}
     (hx : ∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (v t) t)
@@ -615,11 +616,13 @@ theorem fluid_drain_le {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ}
     t₀ (Set.left_mem_Icc.mpr (le_trans ht.1 ht.2)) t ht ht.1
   linarith
 
-/-- **The recovery time, in seconds**: with drain rate at least `δ > 0`,
-the backlog `x t₀` is gone once `x t₀ / δ` seconds have passed — the
-recovery integral `T_rec = Q₀/(C − a_res)` priced on the trajectory itself,
-with no discrete ceiling and no simulation. The drain rate is a lower
-bound, so `x t₀ / δ` is a sufficient time rather than the earliest one. -/
+/-- **The recovery time, in dimensionless time units**: with drain rate at
+least `δ > 0`, the state `x t` is nonpositive at every `t` in `[t₀, t₁]`
+once `x t₀ / δ` time units have passed — the recovery integral `T_rec = Q₀/(C − a_res)`
+priced on the trajectory itself, with no discrete ceiling and no simulation
+(non-vacuous whenever the interval horizon reaches `t₀ + x t₀ / δ ≤ t₁`).
+The drain rate is a lower bound, so `x t₀ / δ` is a sufficient time rather
+than the earliest one. -/
 theorem fluid_drain_clears {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ} (hδ : 0 < δ)
     (hx : ∀ t ∈ Set.Icc t₀ t₁, HasDerivAt x (v t) t)
     (hv : ∀ t ∈ Set.Icc t₀ t₁, v t ≤ -δ) :
@@ -631,10 +634,9 @@ theorem fluid_drain_clears {δ t₀ t₁ : ℝ} {x v : ℝ → ℝ} (hδ : 0 < �
   linarith
 
 /-- Numeric pin of the drain bound at `12/3 = 4`: the trajectory `12 − 3t`
-is at or below zero by second `4` — the instance of `fluid_drain_clears`
-at drain rate `3` — and exactly at zero there. The continuous replacement
-for the discrete `Q k = 12 − 3k` regression that went with the old drain
-bound. -/
+is at or below zero by time `4` — the proof invokes `fluid_drain_clears` at
+drain rate `3` on `[0, 10]`, while the elaborated statement records the
+closed-form trajectory evaluation — and is exactly at zero there. -/
 theorem fluid_drain_twelve_clears_at_four :
     (fun t : ℝ => 12 - 3 * t) 4 ≤ 0 ∧ (fun t : ℝ => 12 - 3 * t) 4 = 0 := by
   refine ⟨?_, by norm_num⟩
@@ -648,13 +650,14 @@ theorem fluid_drain_twelve_clears_at_four :
   norm_num
 
 /-- **The fluid equation has a trajectory.** For every positive initial
-backlog `x₀`, the smooth loop's fluid equation `x' = F(x) − x` has a local
+demand `x₀`, the smooth loop's fluid equation `x' = F(x) − x` has a local
 solution: a trajectory `α` with `α t₀ = x₀` and derivative `F (α t) − α t`
-at every `t` of a closed interval of positive length. Picard–Lindelöf
-(Mathlib's `IsPicardLindelof`) on the ball `[0, 2x₀]`, with the Lipschitz
-modulus from `lipschitzOnWith_smoothLoop_F`. Local existence only: the
-interval length is existential, and neither uniqueness nor extension past
-the interval is claimed. -/
+at every `t` of a closed interval `[t₀, t₁]` of positive length (the proof
+constructs `t₁ = t₀ + ε/2` with `ε = x₀ / (lam * A + 2 * x₀ + 1)`).
+Picard–Lindelöf (Mathlib's `IsPicardLindelof`) on the ball `[0, 2x₀]`, with
+the Lipschitz modulus from `lipschitzOnWith_smoothLoop_F`. Local existence
+only: the interval length in the statement is existential, and neither
+uniqueness nor extension past `[t₀, t₁]` is claimed. -/
 theorem smoothLoop_exists_trajectory {lam C A x₀ : ℝ} (hlam : 0 ≤ lam)
     (hC : 0 < C) (hA : 1 ≤ A) (hx₀ : 0 < x₀) (t₀ : ℝ) :
     ∃ t₁, t₀ < t₁ ∧ ∃ α : ℝ → ℝ, α t₀ = x₀ ∧
@@ -728,10 +731,10 @@ theorem smoothLoop_exists_trajectory {lam C A x₀ : ℝ} (hlam : 0 ≤ lam)
 
 /-- **The drain, priced on the system's own trajectory.** Under the clamp
 condition `λ·A < Θ` (the smooth loop's response is bounded by `A`, so this
-is the clamp certificate at `K = A`) and initial backlog `x₀` at or above
+is the clamp certificate at `K = A`) and initial demand `x₀` at or above
 the threshold, a trajectory of `x' = F(x) − x` from `x₀` exists and,
 conditioned on staying at or above `Θ`, loses at least `Θ − λ·A` per
-second: `α t ≤ x₀ − (Θ − λ·A)(t − t₀)`. Existence from
+unit time: `α t ≤ x₀ − (Θ − λ·A)(t − t₀)`. Existence from
 `smoothLoop_exists_trajectory`; the rate from `fluid_drain_le`, because at
 or above `Θ ≥ 0` the drift `F(α t) − α t` is at most `λ·A − Θ`. The
 horizon `t₁` is existential, and nothing is claimed past it or below the
@@ -765,7 +768,7 @@ theorem smoothLoop_fluid_drain {lam C A Θ x₀ : ℝ} (hlam : 0 ≤ lam)
 
 /-- Numeric pin of the drain on a concrete smooth loop: `λ = 10`, `C = 20`,
 `A = 2`, threshold `Θ = 25` — so `λ·A = 20 < 25` and the priced rate is
-`Θ − λ·A = 5` per second — with initial backlog `30`. A trajectory from
+`Θ − λ·A = 5` per unit time — with initial demand `30`. A trajectory from
 `30` exists on some positive horizon `[0, t₁]`, and on it, while the
 trajectory stays at or above `25`, it obeys `α t ≤ 30 − 5t`; nothing is
 claimed past the existential horizon. Exercises the drain theorem's
@@ -844,12 +847,13 @@ theorem fluid_decay_of_deriv_le {F : ℝ → ℝ} {L a b Λ₀ t₀ t₁ : ℝ} 
   rw [hfeq] at h
   exact h
 
-/-- **Spike recovery time, in seconds**: under gain at most `L` above the
-equilibrium `Λ₀`, the excess `x t − Λ₀` is at most `ε` once
-`log((x t₀ − Λ₀)/ε) / (1 − L)` seconds have passed — one-sided, capping
-the excess from above, within the window `[t₀, t₁]`. Inverting the
+/-- **Spike recovery time, in dimensionless time units**: under gain at most
+`L` above the equilibrium `Λ₀`, the excess `x t − Λ₀` is at most `ε` once
+`log((x t₀ − Λ₀)/ε) / (1 − L)` time units have passed on `[t₀, t₁]` —
+one-sided, capping the excess from above (non-vacuous whenever the interval
+horizon reaches `t₀ + log((x t₀ − Λ₀)/ε) / (1 − L) ≤ t₁`). Inverting the
 exponential of `fluid_decay_of_gain_le` — the spike-recovery arithmetic
-priced in seconds rather than simulated. The bound is a sufficient time,
+priced in time units rather than simulated. The bound is a sufficient time,
 not the earliest one. -/
 theorem fluid_recovery_within {F : ℝ → ℝ} {L Λ₀ t₀ t₁ ε : ℝ} {x : ℝ → ℝ}
     (hL : L < 1) (hε : 0 < ε)
@@ -876,10 +880,11 @@ theorem fluid_recovery_within {F : ℝ → ℝ} {L Λ₀ t₀ t₁ ε : ℝ} {x 
 
 /-- Numeric pin of the spike-recovery time: a unit excursion above the
 equilibrium, held at gain `0` on the window `[0, 1]`, is within `1/2`
-from any time past the recovery threshold `log 2` — the instance of
-`fluid_recovery_within` over a free time — and second `1` is past that
-threshold (`log 2 ≤ 1`). The trajectory `e^{-s}` under the operator
-`F ≡ 0` is the pair `fluid_decay_witness` uses. -/
+from any time past the recovery threshold `log 2` — the proof invokes
+`fluid_recovery_within` on `x s = e^{-s}` under `F ≡ 0`, while the elaborated
+statement records the closed-form trajectory evaluation — and time `1` is past
+that threshold (`log 2 ≤ 1`). The pair `x s = e^{-s}` under `F ≡ 0` is the one
+`fluid_decay_witness` uses. -/
 theorem fluid_recovery_within_half :
     (∀ t ∈ Set.Icc (0 : ℝ) 1,
       (0 : ℝ) + Real.log ((Real.exp (-(0 : ℝ)) - 0) / (1 / 2)) / (1 - 0) ≤ t →

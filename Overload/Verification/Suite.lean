@@ -154,8 +154,9 @@ structure SystemFacts (station req origin wire : Type*) where
 /-- **The verification suite**: the conservation laws and consistency
 identities a run must satisfy to be trusted (tests 1–6 in the module
 docstring's 18-test verification list). `pastaFact` is the caller-supplied
-sampling-unbiasedness proposition (test 6), carried as an explicit hypothesis
-because the PASTA theorem is not formalized here. -/
+sampling-unbiasedness proposition (test 6), carried as a bare `Prop`
+parameter (unconstrained by `F`) because the PASTA theorem is not formalized
+here. -/
 structure VerificationSuite {station req origin wire : Type*}
     [Fintype origin] [Fintype wire] (pastaFact : Prop)
     (F : SystemFacts station req origin wire) : Prop where
@@ -194,7 +195,8 @@ variable {station req origin wire : Type*} [Fintype origin] [Fintype wire]
 (`0 < sbar` — a bare field the suite itself does not constrain), obeys the
 scheme-agnostic goodput bound `G ≤ min(λ, C/sbar)` — for every retry
 scheme, backoff policy, and topology, because none appear in the
-hypotheses. -/
+hypotheses (and `pastaFact` is unused by the proof, which consumes only
+`useful_work` and `goodput_le_offered`). -/
 theorem goodput_bound (S : VerificationSuite pastaFact F) (hs : 0 < F.sbar) :
     F.goodput ≤ min F.offered (F.acct.capacity / F.sbar) :=
   F.acct.goodput_le hs S.useful_work S.goodput_le_offered

@@ -57,12 +57,15 @@ The mapping into this library, and the point of the example:
   anywhere**, and the amplification is pure configuration.
 * At the public defaults (`τᵥ = 30 s`, retention 4 days) an always-failing
   message is delivered `⌊345600/30⌋ = 11520` times — the first delivery plus
-  11519 redeliveries (`sqs_redelivery_cap`). With that amplification, one
-  message per second of poisoned traffic sustains a congested equilibrium
-  against a consumer fleet one hundred times faster
-  (`sqs_unclamped_bistable`, `sqs_unclamped_congestedEq`).
+  11519 redeliveries (`sqs_redelivery_cap`). With that 11,520× saturated
+  redelivery ceiling, an unclamped loop at baseline load `λ = 1` msg/s over
+  `stepKernel 100` (where messages succeed below fleet capacity `C = 100` and
+  time out once aggregate delivery rate reaches `100`, after a poison burst or
+  transient stall tips the queue) sustains a congested equilibrium against a
+  consumer fleet one hundred times faster (`sqs_unclamped_bistable`,
+  `sqs_unclamped_congestedEq`).
 * A redrive policy is exactly the **cap clamp**: `maxReceiveCount = 5`
-  with offered poison load `λ` satisfying `λ·5 < C` removes the congested
+  with offered baseline load `λ` satisfying `λ·5 < C` removes the congested
   equilibrium outright (`sqs_dlq_no_congestedEq`, on the step-kernel
   redrive loop) — no timing or backoff hypothesis anywhere. The honest
   residual: the clamp does not close the band.
@@ -107,12 +110,14 @@ theorem sqs_redelivery_cap :
 /-!
 ## The unclamped loop: bistable at one message per second
 
-The stylized closed loop: poisoned offered load `λ = 1` msg/s, consumer fleet
-capacity `C = 100` msg/s, saturated redelivery amplification `A = 11520`.
+The stylized closed loop: baseline offered load `λ = 1` msg/s, consumer fleet
+capacity `C = 100` msg/s (modeled by `stepKernel 100`, where processing succeeds
+below capacity and fails by visibility-timeout expiration at or above `100`),
+and saturated redelivery amplification `A = 11520`.
 -/
 
-/-- The unclamped redelivery loop: poisoned load 1 msg/s, fleet capacity
-100 msg/s, saturated redelivery amplification 11520. -/
+/-- The unclamped redelivery loop: baseline load 1 msg/s, fleet capacity
+100 msg/s (`stepKernel 100`), saturated redelivery amplification 11520. -/
 noncomputable abbrev sqsUnclampedLoop : ClosedLoop :=
   stepLoop 1 100 11520 (by norm_num) (by norm_num)
 
@@ -142,7 +147,7 @@ noncomputable abbrev dlqLoop (lam C : ℝ) (m : ℕ) (hlam : 0 ≤ lam)
 
 /-- **The dead-letter queue removes the congested equilibrium** that the
 unclamped loop sustains (`sqs_unclamped_congestedEq`). With
-`maxReceiveCount = 5` and poison load 1 msg/s against a 100 msg/s fleet,
+`maxReceiveCount = 5` and baseline load 1 msg/s against a 100 msg/s fleet,
 `λ·5 = 5 < 100` and the redrive loop — the saturated step kernel at these
 numbers — has no congested equilibrium, with no backoff hypothesis
 anywhere. One inequality certifies the architecture. -/
@@ -151,11 +156,12 @@ theorem sqs_dlq_no_congestedEq :
   cappedLoop_no_congestedEq (by norm_num)
 
 /-- **The honest residual**: the clamp does not close the band, it narrows it.
-At `λ = 25` msg/s of poison load (inside `[C/5, C) = [20, 100)`), the
-`maxReceiveCount = 5` system itself — the truncated-geometric `dlqLoop`, not
-a stylized stand-in — is still genuinely bistable, certified by two point
-evaluations of its own demand operator: `F(25) = 25` (healthy demand fixed)
-and `F(100) = 125 ≥ 100` (congested demand self-sustaining). -/
+At `λ = 25` msg/s of baseline load (inside `[C/5, C) = [20, 100)`), the
+`maxReceiveCount = 5` system itself — the truncated-geometric `dlqLoop` over
+`stepKernel 100`, not a stylized stand-in — is still genuinely bistable,
+certified by two point evaluations of its own demand operator: `F(25) = 25`
+(healthy demand fixed below fleet capacity) and `F(100) = 125 ≥ 100`
+(congested demand self-sustaining once deliveries saturate the fleet). -/
 theorem sqs_dlq_band_residual :
     BistableOn (dlqLoop 25 100 5 (by norm_num) (by norm_num)).F 0 125 := by
   refine (dlqLoop 25 100 5 (by norm_num)
@@ -168,7 +174,7 @@ theorem sqs_dlq_band_residual :
     norm_num
 
 /-- The band's lower edge, from the clamp: any congested equilibrium under
-`maxReceiveCount = 5` against `C = 100` forces poison load `λ ≥ 20` msg/s.
+`maxReceiveCount = 5` against `C = 100` forces baseline load `λ ≥ 20` msg/s.
 Below that, the redrive policy is a full guarantee. -/
 theorem sqs_dlq_band_lower {lam : ℝ} (hlam : 0 ≤ lam)
     (hcong : (dlqLoop lam 100 5 hlam (by norm_num)).CongestedEq 100) :

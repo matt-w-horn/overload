@@ -279,11 +279,14 @@ theorem congestedEq_of_inflow {Θ : ℝ} (hΘ : Θ ≤ L.F Θ) :
 
 /-- The formal residue of "none of the four sustaining mechanisms is
 present": the amplification response is trivial. Discharged concretely by
-`amp_eq_one_of_slow_remaining` below — slow failures under remaining-deadline
-apportionment admit one attempt (`neff_slow_remaining`), and one attempt
-means no amplification (Mathlib's `geom_sum_one`). The other two mechanisms are
-structural here: `F = λ·h∘g` has no additive spill-in term, and taking the
-threshold to be the *undegraded* capacity `C` asserts no supply degradation. -/
+`amp_eq_one_of_slow_remaining` below — slow failures (`D ≤ T 0`) under
+remaining-deadline apportionment admit at most one completed attempt
+(`neff_le_one_of_slow`, with `max 1 neff = 1` across the entire slow regime and
+`neff = 1` at the boundary `T 0 = D` via `neff_slow_remaining`), and one
+attempt means no amplification (Mathlib's `geom_sum_one`). The other two
+mechanisms are structural here: `F = λ·h∘g` has no additive spill-in term, and
+taking the threshold to be the *undegraded* capacity `C` asserts no supply
+degradation. -/
 def NoSustaining (L : ClosedLoop) : Prop :=
   ∀ p ∈ Set.Icc (0 : ℝ) 1, L.h p = 1
 
@@ -359,17 +362,25 @@ failures are slow and apportionment is remaining-deadline. Re-armed per-try
 timeouts re-open it.
 -/
 
-/-- At the slow-failure boundary (`T 0 = D`) under remaining-deadline
+/-- Across the entire slow-failure regime (`D ≤ T 0`) under remaining-deadline
 apportionment — positive latencies, nonnegative backoffs, at least one
-attempt available (`1 ≤ n`) — the truncated-geometric response through the
-deadline-capped attempt count is identically 1: no amplification, whatever
-the failure probability. Strictly slower failures drop the count to `0`
-(`neff_eq_zero_of_strictly_slow`), not to `1`. -/
+attempt available (`1 ≤ n`) — the initiated-attempt floor `max 1 (neff T B D n)`
+is identically `1` (`neff_le_one_of_slow`), so the truncated-geometric response
+`expAttempts p (max 1 (neff T B D n))` is identically `1`: no amplification,
+whatever the failure probability. At the exact boundary `T 0 = D`, the raw
+completed-attempt count `neff T B D n` is also `1` (`neff_slow_remaining`),
+whereas strictly slower failures (`D < T 0`) drop completed attempts to `0`
+(`neff_eq_zero_of_strictly_slow`) while still initiating the first attempt. -/
 theorem amp_eq_one_of_slow_remaining {T B : ℕ → ℝ} {D : ℝ} {n : ℕ}
-    (hT0 : T 0 = D) (hTpos : ∀ j, 0 < T j) (hB : ∀ j, 0 ≤ B j)
-    (hn : 1 ≤ n) (p : ℝ) : expAttempts p (neff T B D n) = 1 := by
-  rw [neff_slow_remaining hT0 hTpos hB hn, expAttempts_def]
-  exact geom_sum_one p
+    (hT0 : D ≤ T 0) (hTpos : ∀ j, 0 < T j) (hB : ∀ j, 0 ≤ B j)
+    (hn : 1 ≤ n) (p : ℝ) :
+    expAttempts p (max 1 (neff T B D n)) = 1 ∧
+      (T 0 = D → expAttempts p (neff T B D n) = 1) := by
+  refine ⟨?_, fun hEq => ?_⟩
+  · rw [max_eq_left (neff_le_one_of_slow hT0 hTpos hB), expAttempts_def]
+    exact geom_sum_one p
+  · rw [neff_slow_remaining hEq hTpos hB hn, expAttempts_def]
+    exact geom_sum_one p
 
 /-- Re-armed per-try timeouts re-open amplification: with two sub-deadlines
 in the budget, the retry cap admitting two (`2 ≤ n`), no backoff between
@@ -380,12 +391,18 @@ theorem one_add_le_amp_of_rearmed {τ D : ℝ} {n : ℕ}
     1 + p ≤ expAttempts p (neff (fun _ => τ) (fun _ => 0) D n) :=
   one_add_le_expAttempts hp (two_le_neff_rearmed h2 hn)
 
-/-- Pin of the slow-remaining collapse at `T ≡ 1 = D`, cap 3: the deadline
-admits one attempt and the response is exactly one at `p = 1/2`. -/
+/-- Pin of the slow-remaining collapse across both legs at cap 3 and `p = 1/2`:
+strictly slow failures (`T ≡ 2 > 1 = D`) give `expAttempts (1/2) (max 1 neff) = 1`
+under the initiated-attempt floor, and boundary failures (`T ≡ 1 = D`) give
+`expAttempts (1/2) neff = 1` directly on completed attempts. -/
 theorem amp_eq_one_of_slow_remaining_pin :
-    expAttempts (1 / 2) (neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 1 3) = 1 :=
-  amp_eq_one_of_slow_remaining rfl (fun _ => one_pos) (fun _ => le_rfl)
-    (by norm_num) (1 / 2)
+    expAttempts (1 / 2)
+        (max 1 (neff (fun _ => (2 : ℝ)) (fun _ => (0 : ℝ)) 1 3)) = 1 ∧
+      expAttempts (1 / 2) (neff (fun _ => (1 : ℝ)) (fun _ => (0 : ℝ)) 1 3) = 1 :=
+  ⟨(amp_eq_one_of_slow_remaining (by norm_num) (fun _ => by norm_num)
+      (fun _ => le_rfl) (by norm_num) (1 / 2)).1,
+    (amp_eq_one_of_slow_remaining le_rfl (fun _ => one_pos)
+      (fun _ => le_rfl) (by norm_num) (1 / 2)).2 rfl⟩
 
 /-- Pin of the re-armed re-opening at `τ = 1, D = 2, n = 2, p = 1/2`: two
 sub-deadlines fit, the response is at least `3/2`, and the bound is

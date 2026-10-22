@@ -92,7 +92,7 @@ The overload story, mapped mechanism by mechanism:
   but the scheduler serves *placement attempts*. Without a reschedule clamp,
   a fixed quota bounds nothing (`borg_quota_needs_clamp`, instantiating
   `admission_needs_clamp`). With a per-task
-  replacement clamp it bounds attempt load exactly (`borg_quota_bound`).
+  rescheduling clamp it bounds attempt load exactly (`borg_quota_bound`).
 
 Numbers are stylized illustrations of the public design (except the ~25 s
 startup median, which is Verma et al.'s), chosen to make every certificate close
@@ -112,10 +112,12 @@ namespace Overload
 noncomputable def borgDemand (b : ℝ) : ℕ → ℝ := fun j => if j = 0 then 60 else b
 
 /-- **Production is immune to the batch storm.** Whatever the batch band's
-demand — including unbounded reschedule amplification — the production band's
-allocation is exactly its demand: `min 60 100 = 60`. Priority enforced from
-intent labels at the resource boundary makes the top band's outcome a function
-of its own demand and capacity alone. -/
+demand `b` in `borgDemand b` (which fixes class-`0` production demand at `60`
+and sets class-`1` batch demand to `b`) — including unbounded reschedule
+amplification — the production band's allocation is exactly its demand:
+`min 60 100 = 60`. Priority enforced from intent labels at the resource
+boundary makes the top band's outcome a function of its own demand and
+capacity alone. -/
 theorem borg_prod_immune (b : ℝ) : alloc (borgDemand b) 100 0 = 60 := by
   rw [top_class_isolation (by norm_num)]
   norm_num [borgDemand]
@@ -147,10 +149,11 @@ theorem borg_no_stranding :
 /-- **Per-class loop over allocated capacity** — the bridge between the
 allocation arithmetic and the equilibrium machinery. Batch, offered 8 tasks/s
 under a 4-placement reschedule clamp, runs as a closed loop over its
-*residual* capacity `residual (borgDemand 80) 100 1 = 40`, and `8·4 = 32 <
+*residual* capacity `residual (borgDemand 80) 100 1 = 40` (where `borgDemand
+80` pairs production demand `60` with batch demand `80`), and `8·4 = 32 <
 40` certifies no congested equilibrium there: production's allocation
 isolation (`borg_prod_immune`) fixes the residual batch runs over, and this
-clamp certificate is the phase theorem instantiated at that residual. -/
+clamp certificate is the phase theorem instantiated directly on `residual`. -/
 theorem borg_batch_over_residual :
     ¬(cappedLoop 8 40 4 (by norm_num) (by norm_num)).CongestedEq
       (residual (borgDemand 80) 100 1) := by
@@ -215,10 +218,10 @@ noncomputable def borgAcct : Accounting where
 as lost startup investment and 5% of capacity left idle, goodput (in work
 units) is capped at 75% of capacity less the idle share — 70. Each point of
 eviction waste is a point off the top, and each point of idle is another.
-Disclosed: this accounting is fully specified, so the ceiling necessarily
-lands on its own `useful` figure; the transferable content is the
-decomposition `(1-w)·C - I/T`, not a bound the accounting did not already
-contain. -/
+Disclosed: `borgAcct` is fully specified with closed numerals, so both the
+hypothesis and the conclusion evaluate to `G ≤ 70`; the transferable content
+is the symbolic decomposition `(1-w)·C - I/T` in `goodput_le_of_waste`, not a
+bound the accounting did not already contain. -/
 theorem borg_waste_caps_goodput {G : ℝ}
     (huseful : G * borgAcct.time * 1 ≤ borgAcct.useful) :
     G * 1 ≤ (1 - 1 / 4) * borgAcct.capacity
@@ -235,8 +238,8 @@ work.
 Disclosed: every numeral here is fixed, so the hypothesis evaluates to
 `(1-w)·100 < 100` — that is, to the conclusion. What the instantiation
 records is that the plateau really does sit at 100 for *these* Borg numbers
-(the `UniformLossEq` obligation below is where the work is); the implication
-itself is immediate once it does. -/
+(the `UniformLossEq` obligation in the proof is where the work is); the
+implication itself is immediate once it does. -/
 theorem borg_cliff_needs_waste {w : ℝ} (hw : 0 ≤ w)
     (hcliff : (1 - w) * goodput {0} (fun _ => 200) (fun _ => 1) (1 / 2)
       < min (∑ _j ∈ ({0} : Finset ℕ), (200 : ℝ)) 100) : 0 < w := by
@@ -285,7 +288,7 @@ the amplification behind it. -/
 theorem borg_quota_needs_clamp : ∃ A, 0 < A ∧ (1000 : ℝ) < 10 * A :=
   admission_needs_clamp (by norm_num) 1000
 
-/-- **Quota plus a replacement clamp is a real bound**: 10 tasks/s of quota
+/-- **Quota plus a rescheduling clamp is a real bound**: 10 tasks/s of quota
 under a 3-placement clamp is at most 30 placements/s, full stop. The pair
 (quota, clamp) is the attempt-denominated admission control the scheduler
 actually needs. -/

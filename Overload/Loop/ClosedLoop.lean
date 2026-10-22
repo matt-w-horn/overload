@@ -294,8 +294,8 @@ theorem F_eq_lam_of_noSustaining (hns : L.NoSustaining) {Λ : ℝ}
   rw [hns _ (L.g_mem Λ hΛ), mul_one]
 
 variable {L} in
-/-- With no sustaining mechanism the equilibrium is unique — it is the
-offered load itself. -/
+/-- With no sustaining mechanism, the equilibrium on nonnegative load is
+unique — it is the offered load itself. -/
 theorem noSustaining_unique_eq (hns : L.NoSustaining) {Λ : ℝ} (hΛ : 0 ≤ Λ) :
     L.F Λ = Λ ↔ Λ = L.lam := by
   rw [L.F_eq_lam_of_noSustaining hns hΛ]

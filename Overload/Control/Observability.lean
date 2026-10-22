@@ -77,11 +77,11 @@ theorem intent_factorsThrough_refined {wire : State → Wire}
   ⟨Prod.snd, fun _ => rfl⟩
 
 /-- The miscoding pair on concrete labels: two ground-truth states — shed
-under overload and a genuine client error — carry the same wire code in a
-two-code space, so a dashboard that factors through that code reads `0`
-incidents on both (`instrument_blind` at the shared code). The refined
-label on the same wire separates them, and the instrument that reads
-intent factors through it. -/
+under overload and a genuine client error — carry the same wire code
+(`0 : Fin 2`) in a two-code space, so a dashboard that factors through that
+code reads `0 : Nat` incidents on both (`instrument_blind` at the shared
+code). The refined label on the same wire separates them, and the
+instrument that reads intent factors through it. -/
 theorem miscoded_pair_blind_then_refined :
     (fun _ : Fin 2 => (0 : Fin 2)) 0 = (fun _ : Fin 2 => (0 : Fin 2)) 1 ∧
       (fun _ : Fin 2 => (0 : Nat)) 0 = (fun _ : Fin 2 => (0 : Nat)) 1 ∧

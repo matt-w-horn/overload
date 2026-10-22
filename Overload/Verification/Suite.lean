@@ -152,9 +152,10 @@ structure SystemFacts (station req origin wire : Type*) where
   wireCount : wire → ℝ
 
 /-- **The verification suite**: the conservation laws and consistency
-identities a run must satisfy to be trusted. `pastaFact` is the
-caller-supplied sampling-unbiasedness proposition (test 6), carried as an
-explicit hypothesis because the PASTA theorem is not formalized here. -/
+identities a run must satisfy to be trusted (tests 1–6 in the module
+docstring's 18-test verification list). `pastaFact` is the caller-supplied
+sampling-unbiasedness proposition (test 6), carried as an explicit hypothesis
+because the PASTA theorem is not formalized here. -/
 structure VerificationSuite {station req origin wire : Type*}
     [Fintype origin] [Fintype wire] (pastaFact : Prop)
     (F : SystemFacts station req origin wire) : Prop where
@@ -230,9 +231,9 @@ theorem reduction_forced_failure_pin :
   rw [reduction_forced_failure]
   norm_num [Fin.prod_univ_two]
 
-/-- **Test 12, all caps 1**: with every cap at one attempt the stack does not
-amplify at all — the base model with no retries, whatever the failure
-probabilities. -/
+/-- **Test 12 (degenerate-knob reduction in the module docstring's list), all
+caps 1**: with every cap at one attempt the stack does not amplify at all —
+the base model with no retries, whatever the failure probabilities. -/
 theorem reduction_no_retries {ι : Type*} (s : Finset ι) (p : ι → ℝ) :
     stackAmp s p (fun _ => 1) = 1 := by
   unfold stackAmp

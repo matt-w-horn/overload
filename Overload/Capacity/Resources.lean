@@ -112,9 +112,10 @@ system at 800 while the bottom still allows 1000. -/
 theorem hop_binds_at_amp_five : (4000 : ℝ) / (5 * 1) < 1000 / 1 := by norm_num
 
 /-- Numeric regression at the no-amplification endpoint, the other side of
-`hop_binds_at_amp_five`: with the same provisioning and `A = 1`, the bottom's
-`1000` is the binding limit. The inequality is immediate; what the theorem
-pins is the `A · rk` shape at `A = 1`. -/
+`hop_binds_at_amp_five` (and `binding_shift_at_amp_five`): with the same
+provisioning and `A = 1`, the bottom's `1000` is the binding limit. The
+inequality is immediate; what the theorem pins is the `A · rk` shape at
+`A = 1`. -/
 theorem bottom_binds_at_amp_one : (1000 : ℝ) / 1 ≤ 4000 / (1 * 1) := by
   norm_num
 

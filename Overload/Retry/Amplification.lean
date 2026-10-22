@@ -106,7 +106,8 @@ theorem attemptWeight_of_lt {p : ℝ} {n j : ℕ} (h : j + 1 < n) :
   unfold attemptWeight
   rw [if_pos h]
 
-/-- At the cap the final attempt absorbs the whole tail: `p^{n-1}`. -/
+/-- At the cap (`n = j + 1`), the final attempt (index `j = n - 1`) absorbs
+the whole tail: `p ^ j` (`p^{n-1}`). -/
 theorem attemptWeight_at_cap {p : ℝ} {j : ℕ} :
     attemptWeight p (j + 1) j = p ^ j := by
   unfold attemptWeight

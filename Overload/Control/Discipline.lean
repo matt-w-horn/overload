@@ -117,7 +117,8 @@ theorem sum_alloc_le (d : Fin k → ℝ) (C : ℝ) (hd : ∀ j, 0 ≤ d j)
 allocation language, a class running as a bounded loop over its grant,
 clamped with `λ·K` below that grant, has no congested equilibrium there.
 `borg_batch_over_residual` (`Overload/Examples/Borg.lean`) is the
-strict-priority instance.
+strict-priority counterpart, stated directly on `Overload.residual` (which
+`strictDiscipline` wraps).
 
 Two scopings, stated rather than implied. The class loop needs only
 `BoundedLoop`, so a batching or backpressure class inherits the certificate.
@@ -302,8 +303,10 @@ theorem class_clamp_at_overload :
       norm_num)
 
 /-- Numeric regression on the service-order pair: at backlog `25` and drain
-rate `10`, the unit FIFO serves next has waited past its `2`-second deadline,
-while the unit LIFO serves next is inside it. Same queue, same instant. -/
+rate `10`, the unit FIFO serves next (`fifoSojourn 25 10 = 25/10`) has waited
+past its `2`-second deadline, while the newest unit under LIFO (`lifoSojourn`,
+defined as the constant `0` independently of backlog and drain rate) is inside
+it. Same queue, same instant. -/
 theorem service_order_at_backlog :
     (2 : ℝ) < fifoSojourn 25 10 ∧ lifoSojourn ≤ 2 :=
   ⟨fifo_head_expired (by norm_num) (by norm_num), lifo_fresh (by norm_num)⟩

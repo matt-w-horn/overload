@@ -87,10 +87,10 @@ noncomputable def pipelineAcct : Accounting where
 
 /-- Squash waste prices retirement: with a quarter of issue slots going to
 wrong-path work and one slot stalled, sustained IPC is capped at
-three-quarters of width less the stalled slot — 5 of 8. Disclosed: the
-accounting is fully specified, so the ceiling coincides with its own
-`useful` figure; the decomposition `(1-w)·C - I/T` is the transferable
-part. -/
+three-quarters of width less the stalled slot — 5 of 8. Disclosed:
+`pipelineAcct` is fully specified with closed numerals, so both the hypothesis
+and the conclusion evaluate to `G ≤ 5`; the symbolic decomposition
+`(1-w)·C - I/T` in `goodput_le_of_waste` is the transferable part. -/
 theorem pipeline_squash_caps_ipc {G : ℝ}
     (huseful : G * pipelineAcct.time * 1 ≤ pipelineAcct.useful) :
     G * 1 ≤ (1 - 1 / 4) * pipelineAcct.capacity

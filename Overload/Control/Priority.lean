@@ -135,10 +135,12 @@ theorem effective_priority (lam A : Fin k → ℝ) {ρ : ℝ} (hρ : ρ ≠ 0)
   rw [mul_div_mul_left _ _ hρ]
 
 /-- **The inversion threshold, named.** The existential in `inversion` hides
-where the starvation begins; here it is explicit and one-sided: *every*
-low-class amplification past `λ_hi·A_hi / (λ_lo·ε)` drives the high class's
-share of total offered attempts below `ε`. Sizing a low tier's retry budget against
-this threshold is the checkable form of the construction. -/
+where the starvation begins; here it is explicit and one-sided (written directly
+on the bare two-class products `lam * Ahi` and `lamlo * Alo` rather than
+`offeredAttempts`): *every* low-class amplification past `λ_hi·A_hi / (λ_lo·ε)`
+drives the high class's share of the two classes' offered attempts below `ε`.
+Sizing a low tier's retry budget against this sufficient starvation threshold
+is the checkable form of the construction. -/
 theorem inversion_threshold {lam Ahi lamlo ε Alo : ℝ} (hlamhi : 0 < lam)
     (hAhi : 0 < Ahi) (hlamlo : 0 < lamlo) (hε : 0 < ε)
     (hAlo : lam * Ahi / (lamlo * ε) < Alo) :
@@ -155,10 +157,10 @@ theorem inversion_threshold {lam Ahi lamlo ε Alo : ℝ} (hlamhi : 0 < lam)
 
 /-- **The priority-inversion construction.** Fix positive offered loads
 for both classes and any target share `ε > 0`. Some positive low-class
-amplification drives the high class's fraction of total offered attempts
-below `ε` (`inversion_threshold` prices the threshold). Amplification
-alone — with no change to intended priority — starves the high class of
-attempt share. -/
+amplification drives the high class's fraction of the two classes' offered
+attempts (`(lam * Ahi) / (lam * Ahi + lamlo * Alo)`) below `ε`
+(`inversion_threshold` prices the threshold). Amplification alone — with no
+change to intended priority — starves the high class of attempt share. -/
 theorem inversion {lam Ahi : ℝ} (hlamhi : 0 < lam) (hAhi : 0 < Ahi)
     {lamlo : ℝ} (hlamlo : 0 < lamlo) {ε : ℝ} (hε : 0 < ε) :
     ∃ Alo, 0 < Alo ∧

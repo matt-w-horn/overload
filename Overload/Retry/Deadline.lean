@@ -200,10 +200,13 @@ theorem neff_rearmed {τ : ℝ} (hτ : 0 < τ) (hD : 0 ≤ D) (n : ℕ) :
     neff (fun _ => τ) (fun _ => 0) D n = min n ⌊D / τ⌋₊ := by
   simpa using neff_const hτ le_rfl hD n
 
-/-- Re-armed timeouts sustain amplification: two sub-deadlines in the
-budget, with the retry cap admitting two (`2 ≤ n`) and no backoff between
-attempts, means at least two attempts. This is sustaining mechanism 2 in
-one line. -/
+/-- Re-armed timeouts sustain amplification: when a per-try timeout caps
+each attempt's duration at `τ` with two sub-deadlines in the budget
+(`2 * τ ≤ D`), the retry cap admitting two (`2 ≤ n`), and no backoff between
+attempts, at least two attempts fit. Pairing this with `neff_le_one_of_slow`
+(which bounds remaining-deadline apportionment to at most one attempt when the
+underlying failure satisfies `D ≤ T 0`) gives the separation for sustaining
+mechanism 2. -/
 theorem two_le_neff_rearmed {τ : ℝ} (h2 : 2 * τ ≤ D)
     (hn : 2 ≤ n) : 2 ≤ neff (fun _ => τ) (fun _ => 0) D n := by
   classical

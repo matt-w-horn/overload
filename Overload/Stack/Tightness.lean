@@ -274,9 +274,11 @@ exactly what completeness costs.
 -/
 
 /-- The fixed-kernel gap witness: the `stepLoop 1 1 4` demand profile
-(`h p = 1 + 3p`, offered load `1`) with its kernel parked at zero — failures
-never materialize, whatever the load. (The `stepLoop` capacity argument is
-irrelevant after the kernel surgery.) -/
+(`h p = 1 + 3p`, offered load `1`, amplification `4`) with its kernel
+replaced by `constLoop 0` — failures never materialize, whatever the load.
+The `C = 1` argument to `stepLoop` is discarded by `constLoop 0`; the
+theorems below test `spikeLoop.CongestedEq 3` at congestion threshold `3`
+(matching `stepLoop 1 3 4` in the bistable band). -/
 noncomputable abbrev spikeLoop : ClosedLoop :=
   (stepLoop 1 1 4 (by norm_num) (by norm_num)).constLoop 0
     ⟨le_rfl, zero_le_one⟩

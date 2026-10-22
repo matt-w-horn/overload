@@ -317,7 +317,7 @@ theorem pairing_lt_of_rankOne_certificate {k : ℕ} {a b : Fin k → ℝ}
 /-- **The rank-one certificate criterion**: for `J = a·bᵀ` with
 nonnegative factors, a positive strictly contracting weight exists **iff** the
 pairing sum is below one — the eigenvalue-free form of "the sole nonzero
-eigenvalue of a nonnegative rank-one matrix is `⟨b, a⟩`". -/
+eigenvalue of a nonnegative rank-one matrix is `bᵀa`". -/
 theorem rankOne_certificate_iff {k : ℕ} {a b : Fin k → ℝ}
     (ha : ∀ i, 0 ≤ a i) (hb : ∀ j, 0 ≤ b j) :
     Certificate (Matrix.of fun i j => a i * b j)

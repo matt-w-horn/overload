@@ -127,9 +127,9 @@ noncomputable def thrashingAcct : Accounting where
 and 15% idle waiting on the disk, useful throughput is capped at 55% of
 capacity less the idle share — 40, per `goodput_le_of_waste`. Each point of
 paging overhead is a point off the top, and stalling for the pager costs
-again. Disclosed: the accounting is fully specified, so the ceiling
-coincides with its own `useful` figure; the decomposition is what
-transfers. -/
+again. Disclosed: `thrashingAcct` is fully specified with closed numerals, so
+both the hypothesis and the conclusion evaluate to `G ≤ 40`; the symbolic
+decomposition in `goodput_le_of_waste` is what transfers. -/
 theorem thrashing_waste_caps_goodput {G : ℝ}
     (huseful : G * thrashingAcct.time * 1 ≤ thrashingAcct.useful) :
     G * 1 ≤ (1 - 45 / 100) * thrashingAcct.capacity

@@ -53,7 +53,7 @@ fails and you want to re-run just that one.
 | Target | What it checks |
 |---|---|
 | `lake build` | The structural axiom audit, as part of the default target. Every module elaborates under Mathlib's standard syntax linter set. |
-| `lake test` | The statement lock, the claims ledger, the linter-coverage check, the negative fixtures, and the source scans. |
+| `lake test` | The statement lock, the claims ledger (`failing` mode), the linter-coverage check, the negative fixtures, and the source scans. |
 | `lake lint` | The environment linters — Batteries' set, plus this library's own `silencingMarkers`, which fails on any library declaration carrying a gate-silencing marker (`unsafe`, `partial`, an `implemented_by` or `extern` replacement, a `nolint` exemption). |
 | `lake exe lint-style` | The text-based linters. |
 
@@ -79,7 +79,7 @@ to hide it. That argument is Leonardo de Moura's, in
 ## History
 
 The library was developed privately before release; this repository's
-history was restarted on 2026-07-28.
+history was restarted on 2026-07-27.
 
 ## Related
 

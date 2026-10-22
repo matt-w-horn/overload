@@ -472,14 +472,15 @@ theorem operator_bracket_pin :
 
 /-- Pin of the downward-inertia leg: starting from the congested `8`, three
 monotone iterations of the band loop stay at or above the healthy equilibrium
-`2`. Monotone iteration alone never crosses a fixed point from above. -/
+`2` (where `2 ≤ F 2`). Monotone iteration alone never crosses a postfixed
+point from above. -/
 theorem le_iterate_of_fixedPt_le_pin :
     (2 : ℝ) ≤ (stepLoop 2 5 4 (by norm_num) (by norm_num)).F^[3] (2 * 4) :=
   le_iterate_of_fixedPt_le
     (stepLoop 2 5 4 (by norm_num) (by norm_num)).F_monotoneOn_Icc
     (stepLoop 2 5 4 (by norm_num) (by norm_num)).F_mapsTo
     ⟨by norm_num, show (2 : ℝ) ≤ 2 * 4 by norm_num⟩
-    (stepLoop_F_of_lt (by norm_num) (by norm_num) (by norm_num))
+    (stepLoop_F_of_lt (by norm_num) (by norm_num) (by norm_num)).ge
     ⟨by norm_num, show (2 : ℝ) * 4 ≤ 2 * 4 by norm_num⟩ (by norm_num) 3
 
 /-- Pin of the upward jump at capacity `5`, amplification `4`: the operative

@@ -188,8 +188,7 @@
 #### Overload.ClosedLoop.burst_safe : theorem
   ∀ (L : Overload.ClosedLoop) {z Λ₀ B w : ℝ},
     z ∈ Set.Icc 0 (L.lam * L.Amax) →
-      Function.IsFixedPt L.F z →
-        0 ≤ Λ₀ → 0 ≤ B → 0 < w → Λ₀ + B / w ≤ z → ∀ (n : ℕ), L.F^[n] (Λ₀ + B / w) ≤ z
+      L.F z ≤ z → 0 ≤ Λ₀ → 0 ≤ B → 0 < w → Λ₀ + B / w ≤ z → ∀ (n : ℕ), L.F^[n] (Λ₀ + B / w) ≤ z
 
 #### Overload.ClosedLoop.burst_tips : theorem
   ∀ (L : Overload.ClosedLoop) {Λ₀ B w : ℝ},
@@ -672,12 +671,17 @@
 
 #### Overload.amp_eq_one_of_slow_remaining : theorem
   ∀ {T B : ℕ → ℝ} {D : ℝ} {n : ℕ},
-    T 0 = D →
+    D ≤ T 0 →
       (∀ (j : ℕ), 0 < T j) →
-        (∀ (j : ℕ), 0 ≤ B j) → 1 ≤ n → ∀ (p : ℝ), Overload.expAttempts p (Overload.neff T B D n) = 1
+        (∀ (j : ℕ), 0 ≤ B j) →
+          1 ≤ n →
+            ∀ (p : ℝ),
+              Overload.expAttempts p (max 1 (Overload.neff T B D n)) = 1 ∧
+                (T 0 = D → Overload.expAttempts p (Overload.neff T B D n) = 1)
 
 #### Overload.amp_eq_one_of_slow_remaining_pin : theorem
-  Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 1 3) = 1
+  Overload.expAttempts (1 / 2) (max 1 (Overload.neff (fun x => 2) (fun x => 0) 1 3)) = 1 ∧
+    Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 1 3) = 1
 
 #### Overload.attemptDist : def
   (p : ℝ) → {n : ℕ} → 0 ≤ p → p ≤ 1 → 1 ≤ n → PMF (Fin n)
@@ -784,8 +788,8 @@
   ∀ {lam A C : ℝ}, Overload.BistableBand lam A C → ¬Overload.CongestedOnly lam C
 
 #### Overload.borgAcct : def
-  Overload.Accounting
-  value-hash fca7bb25876cfada
+  (U : ℝ) → 0 ≤ U → U + 25 + 5 = 100 * 1 → Overload.Accounting
+  value-hash fcd63c1c294507a
 
 #### Overload.borgDemand : def
   ℝ → ℕ → ℝ
@@ -838,10 +842,11 @@
   ∃ A, 0 < A ∧ 1000 < 10 * A
 
 #### Overload.borg_waste_caps_goodput : theorem
-  ∀ {G : ℝ},
-    G * Overload.borgAcct.time * 1 ≤ Overload.borgAcct.useful →
+  ∀ {G U : ℝ} (hU : 0 ≤ U) (hcons : U + 25 + 5 = 100 * 1),
+    G * (Overload.borgAcct U hU hcons).time * 1 ≤ (Overload.borgAcct U hU hcons).useful →
       G * 1 ≤
-        (1 - 1 / 4) * Overload.borgAcct.capacity - Overload.borgAcct.idle / Overload.borgAcct.time
+        (1 - 1 / 4) * (Overload.borgAcct U hU hcons).capacity -
+          (Overload.borgAcct U hU hcons).idle / (Overload.borgAcct U hU hcons).time
 
 #### Overload.bottom_binds_at_amp_one : theorem
   1000 / 1 ≤ 4000 / (1 * 1)
@@ -903,7 +908,7 @@
   (Overload.stepLoop 1 2 3 ⋯ ⋯).CongestedEq 2
 
 #### Overload.burst_safe_stepLoop_five : theorem
-  (Overload.stepLoop 1 2 3 ⋯ ⋯).F^[5] (1 / 2 + 1 / 4) ≤ 1
+  (Overload.stepLoop 1 2 3 ⋯ ⋯).F^[5] (1 + 2 / 4) ≤ 3 / 2
 
 #### Overload.burst_tips_stepLoop_two : theorem
   (Overload.stepLoop 1 2 3 ⋯ ⋯).F^[3] (1 / 2 + 6 / 4) ≤
@@ -1046,7 +1051,7 @@
             StrictAntiOn (fun t => 100 * Real.exp (-t)) (Set.Icc 0 1)
 
 #### Overload.class_clamp_at_overload : theorem
-  ¬(Overload.stepLoop (1 / 4) 10 2 ⋯ ⋯).CongestedEq ((Overload.propDiscipline 2).alloc ![3, 9] 4 0)
+  ¬(Overload.stepLoop (1 / 4) 1 2 ⋯ ⋯).CongestedEq ((Overload.propDiscipline 2).alloc ![3, 9] 4 0)
 
 #### Overload.cliff_implies_waste : theorem
   ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ} {C : ℝ},
@@ -1789,7 +1794,7 @@
   ∀ {F : ℝ → ℝ} {a b x z : ℝ},
     MonotoneOn F (Set.Icc a b) →
       Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
-        z ∈ Set.Icc a b → Function.IsFixedPt F z → x ∈ Set.Icc a b → x ≤ z → ∀ (n : ℕ), F^[n] x ≤ z
+        z ∈ Set.Icc a b → F z ≤ z → x ∈ Set.Icc a b → x ≤ z → ∀ (n : ℕ), F^[n] x ≤ z
 
 #### Overload.jitter_window_avoids : theorem
   ∀ {B Λ₀ z w : ℝ}, Λ₀ < z → B / (z - Λ₀) ≤ w → 0 < w → Λ₀ + B / w ≤ z
@@ -1847,7 +1852,7 @@
   ∀ {F : ℝ → ℝ} {a b x z : ℝ},
     MonotoneOn F (Set.Icc a b) →
       Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
-        z ∈ Set.Icc a b → Function.IsFixedPt F z → x ∈ Set.Icc a b → z ≤ x → ∀ (n : ℕ), z ≤ F^[n] x
+        z ∈ Set.Icc a b → z ≤ F z → x ∈ Set.Icc a b → z ≤ x → ∀ (n : ℕ), z ≤ F^[n] x
 
 #### Overload.le_iterate_of_fixedPt_le_pin : theorem
   2 ≤ (Overload.stepLoop 2 5 4 ⋯ ⋯).F^[3] (2 * 4)
@@ -1988,7 +1993,7 @@
 
 #### Overload.miscoded_pair_blind_then_refined : theorem
   (fun x => 0) 0 = (fun x => 0) 1 ∧
-    (fun x => 0) 0 = (fun x => 0) 1 ∧
+    (∀ (instr : Fin 2 → ℕ), (Overload.FactorsThrough instr fun x => 0) → instr 0 = instr 1) ∧
       Overload.refinedLabel (fun x => 0) (fun s => s) 0 ≠
           Overload.refinedLabel (fun x => 0) (fun s => s) 1 ∧
         Overload.FactorsThrough (fun s => s) (Overload.refinedLabel (fun x => 0) fun s => s)
@@ -2265,8 +2270,8 @@
     Overload.HealthyOnly 3 (1 / 2) 2 ∧ Overload.CongestedOnly 3 2
 
 #### Overload.pipelineAcct : def
-  Overload.Accounting
-  value-hash a0b7ee2655661f44
+  (U : ℝ) → 0 ≤ U → U + 2 + 1 = 8 * 1 → Overload.Accounting
+  value-hash 6324236a3572e243
 
 #### Overload.pipeline_replay_envelope : theorem
   ∀ {lam : ℝ}, lam * 2 * 1 ≤ 8 → lam ≤ 8 / (2 * 1)
@@ -2275,11 +2280,11 @@
   4 ≤ 8 / (2 * 1) ∧ 4 = 8 / (2 * 1)
 
 #### Overload.pipeline_squash_caps_ipc : theorem
-  ∀ {G : ℝ},
-    G * Overload.pipelineAcct.time * 1 ≤ Overload.pipelineAcct.useful →
+  ∀ {G U : ℝ} (hU : 0 ≤ U) (hcons : U + 2 + 1 = 8 * 1),
+    G * (Overload.pipelineAcct U hU hcons).time * 1 ≤ (Overload.pipelineAcct U hU hcons).useful →
       G * 1 ≤
-        (1 - 1 / 4) * Overload.pipelineAcct.capacity -
-          Overload.pipelineAcct.idle / Overload.pipelineAcct.time
+        (1 - 1 / 4) * (Overload.pipelineAcct U hU hcons).capacity -
+          (Overload.pipelineAcct U hU hcons).idle / (Overload.pipelineAcct U hU hcons).time
 
 #### Overload.plateau : theorem
   ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ} {C : ℝ},
@@ -2860,8 +2865,8 @@
   Filter.Tendsto (fun m => ↑(m + 1) / ↑m) Filter.atTop (nhds 1)
 
 #### Overload.thrashingAcct : def
-  Overload.Accounting
-  value-hash acdfa9a84b4dd81a
+  (U : ℝ) → 0 ≤ U → U + 45 + 15 = 100 * 1 → Overload.Accounting
+  value-hash 12ac0a20cf46d675
 
 #### Overload.thrashingLoop : def
   Overload.ClosedLoop
@@ -2880,11 +2885,11 @@
   ¬(Overload.cappedLoop 3 20 4 ⋯ ⋯).CongestedEq 20
 
 #### Overload.thrashing_waste_caps_goodput : theorem
-  ∀ {G : ℝ},
-    G * Overload.thrashingAcct.time * 1 ≤ Overload.thrashingAcct.useful →
+  ∀ {G U : ℝ} (hU : 0 ≤ U) (hcons : U + 45 + 15 = 100 * 1),
+    G * (Overload.thrashingAcct U hU hcons).time * 1 ≤ (Overload.thrashingAcct U hU hcons).useful →
       G * 1 ≤
-        (1 - 45 / 100) * Overload.thrashingAcct.capacity -
-          Overload.thrashingAcct.idle / Overload.thrashingAcct.time
+        (1 - 45 / 100) * (Overload.thrashingAcct U hU hcons).capacity -
+          (Overload.thrashingAcct U hU hcons).idle / (Overload.thrashingAcct U hU hcons).time
 
 #### Overload.top_class_isolation : theorem
   ∀ {demand : ℕ → ℝ} {C : ℝ}, 0 ≤ C → Overload.alloc demand C 0 = min (demand 0) C

@@ -199,34 +199,37 @@ theorem borg_batch_bistable :
     BistableOn (stepLoop 30 100 4 (by norm_num) (by norm_num)).F 0 (30 * 4) :=
   stepLoop_bistable (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
-/-- Work accounting for a congested window: capacity 100 for one time unit;
-70 useful, 25 destroyed as evicted-task startup investment, 5 idle. -/
-noncomputable def borgAcct : Accounting where
+/-- Work accounting for a congested window: capacity 100 for one time unit,
+with 25 destroyed as evicted-task startup investment, 5 idle, and useful work
+`U` constrained by conservation `U + 25 + 5 = 100 * 1`. -/
+noncomputable def borgAcct (U : ℝ) (hU : 0 ≤ U)
+    (hcons : U + 25 + 5 = 100 * 1) : Accounting where
   capacity := 100
   time := 1
-  useful := 70
+  useful := U
   wasted := 25
   idle := 5
   capacity_pos := by norm_num
   time_pos := by norm_num
-  useful_nonneg := by norm_num
+  useful_nonneg := hU
   wasted_nonneg := by norm_num
   idle_nonneg := by norm_num
-  conserve := by norm_num
+  conserve := hcons
 
 /-- **Eviction waste prices the cliff**: with 25% of scheduler work destroyed
-as lost startup investment and 5% of capacity left idle, goodput (in work
-units) is capped at 75% of capacity less the idle share — 70. Each point of
-eviction waste is a point off the top, and each point of idle is another.
-Disclosed: `borgAcct` is fully specified with closed numerals, so both the
-hypothesis and the conclusion evaluate to `G ≤ 70`; the transferable content
-is the symbolic decomposition `(1-w)·C - I/T` in `goodput_le_of_waste`, not a
-bound the accounting did not already contain. -/
-theorem borg_waste_caps_goodput {G : ℝ}
-    (huseful : G * borgAcct.time * 1 ≤ borgAcct.useful) :
-    G * 1 ≤ (1 - 1 / 4) * borgAcct.capacity
-      - borgAcct.idle / borgAcct.time :=
-  borgAcct.goodput_le_of_waste huseful (by unfold borgAcct; norm_num)
+as lost startup investment and 5% of capacity left idle, any goodput `G`
+covered by the conserved useful work `U` (`G ≤ U` under `U + 25 + 5 = 100 * 1`)
+is capped at 75% of capacity less the idle share — 70 (`goodput_le_of_waste`).
+Each point of eviction waste is a point off the top, and each point of idle is
+another. -/
+theorem borg_waste_caps_goodput {G U : ℝ} (hU : 0 ≤ U)
+    (hcons : U + 25 + 5 = 100 * 1)
+    (huseful : G * (borgAcct U hU hcons).time * 1 ≤
+      (borgAcct U hU hcons).useful) :
+    G * 1 ≤ (1 - 1 / 4) * (borgAcct U hU hcons).capacity
+      - (borgAcct U hU hcons).idle / (borgAcct U hU hcons).time :=
+  (borgAcct U hU hcons).goodput_le_of_waste huseful
+    (by unfold borgAcct; norm_num)
 
 /-- **The cliff needs the waste** (plateau converse, instantiated): a
 scheduler offered 200 against capacity 100, at the uniform-loss equilibrium

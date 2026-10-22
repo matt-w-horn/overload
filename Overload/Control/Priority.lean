@@ -136,8 +136,9 @@ theorem effective_priority (lam A : Fin k → ℝ) {ρ : ℝ} (hρ : ρ ≠ 0)
 
 /-- **The inversion threshold, named.** The existential in `inversion` hides
 where the starvation begins; here it is explicit and one-sided (written directly
-on the bare two-class products `lam * Ahi` and `lamlo * Alo` rather than
-`offeredAttempts`): *every* low-class amplification past `λ_hi·A_hi / (λ_lo·ε)`
+on the bare two-class products `lam * Ahi` and `lamlo * Alo`, where the binder
+`lam` denotes the high-class arrival rate `λ_hi`, rather than
+`offeredAttempts`): *every* low-class amplification past `lam * Ahi / (lamlo * ε)`
 drives the high class's share of the two classes' offered attempts below `ε`.
 Sizing a low tier's retry budget against this sufficient starvation threshold
 is the checkable form of the construction. -/

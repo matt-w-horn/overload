@@ -85,9 +85,14 @@ def totalTime (T B : ℕ → ℝ) (k : ℕ) : ℝ :=
 def fitsIn (T B : ℕ → ℝ) (D : ℝ) (k : ℕ) : Prop := totalTime T B k ≤ D
 
 open Classical in
-/-- The deadline-capped attempt count: the largest `k ≤ n` whose attempts
-fit in `D` (junk `0` when none fits — `Nat.findGreatest`'s fallback, per
-the totality convention; the theorems supply the fitting hypothesis). -/
+/-- The deadline-capped completed-attempt count: the largest `k ≤ n` whose
+attempts complete within `D` (junk `0` when none fits — `Nat.findGreatest`'s
+fallback, per the totality convention; the theorems supply the fitting
+hypothesis). Because `fitsIn` counts completed attempts, a request whose
+first attempt is still in flight at `D` (`D < T 0`) has `neff = 0` completed
+attempts while still initiating one attempt; passing `max 1 neff` (as in
+`amp_eq_one_of_slow_remaining`) or `min n (neff + 1)` into `Layer`/`ClosedLoop`
+accounts for the initiated attempt in flight when the deadline expires. -/
 noncomputable def neff (T B : ℕ → ℝ) (D : ℝ) (n : ℕ) : ℕ :=
   Nat.findGreatest (fitsIn T B D) n
 
@@ -310,10 +315,10 @@ theorem fitsIn_of_cheap {t : ℝ} (hT : ∀ j, T j ≤ t) (hkt : (k : ℝ) * t �
 
 /-- **Cheap rejection realizes any target count within the cap**: for any
 target attempt count `k` within the cap and any positive deadline, there is a
-rejection latency `t > 0` below which every failure profile admits at least
-`k` attempts. Backoff is pinned to zero here; with a nonzero schedule timing
-does bound attempts (`neff_linear_backoff_le`, `neff_geom_backoff_le`), and
-`neff_le` caps them at `n` regardless. -/
+rejection latency `t > 0` below which every failure profile with latencies at
+most `t` admits at least `k` attempts. Backoff is pinned to zero here; with a
+nonzero schedule timing does bound attempts (`neff_linear_backoff_le`,
+`neff_geom_backoff_le`), and `neff_le` caps them at `n` regardless. -/
 theorem neff_ge_of_fast (hkn : k ≤ n) (hD : 0 < D) :
     ∃ t, 0 < t ∧ ∀ T : ℕ → ℝ, (∀ j, T j ≤ t) →
       k ≤ neff T (fun _ => 0) D n := by

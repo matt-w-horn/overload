@@ -107,33 +107,37 @@ theorem thrashing_mpl_control :
   cappedLoop_no_congestedEq (by norm_num)
 
 /-- Work accounting for a thrashing window: 100 CPU units over the window,
-40 useful, 45 destroyed as paging overhead, 15 idle (I/O stalls). Paging
-is the waste channel *and* the supply degradation: the CPU the storm eats
-is the CPU that otherwise retires work. -/
-noncomputable def thrashingAcct : Accounting where
+with 45 destroyed as paging overhead, 15 idle (I/O stalls), and useful work
+`U` constrained by conservation `U + 45 + 15 = 100 * 1`. Paging is the waste
+channel *and* the supply degradation: the CPU the storm eats is the CPU that
+otherwise retires work. -/
+noncomputable def thrashingAcct (U : ℝ) (hU : 0 ≤ U)
+    (hcons : U + 45 + 15 = 100 * 1) : Accounting where
   capacity := 100
   time := 1
-  useful := 40
+  useful := U
   wasted := 45
   idle := 15
   capacity_pos := by norm_num
   time_pos := by norm_num
-  useful_nonneg := by norm_num
+  useful_nonneg := hU
   wasted_nonneg := by norm_num
   idle_nonneg := by norm_num
-  conserve := by norm_num
+  conserve := hcons
 
 /-- Paging waste prices the throughput cliff: with 45% of CPU spent paging
-and 15% idle waiting on the disk, useful throughput is capped at 55% of
-capacity less the idle share — 40, per `goodput_le_of_waste`. Each point of
-paging overhead is a point off the top, and stalling for the pager costs
-again. Disclosed: `thrashingAcct` is fully specified with closed numerals, so
-both the hypothesis and the conclusion evaluate to `G ≤ 40`; the symbolic
-decomposition in `goodput_le_of_waste` is what transfers. -/
-theorem thrashing_waste_caps_goodput {G : ℝ}
-    (huseful : G * thrashingAcct.time * 1 ≤ thrashingAcct.useful) :
-    G * 1 ≤ (1 - 45 / 100) * thrashingAcct.capacity
-      - thrashingAcct.idle / thrashingAcct.time :=
-  thrashingAcct.goodput_le_of_waste huseful (by unfold thrashingAcct; norm_num)
+and 15% idle waiting on the disk, any useful throughput `G` covered by the
+conserved useful work `U` (`G ≤ U` under `U + 45 + 15 = 100 * 1`) is capped at
+55% of capacity less the idle share — 40, per `goodput_le_of_waste`. Each point
+of paging overhead is a point off the top, and stalling for the pager costs
+again. -/
+theorem thrashing_waste_caps_goodput {G U : ℝ} (hU : 0 ≤ U)
+    (hcons : U + 45 + 15 = 100 * 1)
+    (huseful : G * (thrashingAcct U hU hcons).time * 1 ≤
+      (thrashingAcct U hU hcons).useful) :
+    G * 1 ≤ (1 - 45 / 100) * (thrashingAcct U hU hcons).capacity
+      - (thrashingAcct U hU hcons).idle / (thrashingAcct U hU hcons).time :=
+  (thrashingAcct U hU hcons).goodput_le_of_waste huseful
+    (by unfold thrashingAcct; norm_num)
 
 end Overload

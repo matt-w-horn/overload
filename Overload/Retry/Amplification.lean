@@ -51,10 +51,9 @@ One retry mechanism, i.i.d. per-attempt failure probability `p`, attempt cap
 Design note: `expAttempts` is *defined* as the sum, so it is total. The
 closed-form quotient is Mathlib's `geom_sum_eq` (hypothesis `p ≠ 1`, oriented
 `(pⁿ - 1)/(p - 1)` upstream), reached through `expAttempts_def`.
-The distributional facts (`sum_attemptWeight`, `sum_mul_attemptWeight`) are
-ring identities — true for every real `p` — because the weights telescope.
-Probability hypotheses (`0 ≤ p ≤ 1`) enter only for nonnegativity, bounds, and
-monotonicity.
+The distributional reading — `expAttempts` as the mean of a censored
+geometric attempt count — is in `AttemptDist.lean`. Probability hypotheses
+(`0 ≤ p ≤ 1`) enter only for nonnegativity, bounds, and monotonicity.
 -/
 
 @[expose] public section
@@ -84,87 +83,6 @@ theorem expAttempts_succ (p : ℝ) (n : ℕ) :
 theorem one_sub_mul_expAttempts (p : ℝ) (n : ℕ) :
     (1 - p) * expAttempts p n = 1 - p ^ n :=
   mul_neg_geom_sum p n
-
-/-!
-## The attempt-count distribution
-
-`attemptWeight p n j` is `P(K = j + 1)`, indexed by the number `j` of failed
-attempts before the final one. The mass is `pʲ(1-p)` while another attempt
-remains (`j + 1 < n`), `p^{n-1}` at the cap (the request stops there
-regardless of the final outcome), and `0` outside the support.
-Indexing by `j` rather than `k = j+1`
-avoids ℕ-subtraction throughout.
--/
-
-/-- `P(K = j + 1)` for the truncated-geometric attempt count. -/
-def attemptWeight (p : ℝ) (n j : ℕ) : ℝ :=
-  if j + 1 < n then p ^ j * (1 - p) else if j + 1 = n then p ^ j else 0
-
-/-- Below the cap the weight is the geometric step `pʲ(1-p)`. -/
-theorem attemptWeight_of_lt {p : ℝ} {n j : ℕ} (h : j + 1 < n) :
-    attemptWeight p n j = p ^ j * (1 - p) := by
-  unfold attemptWeight
-  rw [ite_eq_left h]
-
-/-- At the cap (`n = j + 1`), the final attempt (index `j = n - 1`) absorbs
-the whole tail: `p ^ j` (`p^{n-1}`). -/
-theorem attemptWeight_at_cap {p : ℝ} {j : ℕ} :
-    attemptWeight p (j + 1) j = p ^ j := by
-  unfold attemptWeight
-  rw [ite_eq_right (by omega), ite_eq_left rfl]
-
-/-- Outside the support the weight is zero — the definition's third branch,
-disclosed in the module docstring, as a kernel-checked fact. -/
-theorem attemptWeight_of_cap_lt {p : ℝ} {n j : ℕ} (h : n < j + 1) :
-    attemptWeight p n j = 0 := by
-  unfold attemptWeight
-  rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-
-/-- Pin of the off-support branch: attempt `6` (index `5`) carries no mass
-under a cap of `2`, at a failure probability that is otherwise
-unremarkable. -/
-theorem attemptWeight_of_cap_lt_pin : attemptWeight (1 / 2 : ℝ) 2 5 = 0 :=
-  attemptWeight_of_cap_lt (by norm_num)
-
-/-- The weights sum to `1`: a ring identity (telescoping), no `[0,1]`
-hypotheses needed. -/
-theorem sum_attemptWeight (p : ℝ) {n : ℕ} (hn : 1 ≤ n) :
-    ∑ j ∈ Finset.range n, attemptWeight p n j = 1 := by
-  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.one_le_iff_ne_zero.mp hn)
-  rw [Finset.sum_range_succ]
-  have hstep : ∀ j ∈ Finset.range m,
-      attemptWeight p (m + 1) j = p ^ j * (1 - p) := fun j hj =>
-    attemptWeight_of_lt (Nat.succ_lt_succ (Finset.mem_range.mp hj))
-  rw [attemptWeight_at_cap, Finset.sum_congr rfl hstep, ← Finset.sum_mul]
-  have h := one_sub_mul_expAttempts p m
-  unfold expAttempts at h
-  linear_combination h
-
-/-- The mean of the attempt-count distribution is `expAttempts`:
-`∑ (j+1) · P(K = j+1) = E[K]`. Again a ring identity. -/
-theorem sum_mul_attemptWeight (p : ℝ) {n : ℕ} (hn : 1 ≤ n) :
-    ∑ j ∈ Finset.range n, ((j : ℝ) + 1) * attemptWeight p n j
-      = expAttempts p n := by
-  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.one_le_iff_ne_zero.mp hn)
-  clear hn
-  induction m with
-  | zero => norm_num [attemptWeight, expAttempts]
-  | succ m ih =>
-    -- rewrite both the goal's sum and `ih`'s sum into the same shape
-    have hstep : ∀ j ∈ Finset.range (m + 1),
-        ((j : ℝ) + 1) * attemptWeight p (m + 2) j
-          = ((j : ℝ) + 1) * (p ^ j * (1 - p)) := fun j hj => by
-      rw [attemptWeight_of_lt (by have := Finset.mem_range.mp hj; omega)]
-    have hstep' : ∀ j ∈ Finset.range m,
-        ((j : ℝ) + 1) * attemptWeight p (m + 1) j
-          = ((j : ℝ) + 1) * (p ^ j * (1 - p)) := fun j hj => by
-      rw [attemptWeight_of_lt (by have := Finset.mem_range.mp hj; omega)]
-    rw [Finset.sum_range_succ, Finset.sum_congr rfl hstep, attemptWeight_at_cap,
-      Finset.sum_range_succ, expAttempts_succ, expAttempts_succ]
-    rw [Finset.sum_range_succ, Finset.sum_congr rfl hstep', attemptWeight_at_cap,
-      expAttempts_succ] at ih
-    push_cast
-    linear_combination ih
 
 /-!
 ## Bounds, monotonicity, and the `p → 1` limit

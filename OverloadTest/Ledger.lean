@@ -62,9 +62,6 @@ def bridgedLedger : List (Lean.Name × Lean.Name) :=
     -- `one_sub_mul_expAttempts` carries the same independent content
     -- (Mathlib's `mul_neg_geom_sum`) without the division.
     (`Overload.expAttempts, `Overload.one_sub_mul_expAttempts),
-    (`Overload.lfpIcc, `Overload.lfpIcc_eq_lfp_restrict),
-    (`Overload.gfpIcc, `Overload.gfpIcc_eq_gfp_restrict),
-    (`Overload.erlangB, `Overload.erlangB_eq_closed),
     (`Overload.propDiscipline, `Overload.propDiscipline_alloc_eq_sharedGoodput),
     -- `meanQueue`'s bridge is the tsum evaluation against Mathlib's geometric
     -- first moment (`meanQueue_eq`), not `meanWait_eq_of_little`, whose

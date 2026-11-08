@@ -174,7 +174,7 @@ theorem congestedEq_of_over (L : ClosedLoop) {Θ : ℝ}
     (hover : CongestedOnly L.lam Θ) : L.CongestedEq Θ := by
   have hA0 : (0 : ℝ) ≤ L.Amax := le_trans zero_le_one L.one_le_Amax
   have hab : (0 : ℝ) ≤ L.lam * L.Amax := mul_nonneg L.lam_nonneg hA0
-  have hmem := lfpIcc_mem_Icc (F := L.F) hab L.F_mapsTo
+  have hmem := lfpIcc_mem_Icc (f := L.F) hab L.F_mapsTo
   have hfix : L.F (lfpIcc L.F 0 (L.lam * L.Amax))
       = lfpIcc L.F 0 (L.lam * L.Amax) :=
     isFixedPt_lfpIcc hab L.F_monotoneOn_Icc L.F_mapsTo

@@ -3,6 +3,7 @@ module
 public import Overload.Basic -- shake: keep
 public import Mathlib.Algebra.Order.Archimedean.Real.Basic
 public import Mathlib.Order.FixedPoints
+public import Upstream.Order.FixedPointsIcc
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Interval.Basic
 import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
@@ -41,239 +42,35 @@ import Mathlib.Topology.Sheaves.Init
 # Monotone demand operators on an interval
 
 The closed-loop models of this library all take the form "demand is a monotone
-self-map `F` of a capacity interval `[a, b]`". This file is a bespoke
-Knaster–Tarski development for that situation, done directly with `sInf`/`sSup`
-on `ℝ` (conditional completeness) rather than through subtype lattice
-instances:
+self-map `F` of a capacity interval `[a, b]`". The extremal fixed points are
+`lfpIcc F a b` and `gfpIcc F a b` (`Upstream/Order/FixedPointsIcc.lean`, a
+copy of the parts of mathlib PR 42225 this library uses): the infimum of the
+prefixed points and the supremum of the postfixed points of `F` in `[a, b]`,
+which bracket every fixed point there once `F` is monotone on `[a, b]` and
+maps it into itself (`isFixedPt_lfpIcc` with `lfpIcc_le`, `isFixedPt_gfpIcc`
+with `le_gfpIcc`). `lfpIcc` is the *healthy* equilibrium, `gfpIcc` the
+*congested* one. That file also carries the bracketing iterates
+(`iterate_le_lfpIcc`, `gfpIcc_le_iterate`) and parameter monotonicity
+(`lfpIcc_le_lfpIcc`, `gfpIcc_le_gfpIcc`), the primitive the hysteresis results
+(`Hysteresis.lean`) sweep with. This file adds what the loop theorems need on
+top:
 
-* `lfpIcc F a b` / `gfpIcc F a b` — the least/greatest fixed points, which
-  bracket every fixed point in the interval. `lfpIcc` is the *healthy*
-  equilibrium, `gfpIcc` the *congested* one.
 * `BistableOn F a b` — the two differ. Metastability is lattice
   non-degeneracy. No crossing-counting or derivative is ever needed.
-* `lfpIcc_mono_of_le` / `gfpIcc_mono_of_le` — parameter monotonicity: a
-  pointwise-larger map has larger extremal fixed points, by
-  prefixed/postfixed-set inclusion. The primitive the hysteresis results
-  (`Hysteresis.lean`) sweep with.
 * `bistableOn_of_certificate` — a **two-point certificate**: one point pushed
   down (`F x ≤ x`), one pushed up (`y ≤ F y`), `x < y`, and the order gap
   follows. Checking two inequalities replaces solving for equilibria — but
   the order gap is all it gives. `exists_two_fixedPts_of_certificate` is the
   version that carries `MonotoneOn`/`MapsTo` and concludes about equilibria.
-* `iterate_le_lfpIcc` — iterates from the bottom never overshoot the healthy
-  equilibrium (safe ramp-up: convergence claims need continuity and are
-  deliberately not made here).
-* `lfpIcc_eq_lfp_restrict` / `gfpIcc_eq_gfp_restrict` — compatibility
-  bridges: on the subtype `Set.Icc a b` (a complete lattice once `a ≤ b`),
-  the bespoke construction coincides with Mathlib's `OrderHom.lfp`/`gfp` of
-  the restricted map. The fixed-point theorems are read off these bridges,
-  so Mathlib carries the Knaster–Tarski argument.
+* The basin lemmas: monotone iterates never cross a prefixed point from below
+  or a postfixed point from above.
 -/
 
 @[expose] public section
 
 namespace Overload
 
-/-- Points of `[a, b]` that `F` pushes (weakly) down. -/
-def prefixedPts (F : ℝ → ℝ) (a b : ℝ) : Set ℝ :=
-  {x | x ∈ Set.Icc a b ∧ F x ≤ x}
-
-/-- Points of `[a, b]` that `F` pushes (weakly) up. -/
-def postfixedPts (F : ℝ → ℝ) (a b : ℝ) : Set ℝ :=
-  {x | x ∈ Set.Icc a b ∧ x ≤ F x}
-
-/-- The infimum of the prefixed points of `F` on `[a, b]` — the healthy
-equilibrium once the side conditions hold: `isFixedPt_lfpIcc` needs
-`a ≤ b`, monotonicity, and `MapsTo` to make it a least fixed point. -/
-noncomputable def lfpIcc (F : ℝ → ℝ) (a b : ℝ) : ℝ := sInf (prefixedPts F a b)
-
-/-- The supremum of the postfixed points of `F` on `[a, b]` — the congested
-equilibrium once the side conditions hold: `isFixedPt_gfpIcc` needs
-`a ≤ b`, monotonicity, and `MapsTo` to make it a greatest fixed point. -/
-noncomputable def gfpIcc (F : ℝ → ℝ) (a b : ℝ) : ℝ := sSup (postfixedPts F a b)
-
 variable {F : ℝ → ℝ} {a b x y : ℝ}
-
-/-- The prefixed points are bounded below. -/
-theorem bddBelow_prefixedPts : BddBelow (prefixedPts F a b) :=
-  ⟨a, fun _x hx => hx.1.1⟩
-
-/-- The postfixed points are bounded above. -/
-theorem bddAbove_postfixedPts : BddAbove (postfixedPts F a b) :=
-  ⟨b, fun _x hx => hx.1.2⟩
-
-/-- The least fixed point sits below every prefixed (in particular, every
-fixed) point. No monotonicity needed. -/
-theorem lfpIcc_le_of_prefixed (hx : x ∈ Set.Icc a b) (hFx : F x ≤ x) :
-    lfpIcc F a b ≤ x :=
-  csInf_le bddBelow_prefixedPts ⟨hx, hFx⟩
-
-/-- The supremum of the postfixed points sits above every postfixed (in
-particular, every fixed) point. No monotonicity needed. -/
-theorem le_gfpIcc_of_postfixed (hx : x ∈ Set.Icc a b) (hxF : x ≤ F x) :
-    x ≤ gfpIcc F a b :=
-  le_csSup bddAbove_postfixedPts ⟨hx, hxF⟩
-
-/-- `lfpIcc` lies in `[a, b]` once `a ≤ b` and `F` maps the interval into
-itself. No monotonicity needed. -/
-theorem lfpIcc_mem_Icc (hab : a ≤ b)
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    lfpIcc F a b ∈ Set.Icc a b := by
-  have hb_mem : b ∈ Set.Icc a b := ⟨hab, le_rfl⟩
-  have hb : b ∈ prefixedPts F a b := ⟨hb_mem, (hf hb_mem).2⟩
-  exact ⟨le_csInf ⟨b, hb⟩ fun x hx => hx.1.1,
-    csInf_le bddBelow_prefixedPts hb⟩
-
-/-- `gfpIcc` lies in `[a, b]` once `a ≤ b` and `F` maps the interval into
-itself. No monotonicity needed. -/
-theorem gfpIcc_mem_Icc (hab : a ≤ b)
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    gfpIcc F a b ∈ Set.Icc a b := by
-  have ha_mem : a ∈ Set.Icc a b := ⟨le_rfl, hab⟩
-  have ha : a ∈ postfixedPts F a b := ⟨ha_mem, (hf ha_mem).1⟩
-  exact ⟨le_csSup bddAbove_postfixedPts ha,
-    csSup_le ⟨a, ha⟩ fun x hx => hx.1.2⟩
-
-/-!
-### Compatibility with Mathlib's lattice-theoretic Knaster–Tarski
-
-Once `a ≤ b`, the subtype `Set.Icc a b` is a complete lattice
-(`Set.Icc.completeLattice`), so Mathlib's `OrderHom.lfp`/`OrderHom.gfp` apply
-to the restricted map. The bespoke `lfpIcc`/`gfpIcc` exist because the loop
-theorems consume plain-`ℝ` statements with explicit hypotheses — the ambient
-line is not a complete lattice. Nothing diverges: on the subtype, the two
-constructions coincide. The fixed-point theorems `isFixedPt_lfpIcc`/
-`isFixedPt_gfpIcc` below are read off these bridges, so the Knaster–Tarski
-argument itself lives in Mathlib. Only the `sInf`/`sSup` bookkeeping that
-plain-`ℝ` statements need is proved here.
--/
-
-/-- The restriction of `F` to `[a, b]` as an order-hom on the subtype, from
-monotonicity and `MapsTo`. -/
-def restrictIcc (F : ℝ → ℝ) (a b : ℝ) (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    Set.Icc a b →o Set.Icc a b where
-  toFun x := ⟨F x, hf x.2⟩
-  monotone' x y hxy := Subtype.mk_le_mk.mpr (hm x.2 y.2 hxy)
-
-/-- **Bridge to Mathlib, least fixed point**: `lfpIcc` is `OrderHom.lfp` of
-the restricted map, read back through the coercion. (The `Fact` instance
-carries `a ≤ b`, which `Set.Icc.completeLattice` requires.) -/
-theorem lfpIcc_eq_lfp_restrict [inst : Fact (a ≤ b)]
-    (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    lfpIcc F a b = ↑(OrderHom.lfp (restrictIcc F a b hm hf)) := by
-  have hab : a ≤ b := inst.out
-  set F' := restrictIcc F a b hm hf
-  have hb_mem : b ∈ Set.Icc a b := ⟨hab, le_rfl⟩
-  have hSne : {x : Set.Icc a b | F' x ≤ x}.Nonempty :=
-    ⟨⟨b, hb_mem⟩, show F b ≤ b from (hf hb_mem).2⟩
-  have hcoe : ((↑) '' {x : Set.Icc a b | F' x ≤ x} : Set ℝ)
-      = prefixedPts F a b := by
-    ext z
-    constructor
-    · rintro ⟨y, hy, rfl⟩
-      exact ⟨y.2, hy⟩
-    · rintro ⟨hzmem, hFz⟩
-      exact ⟨⟨z, hzmem⟩, show F z ≤ z from hFz, rfl⟩
-  calc lfpIcc F a b
-      = sInf ((↑) '' {x : Set.Icc a b | F' x ≤ x}) := by rw [lfpIcc, hcoe]
-    _ = ↑(sInf {x : Set.Icc a b | F' x ≤ x}) :=
-        (Set.Icc.coe_sInf hab hSne).symm
-    _ = ↑(OrderHom.lfp F') := rfl
-
-/-- **Bridge to Mathlib, greatest fixed point**: `gfpIcc` is `OrderHom.gfp`
-of the restricted map. -/
-theorem gfpIcc_eq_gfp_restrict [inst : Fact (a ≤ b)]
-    (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    gfpIcc F a b = ↑(OrderHom.gfp (restrictIcc F a b hm hf)) := by
-  have hab : a ≤ b := inst.out
-  set F' := restrictIcc F a b hm hf
-  have ha_mem : a ∈ Set.Icc a b := ⟨le_rfl, hab⟩
-  have hSne : {x : Set.Icc a b | x ≤ F' x}.Nonempty :=
-    ⟨⟨a, ha_mem⟩, show a ≤ F a from (hf ha_mem).1⟩
-  have hcoe : ((↑) '' {x : Set.Icc a b | x ≤ F' x} : Set ℝ)
-      = postfixedPts F a b := by
-    ext z
-    constructor
-    · rintro ⟨y, hy, rfl⟩
-      exact ⟨y.2, hy⟩
-    · rintro ⟨hzmem, hzF⟩
-      exact ⟨⟨z, hzmem⟩, show z ≤ F z from hzF, rfl⟩
-  calc gfpIcc F a b
-      = sSup ((↑) '' {x : Set.Icc a b | x ≤ F' x}) := by rw [gfpIcc, hcoe]
-    _ = ↑(sSup {x : Set.Icc a b | x ≤ F' x}) :=
-        (Set.Icc.coe_sSup hab hSne).symm
-    _ = ↑(OrderHom.gfp F') := rfl
-
-/-- **Knaster–Tarski, least fixed point.** A monotone self-map of `[a, b]` has
-`lfpIcc` as a genuine fixed point — Mathlib's `OrderHom.isFixedPt_lfp`, read
-through the compatibility bridge. -/
-theorem isFixedPt_lfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    Function.IsFixedPt F (lfpIcc F a b) := by
-  have : Fact (a ≤ b) := ⟨hab⟩
-  rw [lfpIcc_eq_lfp_restrict hm hf]
-  exact congrArg Subtype.val (restrictIcc F a b hm hf).isFixedPt_lfp
-
-/-- **Knaster–Tarski, greatest fixed point.** Mathlib's
-`OrderHom.isFixedPt_gfp`, read through the compatibility bridge. -/
-theorem isFixedPt_gfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    Function.IsFixedPt F (gfpIcc F a b) := by
-  have : Fact (a ≤ b) := ⟨hab⟩
-  rw [gfpIcc_eq_gfp_restrict hm hf]
-  exact congrArg Subtype.val (restrictIcc F a b hm hf).isFixedPt_gfp
-
-/-- The lower half of the bracket: a fixed point in `[a, b]` sits at or
-above `lfpIcc`. The upper half is `isFixedPt_le_gfpIcc`. -/
-theorem lfpIcc_le_isFixedPt (hx : x ∈ Set.Icc a b)
-    (h : Function.IsFixedPt F x) : lfpIcc F a b ≤ x :=
-  lfpIcc_le_of_prefixed hx h.le
-
-/-- The upper half of the bracket: a fixed point in `[a, b]` sits below
-`gfpIcc`. -/
-theorem isFixedPt_le_gfpIcc (hx : x ∈ Set.Icc a b)
-    (h : Function.IsFixedPt F x) : x ≤ gfpIcc F a b :=
-  le_gfpIcc_of_postfixed hx h.ge
-
-/-- For a monotone self-map of `[a, b]`, the healthy equilibrium sits below
-the congested one: `lfpIcc ≤ gfpIcc`. -/
-theorem lfpIcc_le_gfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    lfpIcc F a b ≤ gfpIcc F a b :=
-  lfpIcc_le_isFixedPt (gfpIcc_mem_Icc hab hf) (isFixedPt_gfpIcc hab hm hf)
-
-/-- **Parameter monotonicity, least fixed point**: a pointwise-larger map has
-a larger least fixed point. Every point the larger map pushes down is pushed
-down by the smaller one too — prefixed-set inclusion — so no monotonicity of
-either map is needed; `G` needs `MapsTo` only to keep its prefixed set
-nonempty. This is the primitive behind equilibrium sweeps: as a parameter
-(offered load) rises, both extremal equilibria move up, never down. -/
-theorem lfpIcc_mono_of_le {G : ℝ → ℝ} (hab : a ≤ b)
-    (hFG : ∀ x ∈ Set.Icc a b, F x ≤ G x)
-    (hfG : Set.MapsTo G (Set.Icc a b) (Set.Icc a b)) :
-    lfpIcc F a b ≤ lfpIcc G a b := by
-  have hb_mem : b ∈ Set.Icc a b := ⟨hab, le_rfl⟩
-  have hne : (prefixedPts G a b).Nonempty := ⟨b, hb_mem, (hfG hb_mem).2⟩
-  refine csInf_le_csInf bddBelow_prefixedPts hne ?_
-  rintro x ⟨hx, hGx⟩
-  exact ⟨hx, (hFG x hx).trans hGx⟩
-
-/-- **Parameter monotonicity, greatest fixed point**: a pointwise-larger map
-has a larger greatest fixed point, by postfixed-set inclusion. Dual
-asymmetry: here it is `F`, the smaller map, that needs `MapsTo` — its
-postfixed set is the one that must be nonempty. -/
-theorem gfpIcc_mono_of_le {G : ℝ → ℝ} (hab : a ≤ b)
-    (hFG : ∀ x ∈ Set.Icc a b, F x ≤ G x)
-    (hfF : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
-    gfpIcc F a b ≤ gfpIcc G a b := by
-  have ha_mem : a ∈ Set.Icc a b := ⟨le_rfl, hab⟩
-  have hne : (postfixedPts F a b).Nonempty := ⟨a, ha_mem, (hfF ha_mem).1⟩
-  refine csSup_le_csSup bddAbove_postfixedPts hne ?_
-  rintro x ⟨hx, hxF⟩
-  exact ⟨hx, hxF.trans (hFG x hx)⟩
 
 /-- A prefixed point truncates the interval from above invariantly. -/
 theorem mapsTo_Icc_of_prefixed (hm : MonotoneOn F (Set.Icc a b))
@@ -333,8 +130,7 @@ conditions and concludes about genuine fixed points. -/
 theorem bistableOn_of_certificate (hx : x ∈ Set.Icc a b) (hFx : F x ≤ x)
     (hy : y ∈ Set.Icc a b) (hyF : y ≤ F y) (hxy : x < y) :
     BistableOn F a b :=
-  lt_of_le_of_lt (lfpIcc_le_of_prefixed hx hFx)
-    (lt_of_lt_of_le hxy (le_gfpIcc_of_postfixed hy hyF))
+  lt_of_le_of_lt (lfpIcc_le hx hFx) (lt_of_lt_of_le hxy (le_gfpIcc hy hyF))
 
 /-- The certificate upgraded to two genuine, separated fixed points. -/
 theorem exists_two_fixedPts_of_certificate (hm : MonotoneOn F (Set.Icc a b))
@@ -346,36 +142,6 @@ theorem exists_two_fixedPts_of_certificate (hm : MonotoneOn F (Set.Icc a b))
   obtain ⟨z₂, hz₂mem, hz₂⟩ := exists_fixedPt_ge hm hf hy hyF
   exact ⟨z₁, z₂, hz₁, hz₂, hz₁mem.2,
     hz₂mem.1, lt_of_le_of_lt hz₁mem.2 (lt_of_lt_of_le hxy hz₂mem.1)⟩
-
-/-- Ramping up from the bottom never overshoots the healthy equilibrium.
-(Convergence *to* it needs continuity and is deliberately not claimed.) -/
-theorem iterate_le_lfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (n : ℕ) :
-    F^[n] a ≤ lfpIcc F a b := by
-  induction n with
-  | zero => simpa using (lfpIcc_mem_Icc hab hf).1
-  | succ n ih =>
-    rw [Function.iterate_succ_apply']
-    have hmem := hf.iterate n ⟨le_rfl, hab⟩
-    calc F (F^[n] a) ≤ F (lfpIcc F a b) :=
-          hm hmem (lfpIcc_mem_Icc hab hf) ih
-      _ = lfpIcc F a b := isFixedPt_lfpIcc hab hm hf
-
-/-- Draining from the top never undershoots the congested equilibrium —
-the downward mirror of `iterate_le_lfpIcc`: iterates started at the
-ceiling stay at or above `gfpIcc`. (Convergence *to* it needs continuity
-and is deliberately not claimed.) -/
-theorem gfpIcc_le_iterate (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (n : ℕ) :
-    gfpIcc F a b ≤ F^[n] b := by
-  induction n with
-  | zero => simpa using (gfpIcc_mem_Icc hab hf).2
-  | succ n ih =>
-    rw [Function.iterate_succ_apply']
-    have hmem := hf.iterate n ⟨hab, le_rfl⟩
-    calc gfpIcc F a b = F (gfpIcc F a b) :=
-          (isFixedPt_gfpIcc hab hm hf).symm
-      _ ≤ F (F^[n] b) := hm (gfpIcc_mem_Icc hab hf) hmem ih
 
 /-!
 ## Basins: the middle fixed point as the trigger-size threshold

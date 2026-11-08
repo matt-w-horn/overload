@@ -76,6 +76,14 @@ implementation would have to be wrong in the same way at the same time
 to hide it. That argument is Leonardo de Moura's, in
 [Who Watches the Provers?](https://leodemoura.github.io/blog/2026-3-16-who-watches-the-provers/)
 
+## Upstream
+
+`Upstream/` holds verbatim copies of this library's open mathlib pull
+requests, at their mathlib paths, so the library uses the mathlib
+formulations before a release carries them. When one merges, its file is
+deleted and the import changes to `Mathlib.`; `Upstream/README.md` lists
+the pull requests.
+
 ## History
 
 The library was developed privately before release; this repository's

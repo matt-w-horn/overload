@@ -7,8 +7,8 @@ does, before load couples to failure. Nothing here imports the loop.
 - `Amplification.lean`: the truncated-geometric expected attempt count
   `expAttempts`, defined as the finite geometric sum so that it is total.
   The `(1-p^n)/(1-p)` quotient is a lemma.
-- `AttemptDist.lean`: the attempt-count masses form a probability
-  distribution on `Fin n`, so `expAttempts` is a genuine expectation.
+- `AttemptDist.lean`: the attempt count as a censored geometric measure on
+  `ℕ`, whose mean is `expAttempts`, so `expAttempts` is a genuine expectation.
 - `Deadline.lean`: how many attempts fit a deadline (`neff`, via
   `Nat.findGreatest`), plus the re-armed vs remaining-deadline distinction
   and the constant, linear, and geometric backoff levers.

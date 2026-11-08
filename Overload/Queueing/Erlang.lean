@@ -2,6 +2,7 @@ module
 
 public import Overload.Basic -- shake: keep
 public import Overload.Loop.ClosedLoop
+public import Upstream.Analysis.SpecialFunctions.ErlangB
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Interval.Basic
 import Mathlib.Algebra.Order.Ring.Star
@@ -39,29 +40,24 @@ import Mathlib.Tactic.ReduceModChar
 import Mathlib.Topology.Sheaves.Init
 
 /-!
-# The Erlang loss law: stable recursion, closed form, and the blocking
-kernel
+# The Erlang loss law as a blocking kernel
 
 The loss model: `c` servers, no queue, offered load `a`. An arrival
 finding all servers busy is blocked. The blocking probability is Erlang's
-`B(c, a)`, and practitioners compute it by the numerically stable
-recursion
+`B(c, a)`, `Real.erlangB a c` (`Upstream/Analysis/SpecialFunctions/ErlangB.lean`,
+a copy of the parts of mathlib PR 42382 this library uses). It is defined by the numerically
+stable recursion
 
 `B(0) = 1`,  `B(c+1) = a·B(c) / (c + 1 + a·B(c))`
 
-because the textbook closed form `(a^c/c!) / ∑_{j≤c} a^j/j!` overflows in
-floating point long before real trunk counts. This file takes the
-recursion as the definition (`erlangB`) and proves:
+that practitioners compute, because the textbook closed form
+`(a^c/c!) / ∑_{j≤c} a^j/j!` overflows in floating point long before real
+trunk counts. That file proves that blocking is a probability
+(`Real.erlangB_mem_Icc`), antitone in the server count
+(`Real.erlangB_antitone`, through `Real.erlangB_carried_le`: carried load
+`a·(1 − B)` never exceeds the server count) and monotone in offered load
+(`Real.erlangB_mono_load`). This file reads it as a loop instance:
 
-* `erlangB_eq_closed` — **the recursion equals the closed form**: the
-  identity that makes the stable computation trustworthy.
-* `erlangB_mem_Icc` — blocking is a probability, for every load and
-  server count.
-* `erlangB_antitone_servers` — adding servers never increases blocking.
-  The load-bearing step is `erlangB_carried_le`: **carried load
-  `a·(1 − B)` never exceeds the server count** — no more than `c`
-  servers' worth of work can be carried by `c` servers.
-* `erlangB_mono_load` — more offered load never decreases blocking.
 * `erlangKernel` / `erlangLoop` — the blocking probability read at
   attempt rate `Λ` over per-server rate `μ` is an admissible load-coupled
   failure kernel (in `[0,1]`, monotone), so retries against a loss system
@@ -72,162 +68,18 @@ recursion as the definition (`erlangB`) and proves:
 Modeling status, same discipline as `mm1Kernel`: the *queueing* reading —
 that `B` is the stationary blocking probability of the M/M/c/c system
 seen by Poisson arrivals — lives in this docstring, not in a theorem.
-What is proved is the arithmetic: recursion–closed-form equality, bounds,
-monotonicities, and kernel admissibility. Erlang C (queueing rather than
+What is proved is the arithmetic: bounds, monotonicities, and kernel
+admissibility. Mathlib PR 42382 also proves the recursion equal to the
+closed form; the copy here leaves that proof out, because nothing in this
+library consumes it. Erlang C (queueing rather than
 loss) and M/M/1/K are not attempted.
 -/
 
 @[expose] public section
 
+open Real
+
 namespace Overload
-
-/-- Erlang's blocking probability for offered load `a`, by the
-numerically stable recursion — the definition practitioners actually
-compute. Total on all of `ℝ`; the results assume `0 ≤ a` (the denominator
-is then at least `c + 1 > 0`). -/
-noncomputable def erlangB (a : ℝ) : ℕ → ℝ
-  | 0 => 1
-  | c + 1 => a * erlangB a c / ((c : ℝ) + 1 + a * erlangB a c)
-
-/-- With no servers, every arrival is blocked. -/
-@[simp] theorem erlangB_zero (a : ℝ) : erlangB a 0 = 1 := rfl
-
-/-- The recursion step, as an eval lemma at the definition. -/
-theorem erlangB_succ (a : ℝ) (c : ℕ) :
-    erlangB a (c + 1)
-      = a * erlangB a c / ((c : ℝ) + 1 + a * erlangB a c) := rfl
-
-/-- Blocking is nonnegative. -/
-theorem erlangB_nonneg {a : ℝ} (ha : 0 ≤ a) : ∀ c : ℕ, 0 ≤ erlangB a c
-  | 0 => zero_le_one
-  | c + 1 => by
-    have hB0 := erlangB_nonneg ha c
-    have hx0 : 0 ≤ a * erlangB a c := mul_nonneg ha hB0
-    rw [erlangB_succ]
-    exact div_nonneg hx0
-      (le_of_lt (add_pos_of_pos_of_nonneg (by positivity) hx0))
-
-/-- Blocking never exceeds one. -/
-theorem erlangB_le_one {a : ℝ} (ha : 0 ≤ a) : ∀ c : ℕ, erlangB a c ≤ 1
-  | 0 => le_rfl
-  | c + 1 => by
-    have hB0 := erlangB_nonneg ha c
-    have hx0 : 0 ≤ a * erlangB a c := mul_nonneg ha hB0
-    have hD : (0 : ℝ) < (c : ℝ) + 1 + a * erlangB a c :=
-      add_pos_of_pos_of_nonneg (by positivity) hx0
-    rw [erlangB_succ, div_le_one hD]
-    linarith
-
-/-- Blocking is a probability. -/
-theorem erlangB_mem_Icc {a : ℝ} (ha : 0 ≤ a) (c : ℕ) :
-    erlangB a c ∈ Set.Icc (0 : ℝ) 1 :=
-  ⟨erlangB_nonneg ha c, erlangB_le_one ha c⟩
-
-/-- **Carried load never exceeds the server count**: `a·(1 − B(c)) ≤ c`.
-The conservation fact behind server-antitonicity — `c` servers cannot
-carry more than `c` servers' worth of offered work. -/
-theorem erlangB_carried_le {a : ℝ} (ha : 0 ≤ a) :
-    ∀ c : ℕ, a * (1 - erlangB a c) ≤ c
-  | 0 => by simp
-  | c + 1 => by
-    have ih := erlangB_carried_le ha c
-    have hB0 := erlangB_nonneg ha c
-    have hD : (0 : ℝ) < (c : ℝ) + 1 + a * erlangB a c :=
-      add_pos_of_pos_of_nonneg (by positivity)
-        (mul_nonneg ha hB0)
-    have key : a * (1 - a * erlangB a c / ((c : ℝ) + 1 + a * erlangB a c))
-        = a * ((c : ℝ) + 1) / ((c : ℝ) + 1 + a * erlangB a c) := by
-      field_simp
-      ring
-    rw [erlangB_succ, key, div_le_iff₀ hD]
-    have haD : a ≤ (c : ℝ) + 1 + a * erlangB a c := by linarith
-    have hc1 : (0 : ℝ) ≤ (c : ℝ) + 1 := by positivity
-    push_cast
-    linarith [mul_le_mul_of_nonneg_left haD hc1]
-
-/-- Adding a server never increases blocking, one step. -/
-theorem erlangB_succ_le {a : ℝ} (ha : 0 ≤ a) (c : ℕ) :
-    erlangB a (c + 1) ≤ erlangB a c := by
-  have hB0 := erlangB_nonneg ha c
-  have hD : (0 : ℝ) < (c : ℝ) + 1 + a * erlangB a c :=
-    add_pos_of_pos_of_nonneg (by positivity) (mul_nonneg ha hB0)
-  have haD : a ≤ (c : ℝ) + 1 + a * erlangB a c := by
-    have ih := erlangB_carried_le ha c
-    linarith
-  rw [erlangB_succ, div_le_iff₀ hD]
-  linarith [mul_nonneg hB0 (sub_nonneg.mpr haD)]
-
-/-- **Blocking is antitone in the server count.** -/
-theorem erlangB_antitone_servers {a : ℝ} (ha : 0 ≤ a) :
-    Antitone (erlangB a) :=
-  antitone_nat_of_succ_le (erlangB_succ_le ha)
-
-/-- **Blocking is monotone in offered load.** -/
-theorem erlangB_mono_load {a a' : ℝ} (ha : 0 ≤ a) (haa' : a ≤ a') :
-    ∀ c : ℕ, erlangB a c ≤ erlangB a' c
-  | 0 => le_rfl
-  | c + 1 => by
-    have ih := erlangB_mono_load ha haa' c
-    have hB0 := erlangB_nonneg ha c
-    have hx : a * erlangB a c ≤ a' * erlangB a' c :=
-      mul_le_mul haa' ih hB0 (ha.trans haa')
-    have hx0 : 0 ≤ a * erlangB a c := mul_nonneg ha hB0
-    have h1 : (0 : ℝ) < (c : ℝ) + 1 + a * erlangB a c :=
-      add_pos_of_pos_of_nonneg (by positivity) hx0
-    have h2 : (0 : ℝ) < (c : ℝ) + 1 + a' * erlangB a' c :=
-      add_pos_of_pos_of_nonneg (by positivity) (hx0.trans hx)
-    rw [erlangB_succ, erlangB_succ, div_le_iff₀ h1, div_mul_eq_mul_div,
-      le_div_iff₀ h2]
-    have hc1 : (0 : ℝ) ≤ (c : ℝ) + 1 := by positivity
-    linarith [mul_le_mul_of_nonneg_right hx hc1]
-
-/-- The recursion multiplied against the normalizing sum telescopes to
-the top term — the division-free core of the closed-form identity. -/
-theorem erlangB_mul_sum {a : ℝ} (ha : 0 < a) (c : ℕ) :
-    erlangB a c * (∑ j ∈ Finset.range (c + 1), a ^ j / j.factorial)
-      = a ^ c / c.factorial := by
-  induction c with
-  | zero => norm_num [Finset.sum_range_one, Nat.factorial]
-  | succ c ih =>
-    have hB0 := erlangB_nonneg ha.le c
-    have hD : (0 : ℝ) < (c : ℝ) + 1 + a * erlangB a c :=
-      add_pos_of_pos_of_nonneg (by positivity)
-        (mul_nonneg ha.le hB0)
-    have hc0 : ((c.factorial : ℕ) : ℝ) ≠ 0 := by
-      exact_mod_cast c.factorial_pos.ne'
-    have hc1 : (c : ℝ) + 1 ≠ 0 := by positivity
-    have hfact : (((c + 1).factorial : ℕ) : ℝ)
-        = ((c : ℝ) + 1) * (c.factorial : ℝ) := by
-      push_cast [Nat.factorial_succ]
-      ring
-    have hT : a ^ (c + 1) / (((c + 1).factorial : ℕ) : ℝ) * ((c : ℝ) + 1)
-        = a * (a ^ c / ((c.factorial : ℕ) : ℝ)) := by
-      rw [hfact, pow_succ]
-      field_simp
-    rw [Finset.sum_range_succ, erlangB_succ, div_mul_eq_mul_div,
-      div_eq_iff hD.ne']
-    linear_combination a * ih - hT
-
-/-- **The stable recursion equals the textbook closed form** for
-nonnegative offered load (`0 ≤ a`): `B(c, a) = (a^c/c!) / ∑_{j≤c} a^j/j!`.
-The identity that makes computing by the recursion trustworthy — in
-machine arithmetic the naive closed form overflows long before real server
-counts, the recursion does not, and here they provably agree. -/
-theorem erlangB_eq_closed {a : ℝ} (ha : 0 ≤ a) (c : ℕ) :
-    erlangB a c
-      = a ^ c / c.factorial
-        / ∑ j ∈ Finset.range (c + 1), a ^ j / j.factorial := by
-  rcases ha.lt_or_eq with hpos | rfl
-  · have hS : (0 : ℝ) < ∑ j ∈ Finset.range (c + 1), a ^ j / j.factorial :=
-      Finset.sum_pos
-        (fun j _ => div_pos (pow_pos hpos j)
-          (by exact_mod_cast j.factorial_pos))
-        ⟨0, Finset.mem_range.mpr (Nat.succ_pos c)⟩
-    rw [eq_div_iff hS.ne']
-    exact erlangB_mul_sum hpos c
-  · cases c with
-    | zero => simp [erlangB_zero]
-    | succ n => simp [erlangB_succ, Finset.sum_range_succ']
 
 /-!
 ## The blocking kernel: retries against a loss system
@@ -274,7 +126,7 @@ theorem erlangLoop_no_congestedEq {lam μ : ℝ} {c m : ℕ} {Θ : ℝ}
 server blocks no more than none does, and `erlangB_zero` says none blocks
 everything. -/
 theorem erlangB_antitone_servers_one : erlangB 1 1 ≤ 1 :=
-  (erlangB_antitone_servers zero_le_one (Nat.zero_le 1)).trans
+  (erlangB_antitone zero_le_one (Nat.zero_le 1)).trans
     (erlangB_zero 1).le
 
 /-- Numeric regression on the attempt-cap clamp over a loss system: at load
@@ -287,9 +139,7 @@ theorem erlangLoop_no_congestedEq_pin :
 
 /-- Numeric regression, doubling as the textbook sanity check: two servers
 at offered load `2` block `2/5`. The proof unwinds `erlangB_succ` twice —
-the only pin exercising the recursion past its first step. Since
-`erlangB_eq_closed` matches the recursion to the closed form at every
-point, this constant also certifies the closed form's value. -/
+the only pin exercising the recursion past its first step. -/
 theorem erlangB_two_two : erlangB 2 2 = 2 / 5 := by
   change erlangB 2 (0 + 1 + 1) = 2 / 5
   rw [erlangB_succ, erlangB_succ]

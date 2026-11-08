@@ -9,5 +9,5 @@ The classical queueing inputs, stated at the interface the loop consumes.
   sojourn-tail kernel. The utilization law `L = ρ/(1-ρ)` comes from
   balance equations with uniqueness, and `W = 1/(μ-λ)` comes through the
   documented Little bridge.
-- `Erlang.lean`: the Erlang-B loss law. The stable recursion equals the
-  closed form, and the blocking kernel is a loop instance.
+- `Erlang.lean`: the Erlang-B blocking kernel as a loop instance, over
+  `Real.erlangB` from `Upstream/Analysis/SpecialFunctions/ErlangB.lean`.

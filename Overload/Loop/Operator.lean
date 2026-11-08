@@ -72,41 +72,46 @@ namespace Overload
 
 variable {F : ℝ → ℝ} {a b x y : ℝ}
 
-/-- A prefixed point truncates the interval from above invariantly. -/
-theorem mapsTo_Icc_of_prefixed (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hx : x ∈ Set.Icc a b)
-    (hFx : F x ≤ x) : Set.MapsTo F (Set.Icc a x) (Set.Icc a x) := by
-  intro z hz
-  have hz' : z ∈ Set.Icc a b := ⟨hz.1, le_trans hz.2 hx.2⟩
-  exact ⟨(hf hz').1, le_trans (hm hz' hx hz.2) hFx⟩
-
-/-- A postfixed point truncates the interval from below invariantly. -/
-theorem mapsTo_Icc_of_postfixed (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hy : y ∈ Set.Icc a b)
-    (hyF : y ≤ F y) : Set.MapsTo F (Set.Icc y b) (Set.Icc y b) := by
-  intro z hz
-  have hz' : z ∈ Set.Icc a b := ⟨le_trans hy.1 hz.1, hz.2⟩
-  exact ⟨le_trans hyF (hm hy hz' hz.1), (hf hz').2⟩
-
 /-- For a monotone self-map of `[a, b]`, a fixed point exists in `[a, x]`
-for every prefixed point `x ∈ [a, b]`: at or below the prefixed point,
-without leaving the interval. -/
+for every prefixed point `x ∈ [a, b]`: the least fixed point `lfpIcc F a b`
+itself lies at or below `x` (`lfpIcc_le`). -/
 theorem exists_fixedPt_le (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hx : x ∈ Set.Icc a b)
-    (hFx : F x ≤ x) : ∃ z ∈ Set.Icc a x, Function.IsFixedPt F z := by
-  have hsub : Set.Icc a x ⊆ Set.Icc a b := Set.Icc_subset_Icc_right hx.2
-  have hm' : MonotoneOn F (Set.Icc a x) := hm.mono hsub
-  have hf' := mapsTo_Icc_of_prefixed hm hf hx hFx
-  exact ⟨lfpIcc F a x, lfpIcc_mem_Icc hx.1 hf', isFixedPt_lfpIcc hx.1 hm' hf'⟩
+    (hFx : F x ≤ x) : ∃ z ∈ Set.Icc a x, Function.IsFixedPt F z :=
+  ⟨lfpIcc F a b, ⟨(lfpIcc_mem_Icc (hx.1.trans hx.2) hf).1, lfpIcc_le hx hFx⟩,
+    isFixedPt_lfpIcc (hx.1.trans hx.2) hm hf⟩
 
-/-- A fixed point exists above every postfixed point. -/
+/-- A fixed point exists above every postfixed point: the greatest fixed point
+`gfpIcc F a b` itself lies at or above it (`le_gfpIcc`). -/
 theorem exists_fixedPt_ge (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) (hy : y ∈ Set.Icc a b)
-    (hyF : y ≤ F y) : ∃ z ∈ Set.Icc y b, Function.IsFixedPt F z := by
-  have hsub : Set.Icc y b ⊆ Set.Icc a b := Set.Icc_subset_Icc_left hy.1
-  have hm' : MonotoneOn F (Set.Icc y b) := hm.mono hsub
-  have hf' := mapsTo_Icc_of_postfixed hm hf hy hyF
-  exact ⟨gfpIcc F y b, gfpIcc_mem_Icc hy.2 hf', isFixedPt_gfpIcc hy.2 hm' hf'⟩
+    (hyF : y ≤ F y) : ∃ z ∈ Set.Icc y b, Function.IsFixedPt F z :=
+  ⟨gfpIcc F a b, ⟨le_gfpIcc hy hyF, (gfpIcc_mem_Icc (hy.1.trans hy.2) hf).2⟩,
+    isFixedPt_gfpIcc (hy.1.trans hy.2) hm hf⟩
+
+/-- **Ceiling independence of the healthy equilibrium.** `lfpIcc F a b₁` is
+at most `lfpIcc G a b₂` whenever `F ≤ G` on `[a, ∞)` and each ceiling is a
+prefixed point of its own map. The two ceilings may differ, so two loops can
+be compared on their own envelopes. No monotonicity of `F` or `G` is used: a
+prefixed point of `G` in `[a, b₂]` either lies in `[a, b₁]` or dominates
+`b₁`, and `b₁` is itself a prefixed point of `F`. -/
+theorem lfpIcc_le_lfpIcc_of_le {G : ℝ → ℝ} {b₁ b₂ : ℝ} (hab₁ : a ≤ b₁)
+    (hb₁ : F b₁ ≤ b₁) (hab₂ : a ≤ b₂) (hb₂ : G b₂ ≤ b₂)
+    (hFG : ∀ x, a ≤ x → F x ≤ G x) : lfpIcc F a b₁ ≤ lfpIcc G a b₂ := by
+  refine le_csInf ⟨b₂, ⟨hab₂, le_rfl⟩, hb₂⟩ fun y hy => ?_
+  rcases le_total y b₁ with hyb | hby
+  · exact lfpIcc_le ⟨hy.1.1, hyb⟩ ((hFG y hy.1.1).trans hy.2)
+  · exact (lfpIcc_le ⟨hab₁, le_rfl⟩ hb₁).trans hby
+
+/-- **Ceiling monotonicity of the congested equilibrium.** Raising the ceiling
+and the map together raises `gfpIcc`: the postfixed points of `F` in
+`[a, b₁]` are postfixed points of `G` in `[a, b₂]`. No monotonicity of `F`
+or `G` is used. -/
+theorem gfpIcc_le_gfpIcc_of_le {G : ℝ → ℝ} {b₁ b₂ : ℝ} (hab₁ : a ≤ b₁)
+    (hb : b₁ ≤ b₂) (ha : a ≤ F a) (hFG : ∀ x, a ≤ x → F x ≤ G x) :
+    gfpIcc F a b₁ ≤ gfpIcc G a b₂ :=
+  csSup_le_csSup ⟨b₂, fun _ hy => hy.1.2⟩ ⟨a, ⟨le_rfl, hab₁⟩, ha⟩
+    fun y hy => ⟨⟨hy.1.1, hy.1.2.trans hb⟩, hy.2.trans (hFG y hy.1.1)⟩
 
 /-- Bistability as an order gap: `lfpIcc < gfpIcc`. Read it together with the
 side conditions: for a *monotone self-map* of `[a, b]` the two values are

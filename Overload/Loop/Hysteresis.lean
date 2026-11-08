@@ -44,8 +44,9 @@ core of that story, with no dynamics beyond monotone iteration:
 * `ClosedLoop.withLam` — demand-level surgery: the same mechanism `(g, h)`
   swept across offered loads.
 * `lfpIcc_mono_lam` / `gfpIcc_mono_lam` — **equilibria move monotonically in
-  offered load** (via `lfpIcc_le_lfpIcc`/`gfpIcc_le_gfpIcc`): raising `λ`
-  never lowers either extremal equilibrium.
+  offered load** (via `lfpIcc_le_lfpIcc_of_le`/`gfpIcc_le_gfpIcc_of_le`):
+  raising `λ` never lowers either extremal equilibrium, each loop read on
+  its own envelope.
 * `congestedEq_mono_lam` / `not_congestedEq_of_le` — **the congested set is
   an up-set in `λ`**: collapse persists under rising load, and safety at a
   high load certifies every lower load. `congestionEdge` names the least
@@ -87,13 +88,6 @@ namespace ClosedLoop
 
 variable (L : ClosedLoop)
 
-/-- The invariance interval, generalized endpoint: any ceiling at or above
-the demand envelope `λ·Amax` is invariant (`F_mapsTo` is the tight case).
-Two-loop comparisons need a *common* interval, which this supplies. -/
-theorem F_mapsTo_of_le {b : ℝ} (hb : L.lam * L.Amax ≤ b) :
-    Set.MapsTo L.F (Set.Icc 0 b) (Set.Icc 0 b) :=
-  fun _x hx => ⟨L.F_nonneg hx.1, (L.F_le hx.1).trans hb⟩
-
 /-- Demand-level surgery: the same mechanism — kernel and response — at a
 different offered load. The instrument for sweeping `λ` while holding the
 system fixed. -/
@@ -128,29 +122,29 @@ theorem F_le_withLam_F {lam' : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam')
     le_trans zero_le_one (L.h_one_le _ (L.g_mem x hx))
   exact mul_le_mul_of_nonneg_right hle hh
 
-/-- **Equilibria move monotonically in offered load, healthy side**: on a
-common interval containing both demand envelopes, the least fixed point at
-the higher load dominates the one at the lower load. -/
-theorem lfpIcc_mono_lam {lam' b : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam')
-    (hb : lam' * L.Amax ≤ b) :
-    lfpIcc L.F 0 b ≤ lfpIcc (L.withLam lam' hlam').F 0 b := by
+/-- **Equilibria move monotonically in offered load, healthy side**: each
+loop read on its own envelope `[0, λ·Amax]`, the least fixed point at the
+higher load dominates the one at the lower load. No common ceiling is
+chosen (`lfpIcc_le_lfpIcc_of_le`). -/
+theorem lfpIcc_mono_lam {lam' : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam') :
+    lfpIcc L.F 0 (L.lam * L.Amax)
+      ≤ lfpIcc (L.withLam lam' hlam').F 0 (lam' * L.Amax) :=
   have hA0 : (0 : ℝ) ≤ L.Amax := zero_le_one.trans L.one_le_Amax
-  have hb0 : (0 : ℝ) ≤ b := (mul_nonneg hlam' hA0).trans hb
-  exact lfpIcc_le_lfpIcc hb0 ((L.withLam lam' hlam').F_mapsTo_of_le hb)
-    (fun x hx => L.F_le_withLam_F hlam' hle hx.1)
+  lfpIcc_le_lfpIcc_of_le (mul_nonneg L.lam_nonneg hA0)
+    (L.F_le (mul_nonneg L.lam_nonneg hA0)) (mul_nonneg hlam' hA0)
+    ((L.withLam lam' hlam').F_le (mul_nonneg hlam' hA0))
+    fun _x hx => L.F_le_withLam_F hlam' hle hx
 
-/-- **Equilibria move monotonically in offered load, congested side**: the
-greatest fixed point at the higher load dominates the one at the lower
-load. -/
-theorem gfpIcc_mono_lam {lam' b : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam')
-    (hb : lam' * L.Amax ≤ b) :
-    gfpIcc L.F 0 b ≤ gfpIcc (L.withLam lam' hlam').F 0 b := by
+/-- **Equilibria move monotonically in offered load, congested side**: each
+loop read on its own envelope, the greatest fixed point at the higher load
+dominates the one at the lower load (`gfpIcc_le_gfpIcc_of_le`). -/
+theorem gfpIcc_mono_lam {lam' : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam') :
+    gfpIcc L.F 0 (L.lam * L.Amax)
+      ≤ gfpIcc (L.withLam lam' hlam').F 0 (lam' * L.Amax) :=
   have hA0 : (0 : ℝ) ≤ L.Amax := zero_le_one.trans L.one_le_Amax
-  have hb0 : (0 : ℝ) ≤ b := (mul_nonneg hlam' hA0).trans hb
-  have hbL : L.lam * L.Amax ≤ b :=
-    le_trans (mul_le_mul_of_nonneg_right hle hA0) hb
-  exact gfpIcc_le_gfpIcc hb0 (L.F_mapsTo_of_le hbL)
-    (fun x hx => L.F_le_withLam_F hlam' hle hx.1)
+  gfpIcc_le_gfpIcc_of_le (mul_nonneg L.lam_nonneg hA0)
+    (mul_le_mul_of_nonneg_right hle hA0) (L.F_nonneg le_rfl)
+    fun _x hx => L.F_le_withLam_F hlam' hle hx
 
 /-- **The congested set is an up-set in offered load**: congestion at `λ`
 transfers to any higher load. The congested witness is postfixed under the
@@ -208,20 +202,18 @@ theorem le_congestionEdge {Θ : ℝ} :
 
 end ClosedLoop
 
-/-- Pin of the two load-monotonicity legs on a common envelope: raising the
-load from `1` to `2` against capacity `10` moves both extremal equilibria up,
-read on `[0, 8]`, the interval carrying both demand envelopes. -/
+/-- Pin of the two load-monotonicity legs: raising the load from `1` to `2`
+against capacity `10` moves both extremal equilibria up, each loop read on
+its own envelope (`[0, 4]` and `[0, 8]`). -/
 theorem equilibria_mono_lam_pin :
-    lfpIcc (stepLoop 1 10 4 (by norm_num) (by norm_num)).F 0 8
-        ≤ lfpIcc (stepLoop 2 10 4 (by norm_num) (by norm_num)).F 0 8 ∧
-      gfpIcc (stepLoop 1 10 4 (by norm_num) (by norm_num)).F 0 8
-        ≤ gfpIcc (stepLoop 2 10 4 (by norm_num) (by norm_num)).F 0 8 :=
+    lfpIcc (stepLoop 1 10 4 (by norm_num) (by norm_num)).F 0 (1 * 4)
+        ≤ lfpIcc (stepLoop 2 10 4 (by norm_num) (by norm_num)).F 0 (2 * 4) ∧
+      gfpIcc (stepLoop 1 10 4 (by norm_num) (by norm_num)).F 0 (1 * 4)
+        ≤ gfpIcc (stepLoop 2 10 4 (by norm_num) (by norm_num)).F 0 (2 * 4) :=
   ⟨(stepLoop 1 10 4 (by norm_num) (by norm_num)).lfpIcc_mono_lam (lam' := 2)
-      (by norm_num) (show (1 : ℝ) ≤ 2 by norm_num)
-      (show (2 : ℝ) * 4 ≤ 8 by norm_num),
+      (by norm_num) (show (1 : ℝ) ≤ 2 by norm_num),
     (stepLoop 1 10 4 (by norm_num) (by norm_num)).gfpIcc_mono_lam (lam' := 2)
-      (by norm_num) (show (1 : ℝ) ≤ 2 by norm_num)
-      (show (2 : ℝ) * 4 ≤ 8 by norm_num)⟩
+      (by norm_num) (show (1 : ℝ) ≤ 2 by norm_num)⟩
 
 /-- Pin of the down-set reading: the mechanism at load `2` is safe under
 threshold `10` because `2·4 = 8 < 10`, so the same mechanism at load `1` was

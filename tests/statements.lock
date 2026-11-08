@@ -157,9 +157,6 @@
   ∀ (L : Overload.ClosedLoop),
     Set.MapsTo L.F (Set.Icc 0 (L.lam * L.Amax)) (Set.Icc 0 (L.lam * L.Amax))
 
-#### Overload.ClosedLoop.F_mapsTo_of_le : theorem
-  ∀ (L : Overload.ClosedLoop) {b : ℝ}, L.lam * L.Amax ≤ b → Set.MapsTo L.F (Set.Icc 0 b) (Set.Icc 0 b)
-
 #### Overload.ClosedLoop.F_monotoneOn : theorem
   ∀ (L : Overload.ClosedLoop), MonotoneOn L.F (Set.Ici 0)
 
@@ -263,8 +260,8 @@
         ¬((Overload.stepLoop 1 5 4 ⋯ ⋯).withKernel g hg_mem hg_mono).CongestedEq 4
 
 #### Overload.ClosedLoop.gfpIcc_mono_lam : theorem
-  ∀ (L : Overload.ClosedLoop) {lam' b : ℝ} (hlam' : 0 ≤ lam'),
-    L.lam ≤ lam' → lam' * L.Amax ≤ b → gfpIcc L.F 0 b ≤ gfpIcc (L.withLam lam' hlam').F 0 b
+  ∀ (L : Overload.ClosedLoop) {lam' : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' → gfpIcc L.F 0 (L.lam * L.Amax) ≤ gfpIcc (L.withLam lam' hlam').F 0 (lam' * L.Amax)
 
 #### Overload.ClosedLoop.lam_le_F : theorem
   ∀ (L : Overload.ClosedLoop) {x : ℝ}, 0 ≤ x → L.lam ≤ L.F x
@@ -273,8 +270,8 @@
   ∀ (L : Overload.ClosedLoop) {Θ : ℝ}, Θ / L.Amax ≤ L.congestionEdge Θ
 
 #### Overload.ClosedLoop.lfpIcc_mono_lam : theorem
-  ∀ (L : Overload.ClosedLoop) {lam' b : ℝ} (hlam' : 0 ≤ lam'),
-    L.lam ≤ lam' → lam' * L.Amax ≤ b → lfpIcc L.F 0 b ≤ lfpIcc (L.withLam lam' hlam').F 0 b
+  ∀ (L : Overload.ClosedLoop) {lam' : ℝ} (hlam' : 0 ≤ lam'),
+    L.lam ≤ lam' → lfpIcc L.F 0 (L.lam * L.Amax) ≤ lfpIcc (L.withLam lam' hlam').F 0 (lam' * L.Amax)
 
 #### Overload.ClosedLoop.noSustaining_no_congestedEq : theorem
   ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {C : ℝ}, L.lam < C → ¬L.CongestedEq C
@@ -1272,8 +1269,10 @@
         ∀ (m : ℕ) {p : ℝ}, 0 ≤ p → Overload.eligibleResponse e m p ≤ Overload.eligibleResponse e' m p
 
 #### Overload.equilibria_mono_lam_pin : theorem
-  lfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤ lfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8 ∧
-    gfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤ gfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8
+  lfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 (1 * 4) ≤
+      lfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 (2 * 4) ∧
+    gfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 (1 * 4) ≤
+      gfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 (2 * 4)
 
 #### Overload.erlangB_antitone_servers_one : theorem
   Real.erlangB 1 1 ≤ 1
@@ -1507,6 +1506,10 @@
 #### Overload.gain_gt_one_repels_pin : theorem
   (∀ x ∈ Set.Icc (-1) 1, x < 0 → 2 * x < x) ∧ ∀ x ∈ Set.Icc (-1) 1, 0 < x → x < 2 * x
 
+#### Overload.gfpIcc_le_gfpIcc_of_le : theorem
+  ∀ {F : ℝ → ℝ} {a : ℝ} {G : ℝ → ℝ} {b₁ b₂ : ℝ},
+    a ≤ b₁ → b₁ ≤ b₂ → a ≤ F a → (∀ (x : ℝ), a ≤ x → F x ≤ G x) → gfpIcc F a b₁ ≤ gfpIcc G a b₂
+
 #### Overload.global_balance : theorem
   ∀ {lam mu : ℝ},
     mu ≠ 0 →
@@ -1724,6 +1727,11 @@
 #### Overload.le_neff : theorem
   ∀ {T B : ℕ → ℝ} {D : ℝ} {k n : ℕ}, k ≤ n → Overload.fitsIn T B D k → k ≤ Overload.neff T B D n
 
+#### Overload.lfpIcc_le_lfpIcc_of_le : theorem
+  ∀ {F : ℝ → ℝ} {a : ℝ} {G : ℝ → ℝ} {b₁ b₂ : ℝ},
+    a ≤ b₁ →
+      F b₁ ≤ b₁ → a ≤ b₂ → G b₂ ≤ b₂ → (∀ (x : ℝ), a ≤ x → F x ≤ G x) → lfpIcc F a b₁ ≤ lfpIcc G a b₂
+
 #### Overload.lifoSojourn : def
   ℝ
   value-hash a00b9350ae2c0b96
@@ -1742,18 +1750,6 @@
 
 #### Overload.looseBudgetLoop_safe : theorem
   ¬Overload.looseBudgetLoop.CongestedEq 10
-
-#### Overload.mapsTo_Icc_of_postfixed : theorem
-  ∀ {F : ℝ → ℝ} {a b y : ℝ},
-    MonotoneOn F (Set.Icc a b) →
-      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
-        y ∈ Set.Icc a b → y ≤ F y → Set.MapsTo F (Set.Icc y b) (Set.Icc y b)
-
-#### Overload.mapsTo_Icc_of_prefixed : theorem
-  ∀ {F : ℝ → ℝ} {a b x : ℝ},
-    MonotoneOn F (Set.Icc a b) →
-      Set.MapsTo F (Set.Icc a b) (Set.Icc a b) →
-        x ∈ Set.Icc a b → F x ≤ x → Set.MapsTo F (Set.Icc a x) (Set.Icc a x)
 
 #### Overload.meanQueue : def
   ℝ → ℝ

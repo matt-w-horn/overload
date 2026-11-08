@@ -3,9 +3,9 @@
 The central object: a closed demand loop over a shared bottleneck, and
 its order theory.
 
-- `Operator.lean`: Knaster–Tarski on real intervals (`lfpIcc`, `gfpIcc`),
-  the two-point `BistableOn` certificate, and the basin and separatrix
-  lemmas.
+- `Operator.lean`: the two-point `BistableOn` certificate and the basin
+  and separatrix lemmas, over the interval fixed points `lfpIcc` and
+  `gfpIcc` from `Upstream/Order/FixedPointsIcc.lean`.
 - `ClosedLoop.lean`: `BoundedLoop` (the boundedness core carrying `F`,
   `CongestedEq`, and the clamp certificates) and `ClosedLoop` (adds
   monotonicity and the `1 ≤ h` floor), with the concrete constructors

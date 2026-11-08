@@ -25,7 +25,7 @@
 
 #### Overload.BistableOn : def
   (ℝ → ℝ) → ℝ → ℝ → Prop
-  value-hash 68e914acd73b4ab
+  value-hash b0a4a8a85d60edda
 
 #### Overload.BoundedLoop : structure
   Type
@@ -264,8 +264,7 @@
 
 #### Overload.ClosedLoop.gfpIcc_mono_lam : theorem
   ∀ (L : Overload.ClosedLoop) {lam' b : ℝ} (hlam' : 0 ≤ lam'),
-    L.lam ≤ lam' →
-      lam' * L.Amax ≤ b → Overload.gfpIcc L.F 0 b ≤ Overload.gfpIcc (L.withLam lam' hlam').F 0 b
+    L.lam ≤ lam' → lam' * L.Amax ≤ b → gfpIcc L.F 0 b ≤ gfpIcc (L.withLam lam' hlam').F 0 b
 
 #### Overload.ClosedLoop.lam_le_F : theorem
   ∀ (L : Overload.ClosedLoop) {x : ℝ}, 0 ≤ x → L.lam ≤ L.F x
@@ -275,8 +274,7 @@
 
 #### Overload.ClosedLoop.lfpIcc_mono_lam : theorem
   ∀ (L : Overload.ClosedLoop) {lam' b : ℝ} (hlam' : 0 ≤ lam'),
-    L.lam ≤ lam' →
-      lam' * L.Amax ≤ b → Overload.lfpIcc L.F 0 b ≤ Overload.lfpIcc (L.withLam lam' hlam').F 0 b
+    L.lam ≤ lam' → lam' * L.Amax ≤ b → lfpIcc L.F 0 b ≤ lfpIcc (L.withLam lam' hlam').F 0 b
 
 #### Overload.ClosedLoop.noSustaining_no_congestedEq : theorem
   ∀ (L : Overload.ClosedLoop), L.NoSustaining → ∀ {C : ℝ}, L.lam < C → ¬L.CongestedEq C
@@ -684,12 +682,8 @@
     Overload.expAttempts (1 / 2) (Overload.neff (fun x => 1) (fun x => 0) 1 3) = 1
 
 #### Overload.attemptDist : def
-  (p : ℝ) → {n : ℕ} → 0 ≤ p → p ≤ 1 → 1 ≤ n → PMF (Fin n)
-  value-hash 39cfa19f6879508b
-
-#### Overload.attemptDist_apply : theorem
-  ∀ (p : ℝ) {n : ℕ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (hn : 1 ≤ n) (j : Fin n),
-    (Overload.attemptDist p hp0 hp1 hn) j = ENNReal.ofReal (Overload.attemptWeight p n ↑j)
+  ℝ → ℕ → MeasureTheory.Measure ℕ
+  value-hash e2502db0d1728ea8
 
 #### Overload.attemptRate : def
   {ι : Type u_1} → Finset ι → (ι → ℝ) → (ι → ℕ) → ℝ → ℝ
@@ -698,25 +692,6 @@
 #### Overload.attemptRate_at_zero : theorem
   ∀ {ι : Type u_1} {s : Finset ι} {lam : ι → ℝ} {cap : ι → ℕ},
     (∀ j ∈ s, 1 ≤ cap j) → Overload.attemptRate s lam cap 0 = ∑ j ∈ s, lam j
-
-#### Overload.attemptWeight : def
-  ℝ → ℕ → ℕ → ℝ
-  value-hash 25e53d27a4d22add
-
-#### Overload.attemptWeight_at_cap : theorem
-  ∀ {p : ℝ} {j : ℕ}, Overload.attemptWeight p (j + 1) j = p ^ j
-
-#### Overload.attemptWeight_nonneg : theorem
-  ∀ {p : ℝ}, 0 ≤ p → p ≤ 1 → ∀ (n j : ℕ), 0 ≤ Overload.attemptWeight p n j
-
-#### Overload.attemptWeight_of_cap_lt : theorem
-  ∀ {p : ℝ} {n j : ℕ}, n < j + 1 → Overload.attemptWeight p n j = 0
-
-#### Overload.attemptWeight_of_cap_lt_pin : theorem
-  Overload.attemptWeight (1 / 2) 2 5 = 0
-
-#### Overload.attemptWeight_of_lt : theorem
-  ∀ {p : ℝ} {n j : ℕ}, j + 1 < n → Overload.attemptWeight p n j = p ^ j * (1 - p)
 
 #### Overload.backpressureLoop : def
   Overload.BoundedLoop
@@ -747,12 +722,6 @@
           ¬∃ z₁ z₂,
               Function.IsFixedPt (Overload.stepLoop (lam * A) C 1 hlamA ⋯).F z₁ ∧
                 Function.IsFixedPt (Overload.stepLoop (lam * A) C 1 hlamA ⋯).F z₂ ∧ z₁ < z₂
-
-#### Overload.bddAbove_postfixedPts : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ}, BddAbove (Overload.postfixedPts F a b)
-
-#### Overload.bddBelow_prefixedPts : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ}, BddBelow (Overload.prefixedPts F a b)
 
 #### Overload.binding_shift : theorem
   ∀ {A s Cbot rk Ck : ℝ},
@@ -1106,24 +1075,6 @@
 #### Overload.congested_exists_pin : theorem
   ∃ p, 0 < p ∧ p < 1 ∧ (1 - p) * Overload.attemptRate Finset.univ (fun x => 4) (fun x => 2) p = 3
 
-#### Overload.count_comp_div_tendsto : theorem
-  ∀ {S : ℕ → ℝ} {c : ℝ → ℕ} {L ρ : ℝ},
-    Filter.Tendsto (fun n => S n / ↑n) Filter.atTop (nhds L) →
-      Filter.Tendsto (fun t => ↑(c t) / t) Filter.atTop (nhds ρ) →
-        Filter.Tendsto c Filter.atTop Filter.atTop →
-          Filter.Tendsto (fun t => S (c t) / t) Filter.atTop (nhds (L * ρ))
-
-#### Overload.count_div_tendsto : theorem
-  ∀ {f : ℕ → ℝ} {c : ℝ → ℕ} {τ : ℝ},
-    0 < τ →
-      Filter.Tendsto (fun n => f n / ↑n) Filter.atTop (nhds τ) →
-        (∀ (t : ℝ), t ≤ f (c t)) →
-          (∀ (t : ℝ), ∀ k < c t, f k ≤ t) →
-            Filter.Tendsto (fun t => ↑(c t) / t) Filter.atTop (nhds τ⁻¹)
-
-#### Overload.count_tendsto_atTop : theorem
-  ∀ {f : ℕ → ℝ} {c : ℝ → ℕ}, (∀ (t : ℝ), t ≤ f (c t)) → Filter.Tendsto c Filter.atTop Filter.atTop
-
 #### Overload.coupledAmp : def
   List (ℝ × ℕ) → ℝ → ℝ
   value-hash e9f1216bf7e18d6d
@@ -1321,64 +1272,18 @@
         ∀ (m : ℕ) {p : ℝ}, 0 ≤ p → Overload.eligibleResponse e m p ≤ Overload.eligibleResponse e' m p
 
 #### Overload.equilibria_mono_lam_pin : theorem
-  Overload.lfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤
-      Overload.lfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8 ∧
-    Overload.gfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤
-      Overload.gfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8
-
-#### Overload.erlangB : def
-  ℝ → ℕ → ℝ
-  value-hash 69db0dbd4f0af436
-
-#### Overload.erlangB_antitone_servers : theorem
-  ∀ {a : ℝ}, 0 ≤ a → Antitone (Overload.erlangB a)
+  lfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤ lfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8 ∧
+    gfpIcc (Overload.stepLoop 1 10 4 ⋯ ⋯).F 0 8 ≤ gfpIcc (Overload.stepLoop 2 10 4 ⋯ ⋯).F 0 8
 
 #### Overload.erlangB_antitone_servers_one : theorem
-  Overload.erlangB 1 1 ≤ 1
-
-#### Overload.erlangB_carried_le : theorem
-  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), a * (1 - Overload.erlangB a c) ≤ ↑c
-
-#### Overload.erlangB_eq_closed : theorem
-  ∀ {a : ℝ},
-    0 ≤ a →
-      ∀ (c : ℕ),
-        Overload.erlangB a c = a ^ c / ↑c.factorial / ∑ j ∈ Finset.range (c + 1), a ^ j / ↑j.factorial
-
-#### Overload.erlangB_le_one : theorem
-  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), Overload.erlangB a c ≤ 1
-
-#### Overload.erlangB_mem_Icc : theorem
-  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), Overload.erlangB a c ∈ Set.Icc 0 1
-
-#### Overload.erlangB_mono_load : theorem
-  ∀ {a a' : ℝ}, 0 ≤ a → a ≤ a' → ∀ (c : ℕ), Overload.erlangB a c ≤ Overload.erlangB a' c
-
-#### Overload.erlangB_mul_sum : theorem
-  ∀ {a : ℝ},
-    0 < a →
-      ∀ (c : ℕ),
-        Overload.erlangB a c * ∑ j ∈ Finset.range (c + 1), a ^ j / ↑j.factorial = a ^ c / ↑c.factorial
-
-#### Overload.erlangB_nonneg : theorem
-  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), 0 ≤ Overload.erlangB a c
-
-#### Overload.erlangB_succ : theorem
-  ∀ (a : ℝ) (c : ℕ),
-    Overload.erlangB a (c + 1) = a * Overload.erlangB a c / (↑c + 1 + a * Overload.erlangB a c)
-
-#### Overload.erlangB_succ_le : theorem
-  ∀ {a : ℝ}, 0 ≤ a → ∀ (c : ℕ), Overload.erlangB a (c + 1) ≤ Overload.erlangB a c
+  Real.erlangB 1 1 ≤ 1
 
 #### Overload.erlangB_two_two : theorem
-  Overload.erlangB 2 2 = 2 / 5
-
-#### Overload.erlangB_zero : theorem
-  ∀ (a : ℝ), Overload.erlangB a 0 = 1
+  Real.erlangB 2 2 = 2 / 5
 
 #### Overload.erlangKernel : def
   ℝ → ℕ → ℝ → ℝ
-  value-hash df4bd08530411a67
+  value-hash 89ec14e0522a918c
 
 #### Overload.erlangKernel_mem : theorem
   ∀ {μ : ℝ}, 0 < μ → ∀ (c : ℕ) (x : ℝ), 0 ≤ x → Overload.erlangKernel μ c x ∈ Set.Icc 0 1
@@ -1602,31 +1507,6 @@
 #### Overload.gain_gt_one_repels_pin : theorem
   (∀ x ∈ Set.Icc (-1) 1, x < 0 → 2 * x < x) ∧ ∀ x ∈ Set.Icc (-1) 1, 0 < x → x < 2 * x
 
-#### Overload.gfpIcc : def
-  (ℝ → ℝ) → ℝ → ℝ → ℝ
-  value-hash e98b47243666ed0b
-
-#### Overload.gfpIcc_eq_gfp_restrict : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ} [inst : Fact (a ≤ b)] (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)),
-    Overload.gfpIcc F a b = ↑(OrderHom.gfp (Overload.restrictIcc F a b hm hf))
-
-#### Overload.gfpIcc_le_iterate : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b →
-      MonotoneOn F (Set.Icc a b) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → ∀ (n : ℕ), Overload.gfpIcc F a b ≤ F^[n] b
-
-#### Overload.gfpIcc_mem_Icc : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b → Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.gfpIcc F a b ∈ Set.Icc a b
-
-#### Overload.gfpIcc_mono_of_le : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ} {G : ℝ → ℝ},
-    a ≤ b →
-      (∀ x ∈ Set.Icc a b, F x ≤ G x) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.gfpIcc F a b ≤ Overload.gfpIcc G a b
-
 #### Overload.global_balance : theorem
   ∀ {lam mu : ℝ},
     mu ≠ 0 →
@@ -1713,11 +1593,13 @@
     Overload.FactorsThrough instr wire → ∀ {s t : State}, wire s = wire t → instr s = instr t
 
 #### Overload.integral_attemptDist : theorem
-  ∀ (p : ℝ) {n : ℕ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (hn : 1 ≤ n),
-    ∫ (j : Fin n), ↑↑j + 1 ∂(Overload.attemptDist p hp0 hp1 hn).toMeasure = Overload.expAttempts p n
+  ∀ {p : ℝ},
+    0 ≤ p →
+      p ≤ 1 →
+        ∀ {n : ℕ}, 1 ≤ n → ∫ (j : ℕ), ↑j + 1 ∂Overload.attemptDist p n = Overload.expAttempts p n
 
 #### Overload.integral_attemptDist_half_three : theorem
-  ∫ (j : Fin 3), ↑↑j + 1 ∂(Overload.attemptDist (1 / 2) ⋯ ⋯ ⋯).toMeasure = 7 / 4
+  ∫ (j : ℕ), ↑j + 1 ∂Overload.attemptDist (1 / 2) 3 = 7 / 4
 
 #### Overload.intent_factorsThrough_refined : theorem
   ∀ {State : Type u_1} {Wire : Type u_2} {Reading : Type u_3} {wire : State → Wire}
@@ -1768,27 +1650,6 @@
 
 #### Overload.invokeFail_nil : theorem
   ∀ (p : ℝ), Overload.invokeFail [] p = p
-
-#### Overload.isFixedPt_gfpIcc : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b →
-      MonotoneOn F (Set.Icc a b) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Function.IsFixedPt F (Overload.gfpIcc F a b)
-
-#### Overload.isFixedPt_le_gfpIcc : theorem
-  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → Function.IsFixedPt F x → x ≤ Overload.gfpIcc F a b
-
-#### Overload.isFixedPt_lfpIcc : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b →
-      MonotoneOn F (Set.Icc a b) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Function.IsFixedPt F (Overload.lfpIcc F a b)
-
-#### Overload.iterate_le_lfpIcc : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b →
-      MonotoneOn F (Set.Icc a b) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → ∀ (n : ℕ), F^[n] a ≤ Overload.lfpIcc F a b
 
 #### Overload.iterate_le_of_le_fixedPt : theorem
   ∀ {F : ℝ → ℝ} {a b x z : ℝ},
@@ -1845,9 +1706,6 @@
 #### Overload.layersAmp_region2Stack : theorem
   Overload.layersAmp Overload.region2Stack = 4
 
-#### Overload.le_gfpIcc_of_postfixed : theorem
-  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → x ≤ F x → x ≤ Overload.gfpIcc F a b
-
 #### Overload.le_iterate_of_fixedPt_le : theorem
   ∀ {F : ℝ → ℝ} {a b x z : ℝ},
     MonotoneOn F (Set.Icc a b) →
@@ -1865,37 +1723,6 @@
 
 #### Overload.le_neff : theorem
   ∀ {T B : ℕ → ℝ} {D : ℝ} {k n : ℕ}, k ≤ n → Overload.fitsIn T B D k → k ≤ Overload.neff T B D n
-
-#### Overload.lfpIcc : def
-  (ℝ → ℝ) → ℝ → ℝ → ℝ
-  value-hash 974286ef250c92b3
-
-#### Overload.lfpIcc_eq_lfp_restrict : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ} [inst : Fact (a ≤ b)] (hm : MonotoneOn F (Set.Icc a b))
-    (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)),
-    Overload.lfpIcc F a b = ↑(OrderHom.lfp (Overload.restrictIcc F a b hm hf))
-
-#### Overload.lfpIcc_le_gfpIcc : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b →
-      MonotoneOn F (Set.Icc a b) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.lfpIcc F a b ≤ Overload.gfpIcc F a b
-
-#### Overload.lfpIcc_le_isFixedPt : theorem
-  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → Function.IsFixedPt F x → Overload.lfpIcc F a b ≤ x
-
-#### Overload.lfpIcc_le_of_prefixed : theorem
-  ∀ {F : ℝ → ℝ} {a b x : ℝ}, x ∈ Set.Icc a b → F x ≤ x → Overload.lfpIcc F a b ≤ x
-
-#### Overload.lfpIcc_mem_Icc : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ},
-    a ≤ b → Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → Overload.lfpIcc F a b ∈ Set.Icc a b
-
-#### Overload.lfpIcc_mono_of_le : theorem
-  ∀ {F : ℝ → ℝ} {a b : ℝ} {G : ℝ → ℝ},
-    a ≤ b →
-      (∀ x ∈ Set.Icc a b, F x ≤ G x) →
-        Set.MapsTo G (Set.Icc a b) (Set.Icc a b) → Overload.lfpIcc F a b ≤ Overload.lfpIcc G a b
 
 #### Overload.lifoSojourn : def
   ℝ
@@ -2228,9 +2055,9 @@
   ∀ (p : ℝ) (n : ℕ), (1 - p) * Overload.expAttempts p n = 1 - p ^ n
 
 #### Overload.operator_bracket_pin : theorem
-  Overload.lfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) ≤
-      Overload.gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) ∧
-    2 * 4 ≤ Overload.gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4)
+  lfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) ≤
+      gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) ∧
+    2 * 4 ≤ gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4)
 
 #### Overload.overloadOmittedTokens : def
   List String
@@ -2300,14 +2127,6 @@
 #### Overload.pool_rate_bound_pin : theorem
   (∀ (rate : ℝ), 1 = rate * (1 / 4) → rate ≤ 1 / (1 / 4)) ∧ 1 = 4 * (1 / 4) ∧ 4 = 1 / (1 / 4)
 
-#### Overload.postfixedPts : def
-  (ℝ → ℝ) → ℝ → ℝ → Set ℝ
-  value-hash 89f013287257590d
-
-#### Overload.prefixedPts : def
-  (ℝ → ℝ) → ℝ → ℝ → Set ℝ
-  value-hash 8354e6b927dad707
-
 #### Overload.propDiscipline : def
   (k : ℕ) → Overload.Discipline k
   value-hash eef4dbed9ff3cc2d
@@ -2374,13 +2193,6 @@
 
 #### Overload.residual_nonneg : theorem
   ∀ (demand : ℕ → ℝ) (C : ℝ) (m : ℕ), 0 ≤ Overload.residual demand C m
-
-#### Overload.restrictIcc : def
-  (F : ℝ → ℝ) →
-    (a b : ℝ) →
-      MonotoneOn F (Set.Icc a b) →
-        Set.MapsTo F (Set.Icc a b) (Set.Icc a b) → ↑(Set.Icc a b) →o ↑(Set.Icc a b)
-  value-hash 3fbe5b28e7f250a8
 
 #### Overload.service_order_at_backlog : theorem
   2 < Overload.fifoSojourn 25 10 ∧ Overload.lifoSojourn ≤ 2
@@ -2726,18 +2538,18 @@
 #### Overload.stepLoop_equilibrium_trichotomy : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
     (Overload.HealthyOnly lam A C →
-        Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam ∧
-          Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam) ∧
+        lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam ∧
+          gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam) ∧
       (Overload.BistableBand lam A C →
-          Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam ∧
-            Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A) ∧
+          lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam ∧
+            gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A) ∧
         (Overload.CongestedOnly lam C →
-          Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A ∧
-            Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A)
+          lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A ∧
+            gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A)
 
 #### Overload.stepLoop_equilibrium_trichotomy_pin : theorem
-  Overload.lfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) = 2 ∧
-    Overload.gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) = 2 * 4
+  lfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) = 2 ∧
+    gfpIcc (Overload.stepLoop 2 5 4 ⋯ ⋯).F 0 (2 * 4) = 2 * 4
 
 #### Overload.stepLoop_floor_certifies : theorem
   ∀ {lam Cfloor C' A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
@@ -2747,11 +2559,11 @@
 
 #### Overload.stepLoop_gfpIcc_of_ge : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
-    C ≤ lam * A → Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A
+    C ≤ lam * A → gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A
 
 #### Overload.stepLoop_gfpIcc_of_healthyOnly : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
-    lam * A < C → Overload.gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam
+    lam * A < C → gfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam
 
 #### Overload.stepLoop_hundred_no_congestedEq : theorem
   ¬(Overload.stepLoop 1 100 5 ⋯ ⋯).CongestedEq 100
@@ -2767,36 +2579,36 @@
 #### Overload.stepLoop_jump_down : theorem
   ∀ {C A : ℝ} (hC : 0 < C) (hA : 1 < A),
     C / A < C ∧
-      Overload.gfpIcc (Overload.stepLoop (C / A) C A ⋯ ⋯).F 0 (C / A * A) = C ∧
+      gfpIcc (Overload.stepLoop (C / A) C A ⋯ ⋯).F 0 (C / A * A) = C ∧
         ∀ (lam : ℝ) (hlam : 0 ≤ lam),
-          lam * A < C → Overload.gfpIcc (Overload.stepLoop lam C A hlam ⋯).F 0 (lam * A) = lam
+          lam * A < C → gfpIcc (Overload.stepLoop lam C A hlam ⋯).F 0 (lam * A) = lam
 
 #### Overload.stepLoop_jump_down_pin : theorem
   5 / 4 < 5 ∧
-    Overload.gfpIcc (Overload.stepLoop (5 / 4) 5 4 ⋯ ⋯).F 0 (5 / 4 * 4) = 5 ∧
+    gfpIcc (Overload.stepLoop (5 / 4) 5 4 ⋯ ⋯).F 0 (5 / 4 * 4) = 5 ∧
       ∀ (lam : ℝ) (hlam : 0 ≤ lam),
-        lam * 4 < 5 → Overload.gfpIcc (Overload.stepLoop lam 5 4 hlam ⋯).F 0 (lam * 4) = lam
+        lam * 4 < 5 → gfpIcc (Overload.stepLoop lam 5 4 hlam ⋯).F 0 (lam * 4) = lam
 
 #### Overload.stepLoop_jump_up : theorem
   ∀ {C A : ℝ} (hC : 0 < C) (hA : 1 < A),
     C < C * A ∧
       (∀ (lam : ℝ) (hlam : 0 ≤ lam),
-          lam < C → Overload.lfpIcc (Overload.stepLoop lam C A hlam ⋯).F 0 (lam * A) = lam) ∧
-        Overload.lfpIcc (Overload.stepLoop C C A ⋯ ⋯).F 0 (C * A) = C * A
+          lam < C → lfpIcc (Overload.stepLoop lam C A hlam ⋯).F 0 (lam * A) = lam) ∧
+        lfpIcc (Overload.stepLoop C C A ⋯ ⋯).F 0 (C * A) = C * A
 
 #### Overload.stepLoop_jump_up_pin : theorem
   5 < 5 * 4 ∧
     (∀ (lam : ℝ) (hlam : 0 ≤ lam),
-        lam < 5 → Overload.lfpIcc (Overload.stepLoop lam 5 4 hlam ⋯).F 0 (lam * 4) = lam) ∧
-      Overload.lfpIcc (Overload.stepLoop 5 5 4 ⋯ ⋯).F 0 (5 * 4) = 5 * 4
+        lam < 5 → lfpIcc (Overload.stepLoop lam 5 4 hlam ⋯).F 0 (lam * 4) = lam) ∧
+      lfpIcc (Overload.stepLoop 5 5 4 ⋯ ⋯).F 0 (5 * 4) = 5 * 4
 
 #### Overload.stepLoop_lfpIcc_of_ge : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
-    C ≤ lam → Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A
+    C ≤ lam → lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam * A
 
 #### Overload.stepLoop_lfpIcc_of_lt : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
-    lam < C → Overload.lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam
+    lam < C → lfpIcc (Overload.stepLoop lam C A hlam hA).F 0 (lam * A) = lam
 
 #### Overload.stepLoop_sweep_down_ge : theorem
   ∀ {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A),
@@ -2833,15 +2645,8 @@
 #### Overload.strictDiscipline_alloc_at_overload : theorem
   (Overload.strictDiscipline 2).alloc ![3, 9] 4 0 = 3
 
-#### Overload.sum_attemptWeight : theorem
-  ∀ (p : ℝ) {n : ℕ}, 1 ≤ n → ∑ j ∈ Finset.range n, Overload.attemptWeight p n j = 1
-
 #### Overload.sum_extendDemand : theorem
   ∀ {k : ℕ} (d : Fin k → ℝ), ∑ j ∈ Finset.range k, Overload.extendDemand d j = ∑ i, d i
-
-#### Overload.sum_mul_attemptWeight : theorem
-  ∀ (p : ℝ) {n : ℕ},
-    1 ≤ n → ∑ j ∈ Finset.range n, (↑j + 1) * Overload.attemptWeight p n j = Overload.expAttempts p n
 
 #### Overload.sum_range_add_one : theorem
   ∀ (m : ℕ), ∑ j ∈ Finset.range m, (↑j + 1) = ↑m * (↑m + 1) / 2
@@ -2857,9 +2662,6 @@
 
 #### Overload.tendsto_meanQueue_atTop : theorem
   Filter.Tendsto Overload.meanQueue (nhdsWithin 1 (Set.Iio 1)) Filter.atTop
-
-#### Overload.tendsto_pred_div : theorem
-  Filter.Tendsto (fun m => ↑(m - 1) / ↑m) Filter.atTop (nhds 1)
 
 #### Overload.tendsto_succ_div : theorem
   Filter.Tendsto (fun m => ↑(m + 1) / ↑m) Filter.atTop (nhds 1)

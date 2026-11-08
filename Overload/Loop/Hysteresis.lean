@@ -44,7 +44,7 @@ core of that story, with no dynamics beyond monotone iteration:
 * `ClosedLoop.withLam` — demand-level surgery: the same mechanism `(g, h)`
   swept across offered loads.
 * `lfpIcc_mono_lam` / `gfpIcc_mono_lam` — **equilibria move monotonically in
-  offered load** (via `lfpIcc_mono_of_le`/`gfpIcc_mono_of_le`): raising `λ`
+  offered load** (via `lfpIcc_le_lfpIcc`/`gfpIcc_le_gfpIcc`): raising `λ`
   never lowers either extremal equilibrium.
 * `congestedEq_mono_lam` / `not_congestedEq_of_le` — **the congested set is
   an up-set in `λ`**: collapse persists under rising load, and safety at a
@@ -136,8 +136,8 @@ theorem lfpIcc_mono_lam {lam' b : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam
     lfpIcc L.F 0 b ≤ lfpIcc (L.withLam lam' hlam').F 0 b := by
   have hA0 : (0 : ℝ) ≤ L.Amax := zero_le_one.trans L.one_le_Amax
   have hb0 : (0 : ℝ) ≤ b := (mul_nonneg hlam' hA0).trans hb
-  exact lfpIcc_mono_of_le hb0 (fun x hx => L.F_le_withLam_F hlam' hle hx.1)
-    ((L.withLam lam' hlam').F_mapsTo_of_le hb)
+  exact lfpIcc_le_lfpIcc hb0 ((L.withLam lam' hlam').F_mapsTo_of_le hb)
+    (fun x hx => L.F_le_withLam_F hlam' hle hx.1)
 
 /-- **Equilibria move monotonically in offered load, congested side**: the
 greatest fixed point at the higher load dominates the one at the lower
@@ -149,8 +149,8 @@ theorem gfpIcc_mono_lam {lam' b : ℝ} (hlam' : 0 ≤ lam') (hle : L.lam ≤ lam
   have hb0 : (0 : ℝ) ≤ b := (mul_nonneg hlam' hA0).trans hb
   have hbL : L.lam * L.Amax ≤ b :=
     le_trans (mul_le_mul_of_nonneg_right hle hA0) hb
-  exact gfpIcc_mono_of_le hb0 (fun x hx => L.F_le_withLam_F hlam' hle hx.1)
-    (L.F_mapsTo_of_le hbL)
+  exact gfpIcc_le_gfpIcc hb0 (L.F_mapsTo_of_le hbL)
+    (fun x hx => L.F_le_withLam_F hlam' hle hx.1)
 
 /-- **The congested set is an up-set in offered load**: congestion at `λ`
 transfers to any higher load. The congested witness is postfixed under the
@@ -256,7 +256,7 @@ theorem stepLoop_lfpIcc_of_lt {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A)
     ⟨hlam, le_mul_of_one_le_right hlam hA⟩
   have hfix : (stepLoop lam C A hlam hA).F lam = lam :=
     stepLoop_F_of_lt hlam hA hlt
-  refine le_antisymm (lfpIcc_le_of_prefixed hmem hfix.le) ?_
+  refine le_antisymm (lfpIcc_le hmem hfix.le) ?_
   have hlfp_mem := lfpIcc_mem_Icc hab (stepLoop lam C A hlam hA).F_mapsTo
   calc lam ≤ (stepLoop lam C A hlam hA).F
         (lfpIcc (stepLoop lam C A hlam hA).F 0 (lam * A)) :=
@@ -273,7 +273,7 @@ theorem stepLoop_gfpIcc_of_ge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A)
   have hab : (0 : ℝ) ≤ lam * A := mul_nonneg hlam (zero_le_one.trans hA)
   have hpost : lam * A ≤ (stepLoop lam C A hlam hA).F (lam * A) :=
     (stepLoop_F_of_ge hlam hA hge).ge
-  refine le_antisymm ?_ (le_gfpIcc_of_postfixed ⟨hab, le_rfl⟩ hpost)
+  refine le_antisymm ?_ (le_gfpIcc ⟨hab, le_rfl⟩ hpost)
   exact (gfpIcc_mem_Icc hab (stepLoop lam C A hlam hA).F_mapsTo).2
 
 /-- Below the band the congested branch does not exist: even the *greatest*
@@ -467,8 +467,8 @@ theorem operator_bracket_pin :
   ⟨lfpIcc_le_gfpIcc (by norm_num)
       (stepLoop 2 5 4 (by norm_num) (by norm_num)).F_monotoneOn_Icc
       (stepLoop 2 5 4 (by norm_num) (by norm_num)).F_mapsTo,
-    isFixedPt_le_gfpIcc ⟨by norm_num, show (2 : ℝ) * 4 ≤ 2 * 4 by norm_num⟩
-      (stepLoop_F_of_ge (by norm_num) (by norm_num) (by norm_num))⟩
+    le_gfpIcc ⟨by norm_num, show (2 : ℝ) * 4 ≤ 2 * 4 by norm_num⟩
+      (stepLoop_F_of_ge (by norm_num) (by norm_num) (by norm_num)).ge⟩
 
 /-- Pin of the downward-inertia leg: starting from the congested `8`, the
 third monotone iterate of the band loop is still at or above the healthy

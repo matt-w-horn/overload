@@ -76,6 +76,62 @@ implementation would have to be wrong in the same way at the same time
 to hide it. That argument is Leonardo de Moura's, in
 [Who Watches the Provers?](https://leodemoura.github.io/blog/2026-3-16-who-watches-the-provers/)
 
+## Upstream
+
+Parts of this library have been contributed to mathlib. The library uses
+the mathlib versions, and its own older formulations are deleted. Status
+as of 2026-11-07:
+
+| Piece | mathlib PR | Status | Copy under `Upstream/` | Used by |
+|---|---|---|---|---|
+| `sum_range_mul_geometric_add`: the summation-by-parts identity behind the mean of a censored geometric distribution | [#42380](https://github.com/leanprover-community/mathlib4/pull/42380) | merged, used from the mathlib pin | none | `Overload/Retry/AttemptDist.lean` |
+| `lfpIcc`, `gfpIcc`: the least and greatest fixed points of a monotone self-map of an interval | [#42225](https://github.com/leanprover-community/mathlib4/pull/42225) | open | `Order/FixedPointsIcc.lean` | `Overload/Loop/Operator.lean` |
+| `Real.erlangB`: Erlang's loss formula by its stable recursion, with its bounds and monotonicity | [#42382](https://github.com/leanprover-community/mathlib4/pull/42382) | open | `Analysis/SpecialFunctions/ErlangB.lean` | `Overload/Queueing/Erlang.lean` |
+| `tendsto_count_div_atTop` and two companions: the growth rate of a counting function | [#42384](https://github.com/leanprover-community/mathlib4/pull/42384) | open | `Analysis/SpecificLimits/Counting.lean` | `Overload/Queueing/Little.lean` |
+| `geometricCensoredMeasure`: the geometric distribution censored at a cap | [#42381](https://github.com/leanprover-community/mathlib4/pull/42381) | open | `Probability/Distributions/GeometricCensored.lean` | `Overload/Retry/AttemptDist.lean` |
+| `geometricMeasure_Iio`, `geometricMeasure_Ici`: the head and tail masses of the geometric distribution | [#45786](https://github.com/leanprover-community/mathlib4/pull/45786) | open | `Probability/Distributions/Geometric.lean` | `GeometricCensored.lean` above |
+
+Until a pull request merges, `Upstream/` holds a copy of it, so the
+library can use the mathlib formulation before a mathlib release carries
+it. Each file sits at its mathlib path with `Mathlib/` replaced by
+`Upstream/`, so module `Upstream.X` is the future `Mathlib.X`, and the
+declaration names, namespaces, and signatures are mathlib's.
+
+A copy keeps only the declarations the `Overload` library reaches,
+directly or through another kept declaration's proof. The kept
+declarations are verbatim except where noted below, and each module
+docstring drops the lines that name what was cut. The cuts and changes:
+
+- `Order/FixedPointsIcc.lean`: `isLeast_lfpIcc` and its generated dual
+  `isGreatest_gfpIcc` are cut.
+- `Analysis/SpecialFunctions/ErlangB.lean`: `Real.erlangB_mul_sum` and
+  `Real.erlangB_eq_div` (the closed form) are cut, with the three imports
+  only they needed. Three proofs also differ: `erlangB_nonneg`,
+  `erlangB_denom_pos`, and `erlangB_le_one` pass to `linarith` the facts
+  #42382 states as `have` lines, because this library's
+  `linter.unusedVariables.analyzeTactics` counts a `have` that only
+  `linarith` consumes as unused. The statements are verbatim.
+- `Probability/Distributions/Geometric.lean`: holds only the two lemmas
+  #45786 adds to mathlib's existing file of that name. The header,
+  imports, and namespace lines around them are new.
+- `Probability/Distributions/GeometricCensored.lean`: nothing is cut, but
+  it imports `Upstream.Probability.Distributions.Geometric` where #42381
+  imports `Mathlib.Probability.Distributions.Geometric`, so that it sees
+  those two lemmas.
+
+When a pull request merges and the mathlib pin reaches it, its file under
+`Upstream/` is deleted and each `import Upstream.X` becomes
+`import Mathlib.X`; nothing else changes. For #45786, `Geometric.lean` is
+deleted and the changed import line in `GeometricCensored.lean` is
+dropped.
+
+The copies build as the `Upstream` library, outside `Overload/` and its
+gates (statement lock, claims ledger, coverage, `lake lint`): they follow
+mathlib's conventions, and mathlib review is their gate. The library's own
+linter options apply to them. The axiom audit reaches every copied
+declaration, because each one is used by an `Overload` declaration that
+depends on it.
+
 ## History
 
 The library was developed privately before release; this repository's

@@ -62,8 +62,8 @@ The suite's tests map to this library as follows:
   formalized here, and the field exists so that the claim is an explicit
   hypothesis rather than ambient folklore.
 * Test 8 (truncated-geometric histogram under exogenous `p`) —
-  `sum_attemptWeight` / `sum_mul_attemptWeight`
-  (`Overload/Retry/Amplification.lean`).
+  `attemptDist`, whose masses are mathlib's censored-geometric masses, and
+  its mean `integral_attemptDist` (`Overload/Retry/AttemptDist.lean`).
 * Test 9 (goodput plateau under zero waste) — `plateau`
   (`Overload/Capacity/Plateau.lean`).
 * Test 11 (forced failure ⟹ product of caps) — `reduction_forced_failure`.

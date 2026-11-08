@@ -5,6 +5,7 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Defs
 public import Mathlib.Order.Lattice.Nat
 public import Mathlib.Tactic.Bound
 public import Mathlib.Topology.MetricSpace.Pseudo.Defs
+public import Upstream.Analysis.SpecificLimits.Counting
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Interval.Basic
 import Mathlib.Algebra.Order.Ring.Star
@@ -64,8 +65,9 @@ No distributions, no independence, no stationarity, no ergodicity. The
 technical care sits exactly where the classical proof puts it. Departures
 need not be monotone, so the departed side runs through the longest
 fully-departed *prefix* (`departedPrefix`). The count asymptotics are
-proved once, for any counting function satisfying two one-sided bounds
-(`count_div_tendsto`) — by squeeze and composition, with no ε-management.
+the general fact for any counting function satisfying two one-sided bounds
+(`tendsto_count_div_atTop`, in `Upstream/Analysis/SpecificLimits/Counting.lean`,
+a copy of mathlib PR 42384).
 Byproducts stated separately: the Cesàro tail bound `W n / n → 0`
 (`tendsto_W_div`) and the departure rate `d n / n → τ`
 (`tendsto_d_div`).
@@ -106,47 +108,6 @@ structure SamplePath where
   /-- Customers are indexed in arrival order. -/
   a_mono : Monotone a
 
-/-!
-## Counting-function asymptotics
-
-The one analytic lemma both counts need, proved once: if `f n / n → τ`
-and the count `c : ℝ → ℕ` satisfies two one-sided bounds — `t ≤ f (c t)`
-and `f k ≤ t` below the count — then `c t / t → 1/τ`. Monotonicity of
-`f` is **not** required: this is the inversion the overtaking case
-needs.
--/
-
-/-- A counting function dominated below through `f` diverges: whenever
-`t ≤ f (c t)`, the count must leave every finite prefix, because `f` is
-bounded on it. -/
-theorem count_tendsto_atTop {f : ℕ → ℝ} {c : ℝ → ℕ}
-    (hub : ∀ t, t ≤ f (c t)) : Tendsto c atTop atTop := by
-  rw [Filter.tendsto_atTop]
-  intro M
-  obtain ⟨T, hT⟩ : ∃ T : ℝ, ∀ k < M, f k < T := by
-    refine ⟨1 + ∑ j ∈ Finset.range M, |f j|, fun k hk => ?_⟩
-    have h1 : f k ≤ |f k| := le_abs_self _
-    have h2 : |f k| ≤ ∑ j ∈ Finset.range M, |f j| :=
-      Finset.single_le_sum (fun j _ => abs_nonneg (f j))
-        (Finset.mem_range.mpr hk)
-    linarith
-  filter_upwards [Filter.eventually_ge_atTop T] with t ht
-  by_contra hcM
-  push Not at hcM
-  exact absurd (hub t) (not_le.mpr (lt_of_lt_of_le (hT _ hcM) ht))
-
-/-- `(n - 1) / n → 1` (natural subtraction, cast to `ℝ`). Mathlib's
-`tendsto_natCast_div_add_atTop` at `x = -1` inverted: upstream gives
-`n / (n + x)`, so the reciprocal and the `ℕ`-subtraction cast are what this
-statement adds. -/
-theorem tendsto_pred_div :
-    Tendsto (fun m : ℕ => ((m - 1 : ℕ) : ℝ) / m) atTop (nhds 1) := by
-  have h := (tendsto_natCast_div_add_atTop (-1 : ℝ)).inv₀ one_ne_zero
-  rw [inv_one] at h
-  refine h.congr' ?_
-  filter_upwards [Filter.eventually_ge_atTop 1] with m hm
-  rw [inv_div, Nat.cast_sub hm, Nat.cast_one, ← sub_eq_add_neg]
-
 /-- `(n + 1) / n → 1` (cast to `ℝ`). Mathlib's
 `tendsto_natCast_div_add_atTop` at `x = 1` inverted; the reciprocal and the
 `ℕ`-cast of the numerator are the difference. -/
@@ -156,57 +117,6 @@ theorem tendsto_succ_div :
   rw [inv_one] at h
   refine h.congr fun m => ?_
   rw [inv_div, Nat.cast_add, Nat.cast_one]
-
-/-- **Count inversion, no monotonicity.** If `f n / n → τ > 0` and the
-count `c` satisfies the two one-sided bounds — `t` never exceeds `f` at
-the count, and `f` below the count never exceeds `t` — then
-`c t / t → 1/τ`. Proof: squeeze `t / c t` between `f (c t - 1) / c t`
-and `f (c t) / c t`, both converging to `τ` by composition, then
-invert. -/
-theorem count_div_tendsto {f : ℕ → ℝ} {c : ℝ → ℕ} {τ : ℝ} (hτ : 0 < τ)
-    (hf : Tendsto (fun n => f n / n) atTop (nhds τ))
-    (hub : ∀ t, t ≤ f (c t)) (hlb : ∀ t, ∀ k < c t, f k ≤ t) :
-    Tendsto (fun t => (c t : ℝ) / t) atTop (nhds τ⁻¹) := by
-  have hc_top : Tendsto c atTop atTop := count_tendsto_atTop hub
-  have hupper : Tendsto (fun t => f (c t) / (c t : ℝ)) atTop (nhds τ) :=
-    hf.comp hc_top
-  have hg : Tendsto (fun m : ℕ => f (m - 1) / m) atTop (nhds τ) := by
-    have h1 : Tendsto (fun m : ℕ => f (m - 1) / ((m - 1 : ℕ) : ℝ))
-        atTop (nhds τ) := hf.comp (tendsto_sub_atTop_nat 1)
-    have h2 := h1.mul tendsto_pred_div
-    rw [mul_one] at h2
-    refine h2.congr' ?_
-    filter_upwards [Filter.eventually_ge_atTop 2] with m hm
-    rw [div_mul_div_cancel₀
-      (Nat.cast_ne_zero.mpr (by omega : (m - 1 : ℕ) ≠ 0))]
-  have hlower : Tendsto (fun t => f (c t - 1) / (c t : ℝ)) atTop
-      (nhds τ) := hg.comp hc_top
-  have hmid : Tendsto (fun t => t / (c t : ℝ)) atTop (nhds τ) := by
-    refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hlower hupper ?_ ?_
-    · filter_upwards [hc_top.eventually_ge_atTop 1] with t hct
-      exact div_le_div_of_nonneg_right (hlb t _ (by omega))
-        (Nat.cast_nonneg _)
-    · exact Filter.Eventually.of_forall fun t =>
-        div_le_div_of_nonneg_right (hub t) (Nat.cast_nonneg _)
-  have hinv := hmid.inv₀ (ne_of_gt hτ)
-  exact hinv.congr fun t => inv_div _ _
-
-/-- **Cesàro composition with a count.** If the partial-sum averages
-converge, `S n / n → L`, and the count grows linearly, `c t / t → ρ`
-with `c → ∞`, then `S (c t) / t → L·ρ`. The envelope step both sandwich
-sides of `little` and `brumelle` share: split off `S (c t) / c t` and
-multiply the limits. -/
-theorem count_comp_div_tendsto {S : ℕ → ℝ} {c : ℝ → ℕ} {L ρ : ℝ}
-    (hS : Tendsto (fun n => S n / n) atTop (nhds L))
-    (hc : Tendsto (fun t => (c t : ℝ) / t) atTop (nhds ρ))
-    (hc_top : Tendsto c atTop atTop) :
-    Tendsto (fun t => S (c t) / t) atTop (nhds (L * ρ)) := by
-  have h1 : Tendsto (fun t => S (c t) / (c t : ℝ)) atTop (nhds L) :=
-    hS.comp hc_top
-  have h2 := h1.mul hc
-  refine h2.congr' ?_
-  filter_upwards [hc_top.eventually_ge_atTop 1] with t hct
-  rw [div_mul_div_cancel₀ (Nat.cast_ne_zero.mpr (by omega : c t ≠ 0))]
 
 namespace SamplePath
 
@@ -404,13 +314,13 @@ theorem count_asymptotics {τ Wbar : ℝ} (hτ : 0 < τ)
   have hBne : ∀ t : ℝ, {n | t < P.d n}.Nonempty := fun t =>
     (hd_top.eventually_gt_atTop t).exists
   refine ⟨hAne, ?_, ?_, ?_, ?_⟩
-  · exact count_div_tendsto hτ hH1 (fun t => Nat.sInf_mem (hAne t))
+  · exact tendsto_count_div_atTop hτ.ne' hH1 (fun t => Nat.sInf_mem (hAne t))
       (fun t _k hk => (P.a_lt_of_lt_arrivals hk).le)
-  · exact count_div_tendsto hτ (P.tendsto_d_div hH1 hH2)
+  · exact tendsto_count_div_atTop hτ.ne' (P.tendsto_d_div hH1 hH2)
       (fun t => (P.lt_d_departedPrefix (hBne t)).le)
       (fun t _k hk => P.d_le_of_lt_departedPrefix hk)
-  · exact count_tendsto_atTop (fun t => Nat.sInf_mem (hAne t))
-  · exact count_tendsto_atTop (fun t => (P.lt_d_departedPrefix (hBne t)).le)
+  · exact tendsto_count_atTop (fun t => Nat.sInf_mem (hAne t))
+  · exact tendsto_count_atTop (fun t => (P.lt_d_departedPrefix (hBne t)).le)
 
 /-- **Little's law, deterministic sample-path form (Stidham).** If the
 arrival instants have rate `1/τ` (H1: `a n / n → τ`, `τ > 0`) and the
@@ -426,8 +336,8 @@ theorem little {τ Wbar : ℝ} (hτ : 0 < τ)
     (hH2 : Tendsto (fun n => P.sojournSum n / n) atTop (nhds Wbar)) :
     Tendsto (fun t => P.area t / t) atTop (nhds (Wbar / τ)) := by
   obtain ⟨hAne, hA, hB, hA_top, hB_top⟩ := P.count_asymptotics hτ hH1 hH2
-  have hUenv := count_comp_div_tendsto hH2 hA hA_top
-  have hLenv := count_comp_div_tendsto hH2 hB hB_top
+  have hUenv := tendsto_comp_count_div_atTop hH2 hA hA_top
+  have hLenv := tendsto_comp_count_div_atTop hH2 hB hB_top
   have hmain : Tendsto (fun t => P.area t / t) atTop
       (nhds (Wbar * τ⁻¹)) := by
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hLenv hUenv ?_ ?_
@@ -525,8 +435,8 @@ theorem brumelle {g : ℕ → ℝ} {τ Wbar Gbar : ℝ} (hτ : 0 < τ)
     (hH3 : Tendsto (fun n => P.valueSum g n / n) atTop (nhds Gbar)) :
     Tendsto (fun t => P.valueArea g t / t) atTop (nhds (Gbar / τ)) := by
   obtain ⟨hAne, hA, hB, hA_top, hB_top⟩ := P.count_asymptotics hτ hH1 hH2
-  have hUenv := count_comp_div_tendsto hH3 hA hA_top
-  have hLenv := count_comp_div_tendsto hH3 hB hB_top
+  have hUenv := tendsto_comp_count_div_atTop hH3 hA hA_top
+  have hLenv := tendsto_comp_count_div_atTop hH3 hB hB_top
   have hmain : Tendsto (fun t => P.valueArea g t / t) atTop
       (nhds (Gbar * τ⁻¹)) := by
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hLenv hUenv ?_ ?_

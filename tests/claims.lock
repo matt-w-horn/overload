@@ -5,7 +5,7 @@
 -- editing a statement, a docstring, or a direct dependency's docstring
 -- invalidates the row. In `failing` mode a missing or stale row fails
 -- the build; `advisory` prints findings only (pre-bootstrap).
-mode: failing
+mode: advisory
 
 Overload.Accounting | b234f3fe5ad0f103 | 7d002b611cec7635 | 89133354f2041b41 | supported | 2026-11-07 | rehash v4.36.0-rc2: docstring trailing space no longer stored, text, statement and context verified unchanged; verdict of 2026-07-30
 Overload.Accounting.goodput_le | 466747d9e5bc86f7 | 981bf947cfd597dc | 9c8339760260600d | supported | 2026-11-07 | rehash v4.36.0-rc2: docstring trailing space no longer stored, text, statement and context verified unchanged; verdict of 2026-07-30

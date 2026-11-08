@@ -2,7 +2,7 @@ module
 
 public import Overload.Basic -- shake: keep
 public import Mathlib.AlgebraicTopology.SimplexCategory.Basic
-public import Mathlib.Data.Real.Basic
+public import Mathlib.Basic.Real.Basic
 public import Mathlib.LinearAlgebra.Matrix.Notation
 import Mathlib.Algebra.Order.Floor.Extended
 import Mathlib.Algebra.Order.Interval.Basic

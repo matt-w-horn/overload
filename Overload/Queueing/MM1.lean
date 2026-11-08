@@ -488,11 +488,11 @@ noncomputable def mm1Kernel (C τ : ℝ) : ℝ → ℝ :=
 /-- Below capacity the kernel is the exponential sojourn tail. -/
 theorem mm1Kernel_of_lt {C τ Λ : ℝ} (h : Λ < C) :
     mm1Kernel C τ Λ = Real.exp (-((C - Λ) * τ)) :=
-  if_pos h
+  ite_eq_left h
 
 /-- At and above capacity the kernel saturates: attempts surely time out. -/
 theorem mm1Kernel_of_ge {C τ Λ : ℝ} (h : C ≤ Λ) : mm1Kernel C τ Λ = 1 :=
-  if_neg (not_lt.mpr h)
+  ite_eq_right (not_lt.mpr h)
 
 /-- The `τ = 0` degeneracy, disclosed: with a zero timeout the
 "queueing-derived" kernel is the constant-1 (always-fail) kernel at every

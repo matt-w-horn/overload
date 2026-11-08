@@ -104,21 +104,21 @@ def attemptWeight (p : ℝ) (n j : ℕ) : ℝ :=
 theorem attemptWeight_of_lt {p : ℝ} {n j : ℕ} (h : j + 1 < n) :
     attemptWeight p n j = p ^ j * (1 - p) := by
   unfold attemptWeight
-  rw [if_pos h]
+  rw [ite_eq_left h]
 
 /-- At the cap (`n = j + 1`), the final attempt (index `j = n - 1`) absorbs
 the whole tail: `p ^ j` (`p^{n-1}`). -/
 theorem attemptWeight_at_cap {p : ℝ} {j : ℕ} :
     attemptWeight p (j + 1) j = p ^ j := by
   unfold attemptWeight
-  rw [if_neg (by omega), if_pos rfl]
+  rw [ite_eq_right (by omega), ite_eq_left rfl]
 
 /-- Outside the support the weight is zero — the definition's third branch,
 disclosed in the module docstring, as a kernel-checked fact. -/
 theorem attemptWeight_of_cap_lt {p : ℝ} {n j : ℕ} (h : n < j + 1) :
     attemptWeight p n j = 0 := by
   unfold attemptWeight
-  rw [if_neg (by omega), if_neg (by omega)]
+  rw [ite_eq_right (by omega), ite_eq_right (by omega)]
 
 /-- Pin of the off-support branch: attempt `6` (index `5`) carries no mass
 under a cap of `2`, at a failure probability that is otherwise
@@ -207,7 +207,7 @@ theorem expAttempts_mono_right {p : ℝ} (hp : 0 ≤ p) {m n : ℕ} (hmn : m ≤
 `zero_geom_sum` is the same fact under an `ite` on `n = 0`; the hypothesis
 `1 ≤ n` is the adapted form every call site here passes positionally. -/
 theorem expAttempts_at_zero {n : ℕ} (hn : 1 ≤ n) : expAttempts 0 n = 1 := by
-  rw [expAttempts_def, zero_geom_sum, if_neg (Nat.one_le_iff_ne_zero.mp hn)]
+  rw [expAttempts_def, zero_geom_sum, ite_eq_right (Nat.one_le_iff_ne_zero.mp hn)]
 
 /-- First-order gain, lower: with at least two attempts allowed, every unit
 of failure probability adds at least itself to the amplification —

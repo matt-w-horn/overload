@@ -213,7 +213,7 @@ through the compatibility bridge. -/
 theorem isFixedPt_lfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
     Function.IsFixedPt F (lfpIcc F a b) := by
-  haveI : Fact (a ≤ b) := ⟨hab⟩
+  have : Fact (a ≤ b) := ⟨hab⟩
   rw [lfpIcc_eq_lfp_restrict hm hf]
   exact congrArg Subtype.val (restrictIcc F a b hm hf).isFixedPt_lfp
 
@@ -222,7 +222,7 @@ theorem isFixedPt_lfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
 theorem isFixedPt_gfpIcc (hab : a ≤ b) (hm : MonotoneOn F (Set.Icc a b))
     (hf : Set.MapsTo F (Set.Icc a b) (Set.Icc a b)) :
     Function.IsFixedPt F (gfpIcc F a b) := by
-  haveI : Fact (a ≤ b) := ⟨hab⟩
+  have : Fact (a ≤ b) := ⟨hab⟩
   rw [gfpIcc_eq_gfp_restrict hm hf]
   exact congrArg Subtype.val (restrictIcc F a b hm hf).isFixedPt_gfp
 

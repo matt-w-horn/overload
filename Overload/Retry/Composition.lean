@@ -118,7 +118,7 @@ reduce the attempt count below one per request. -/
 theorem one_le_stackAmp {ι : Type*} (s : Finset ι) {p : ι → ℝ} {n : ι → ℕ}
     (hp : ∀ i ∈ s, 0 ≤ p i) (hn : ∀ i ∈ s, 1 ≤ n i) : 1 ≤ stackAmp s p n := by
   have h : ∏ _i ∈ s, (1 : ℝ) ≤ stackAmp s p n :=
-    Finset.prod_le_prod (fun _ _ => zero_le_one)
+    Finset.prod_le_prod₀ (fun _ _ => zero_le_one)
       (fun i hi => one_le_expAttempts (hp i hi) (hn i hi))
   simpa using h
 
@@ -127,7 +127,7 @@ envelope: every attempt failing gives exactly `∏ nᵢ`). -/
 theorem stackAmp_le_prod_cap {ι : Type*} (s : Finset ι) {p : ι → ℝ}
     (n : ι → ℕ) (hp0 : ∀ i ∈ s, 0 ≤ p i) (hp1 : ∀ i ∈ s, p i ≤ 1) :
     stackAmp s p n ≤ ∏ i ∈ s, (n i : ℝ) :=
-  Finset.prod_le_prod
+  Finset.prod_le_prod₀
     (fun i hi => expAttempts_nonneg (hp0 i hi) (n i))
     (fun i hi => expAttempts_le_cap (hp0 i hi) (hp1 i hi) (n i))
 
@@ -239,8 +239,8 @@ theorem sum_range_indicator_lt {c : ℝ} {k N : ℕ} (hk : k ≤ N) :
   rw [← Finset.sum_subset hsub ?vanish]
   case vanish =>
     intro j _hjN hjk
-    exact if_neg fun h => hjk (Finset.mem_range.mpr h)
-  rw [Finset.sum_congr rfl fun j hj => if_pos (Finset.mem_range.mp hj),
+    exact ite_eq_right fun h => hjk (Finset.mem_range.mpr h)
+  rw [Finset.sum_congr rfl fun j hj => ite_eq_left (Finset.mem_range.mp hj),
     Finset.sum_const, Finset.card_range, nsmul_eq_mul]
 
 /-- **Branching Wald, derived.** With the joint weight in per-slot product
@@ -260,13 +260,13 @@ theorem branching_wald {ι : Type*} (N : ℕ) (s : Finset ι) (P : ℕ → ℝ)
         = (if j < k then P k * expCostOf s Q x else 0) := by
     intro j hj k hk
     by_cases hjk : j < k
-    · rw [if_pos hjk, expCostOf, Finset.mul_sum]
+    · rw [ite_eq_left hjk, expCostOf, Finset.mul_sum]
       refine Finset.sum_congr rfl fun i hi => ?_
-      rw [hw j hj k hk i hi, if_pos hjk]
+      rw [hw j hj k hk i hi, ite_eq_left hjk]
       ring
-    · rw [if_neg hjk]
+    · rw [ite_eq_right hjk]
       refine Finset.sum_eq_zero fun i _hi => ?_
-      rw [if_neg hjk, mul_zero]
+      rw [ite_eq_right hjk, mul_zero]
   calc ∑ j ∈ Finset.range N, ∑ k ∈ Finset.range (N + 1), ∑ i ∈ s,
         w j k i * (if j < k then x i else 0)
       = ∑ j ∈ Finset.range N, ∑ k ∈ Finset.range (N + 1),

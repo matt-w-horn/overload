@@ -80,12 +80,12 @@ to hide it. That argument is Leonardo de Moura's, in
 
 Parts of this library have been contributed to mathlib. The library uses
 the mathlib versions, and its own older formulations are deleted. Status
-as of 2026-11-07:
+as of 2026-11-08:
 
 | Piece | mathlib PR | Status | Copy under `Upstream/` | Used by |
 |---|---|---|---|---|
 | `sum_range_mul_geometric_add`: the summation-by-parts identity behind the mean of a censored geometric distribution | [#42380](https://github.com/leanprover-community/mathlib4/pull/42380) | merged, used from the mathlib pin | none | `Overload/Retry/AttemptDist.lean` |
-| `lfpIcc`, `gfpIcc`: the least and greatest fixed points of a monotone self-map of an interval | [#42225](https://github.com/leanprover-community/mathlib4/pull/42225) | open | `Order/FixedPointsIcc.lean` | `Overload/Loop/Operator.lean` |
+| `lfpIcc`, `gfpIcc`: the least and greatest fixed points of a monotone self-map of an interval | [#42225](https://github.com/leanprover-community/mathlib4/pull/42225) | open; the reviewer asked for a generalization, and a replacement (`nextFixedPt`, the least fixed point above a point in a conditionally complete lattice) is prepared on the fork branch `claude/knaster-tarski-intervals-a64p1u`, not yet submitted. The copy here now proves everything through mathlib's `OrderHom.lfp` (see below) | `Order/FixedPointsIcc.lean` | `Overload/Loop/Operator.lean` |
 | `Real.erlangB`: Erlang's loss formula by its stable recursion, with its bounds and monotonicity | [#42382](https://github.com/leanprover-community/mathlib4/pull/42382) | open | `Analysis/SpecialFunctions/ErlangB.lean` | `Overload/Queueing/Erlang.lean` |
 | `tendsto_count_div_atTop` and two companions: the growth rate of a counting function | [#42384](https://github.com/leanprover-community/mathlib4/pull/42384) | open | `Analysis/SpecificLimits/Counting.lean` | `Overload/Queueing/Little.lean` |
 | `geometricCensoredMeasure`: the geometric distribution censored at a cap | [#42381](https://github.com/leanprover-community/mathlib4/pull/42381) | open | `Probability/Distributions/GeometricCensored.lean` | `Overload/Retry/AttemptDist.lean` |
@@ -102,8 +102,13 @@ directly or through another kept declaration's proof. The kept
 declarations are verbatim except where noted below, and each module
 docstring drops the lines that name what was cut. The cuts and changes:
 
-- `Order/FixedPointsIcc.lean`: `isLeast_lfpIcc` and its generated dual
-  `isGreatest_gfpIcc` are cut.
+- `Order/FixedPointsIcc.lean`: the definitions and statements are the PR's,
+  but the proofs are not. The file adds `Set.MapsTo.restrictOrderHom` and the
+  bridge `coe_lfp_restrictOrderHom : ↑(lfp (restriction of f to Icc a b)) =
+  lfpIcc f a b`, and derives `isLeast_lfpIcc`, `isGreatest_gfpIcc`,
+  `isFixedPt_lfpIcc`, `isFixedPt_gfpIcc`, and `lfpIcc_le_gfpIcc` from
+  mathlib's `OrderHom.isLeast_lfp` through it, instead of the PR's direct
+  `csInf` proofs.
 - `Analysis/SpecialFunctions/ErlangB.lean`: `Real.erlangB_mul_sum` and
   `Real.erlangB_eq_div` (the closed form) are cut, with the three imports
   only they needed. Three proofs also differ: `erlangB_nonneg`,

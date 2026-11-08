@@ -349,7 +349,7 @@ theorem lipschitzOnWith_smoothLoop_F {lam C A : ℝ} (hlam : 0 ≤ lam)
     LipschitzOnWith (Real.toNNReal (lam * (A - 1) / C))
       (smoothLoop lam C A hlam hC hA).F (Set.Ici 0) := by
   have hlamA : 0 ≤ lam * (A - 1) := mul_nonneg hlam (sub_nonneg.mpr hA)
-  refine (convex_Ici (0 : ℝ)).lipschitzOnWith_of_nnnorm_hasDerivWithin_le
+  refine (convex_Ici (0 : ℝ)).lipschitzOnWith_of_nnNorm_hasDerivWithin_le
     (f' := fun Λ => lam * ((A - 1) * (C / (Λ + C) ^ 2)))
     (fun x hx => (hasDerivAt_smoothLoop_F hlam hC hA hx).hasDerivWithinAt)
     (fun x hx => ?_)
@@ -357,7 +357,7 @@ theorem lipschitzOnWith_smoothLoop_F {lam C A : ℝ} (hlam : 0 ≤ lam)
   have hnonneg : 0 ≤ lam * ((A - 1) * (C / (x + C) ^ 2)) := by
     have : 0 ≤ A - 1 := sub_nonneg.mpr hA
     positivity
-  rw [← NNReal.coe_le_coe, coe_nnnorm, Real.norm_eq_abs,
+  rw [← NNReal.coe_le_coe, coe_nnNorm, Real.norm_eq_abs,
     Real.coe_toNNReal _ (div_nonneg hlamA hC.le), abs_of_nonneg hnonneg]
   have hdiv : C / (x + C) ^ 2 ≤ 1 / C := by
     rw [div_le_div_iff₀ (by positivity) hC]

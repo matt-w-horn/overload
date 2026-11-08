@@ -433,11 +433,11 @@ noncomputable def stepKernel (C : ℝ) : ℝ → ℝ := fun Λ => if Λ < C then
 
 /-- Below capacity the step kernel vanishes. -/
 theorem stepKernel_of_lt {C Λ : ℝ} (h : Λ < C) : stepKernel C Λ = 0 :=
-  if_pos h
+  ite_eq_left h
 
 /-- At and above capacity the step kernel saturates. -/
 theorem stepKernel_of_ge {C Λ : ℝ} (h : C ≤ Λ) : stepKernel C Λ = 1 :=
-  if_neg (not_lt.mpr h)
+  ite_eq_right (not_lt.mpr h)
 
 /-- The step kernel lands in `[0, 1]`. Supplies `g_mem` for `stepLoop` and
 `cappedLoop`. -/

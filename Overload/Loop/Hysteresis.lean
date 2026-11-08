@@ -424,7 +424,7 @@ theorem stepLoop_congestionEdge {lam C A : ℝ} (hlam : 0 ≤ lam) (hA : 1 ≤ A
       ((stepLoop lam C A hlam hA).withLam lam' h).CongestedEq C}
       = Set.Ici (C / A) := by
     ext x
-    simp only [Set.mem_setOf_eq, Set.mem_Ici]
+    simp only [Set.mem_ofPred_eq, Set.mem_Ici]
     constructor
     · rintro ⟨hx0, hcong⟩
       exact clamp_band_lower

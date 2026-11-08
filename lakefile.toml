@@ -29,7 +29,7 @@ linter.unusedVariables.analyzeTactics = true
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "v4.32.1"
+rev = "cdb2d388bcdad6fbe925917f79829617a4382dd9"
 
 [[lean_lib]]
 name = "Overload"

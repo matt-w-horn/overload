@@ -133,7 +133,7 @@ noncomputable def eligibleLoop (lam : ℝ) (g : ℝ → ℝ) (m : ℕ) (e : ℝ)
     (mul_nonneg he.1 hp.1) (mul_le_mul_of_nonneg_left hpq he.1) m
   h_one_le := fun _p hp => one_le_expAttempts (mul_nonneg he.1 hp.1) hm
   h_le_Amax := fun _p hp => expAttempts_le_cap (mul_nonneg he.1 hp.1)
-    (mul_le_one₀ he.2 hp.1 hp.2) m
+    ((mul_le_of_le_one_left hp.1 he.2).trans hp.2) m
 
 variable {lam : ℝ} {g : ℝ → ℝ} {m : ℕ} {e e' : ℝ} {hlam : 0 ≤ lam}
   {hm : 1 ≤ m} {hg_mem : ∀ x, 0 ≤ x → g x ∈ Set.Icc (0 : ℝ) 1}

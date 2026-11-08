@@ -10,11 +10,11 @@ Work directory: `/home/user/work`. Lean files: `/home/user/work/lean/`, compiled
 
 - elan 4.2.4 installed; toolchain `leanprover/lean4:v4.36.0-rc2` (from `mathlib4/lean-toolchain`).
 - Mathlib checkout `/home/user/mathlib4`, remote `matt-w-horn/mathlib4`, branch
-  `claude/knaster-tarski-intervals-a64p1u`, HEAD `cdb2d388bcdad6fbe925917f79829617a4382dd9`
+  `knaster-tarski-intervals`, HEAD `cdb2d388bcdad6fbe925917f79829617a4382dd9`
   (2026-11-07 20:53 UTC, "chore: rename `enorm` to `eNorm` (#45735)"). This is 1 day older than
   the `1c2b155` the brief's table was checked against; re-verified below.
 - `lake exe cache get`: 9094 files downloaded and decompressed (64 s). No from-source build.
-- Overload checkout `/home/user/overload`, branch `claude/knaster-tarski-intervals-a64p1u`,
+- Overload checkout `/home/user/overload`, branch `knaster-tarski-intervals`,
   HEAD `c45ea847cbde02e295fabae673e972607090e588`. Its `lake-manifest.json` pins Mathlib at
   `cdb2d388…` — identical to the Mathlib checkout. No pin bump needed.
 - Test of the checks: `theorem bad : (1 : ℕ) = 2 := rfl` fails (`Not a definitional equality`);
@@ -101,7 +101,7 @@ monotonicity (`agree_D2_linear`), and the cross-check `agree_1A_1C`. **All equal
 disagreement found.** Axioms: `propext`, `Classical.choice`, `Quot.sound` only; `isLeast_nextFixedPt`
 uses no axioms at all.
 
-## Phase 4 — decision and the Mathlib files (fork `matt-w-horn/mathlib4`, branch `claude/knaster-tarski-intervals-a64p1u`, pushed)
+## Phase 4 — decision and the Mathlib files (fork `matt-w-horn/mathlib4`, branch `knaster-tarski-intervals`, pushed)
 
 Decision rule 1 (D4) requires global `Monotone f` to be acceptable for Overload. It is not:
 `ClosedLoop` only has `g_mono : MonotoneOn g (Ici 0)` (`Overload/Loop/ClosedLoop.lean:122`),
@@ -125,7 +125,7 @@ concept (`nextFixedPt` and its dual) as §5 criterion 1 requires while still car
 clamp lemmas; the linear-order variant `isLeast_nextFixedPt_of_linear` (compiled in `KT/D2.lean`)
 is left out of the Mathlib file; `restrictOrderHom` is a third commit because it is a third file.
 
-## Phase 5 — Overload (branch `claude/knaster-tarski-intervals-a64p1u`, pushed)
+## Phase 5 — Overload (branch `knaster-tarski-intervals`, pushed)
 
 | Commit | What | Checks |
 | --- | --- | --- |

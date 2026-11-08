@@ -1,7 +1,7 @@
 # Migrating Overload from `lfpIcc`/`gfpIcc` to `nextFixedPt`/`prevFixedPt`
 
 Status: a plan, not applied. Written 2026-11-08 against Overload branch
-`claude/knaster-tarski-intervals-a64p1u` after the two refactor commits
+`knaster-tarski-intervals` after the two refactor commits
 ("Route every lfpIcc/gfpIcc fixed-point fact through mathlib's OrderHom.lfp" and
 "Ceiling-free hysteresis"). The target definitions are those of the Mathlib candidate file
 `Mathlib/Order/ConditionallyCompleteLattice/FixedPoints.lean` on the fork branch of the same name.

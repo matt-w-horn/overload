@@ -19,7 +19,7 @@ hysteresis), with the claims gate switched to advisory as you directed; 13 advis
 open.
 
 Nothing was opened on GitHub. Four Mathlib commits and five Overload commits are pushed to the two
-fork branches named `claude/knaster-tarski-intervals-a64p1u`.
+fork branches named `knaster-tarski-intervals`.
 
 ## 2. Decisions for Matt
 

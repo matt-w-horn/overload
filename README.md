@@ -78,11 +78,33 @@ to hide it. That argument is Leonardo de Moura's, in
 
 ## Upstream
 
-`Upstream/` holds verbatim copies of this library's open mathlib pull
-requests, at their mathlib paths, so the library uses the mathlib
-formulations before a release carries them. When one merges, its file is
-deleted and the import changes to `Mathlib.`; `Upstream/README.md` lists
-the pull requests.
+Parts of this library have been contributed to mathlib. The library uses
+the mathlib versions, and its own older formulations are deleted. Status
+as of 2026-11-07:
+
+Merged, and used from the mathlib pin:
+
+- `sum_range_mul_geometric_add` ([mathlib#42380](https://github.com/leanprover-community/mathlib4/pull/42380)): the
+  summation-by-parts identity behind the mean of a censored geometric
+  distribution.
+
+Pending, as open mathlib pull requests:
+
+- `lfpIcc` and `gfpIcc` ([mathlib#42225](https://github.com/leanprover-community/mathlib4/pull/42225)): the least and
+  greatest fixed points of a monotone self-map of an interval.
+- `Real.erlangB` ([mathlib#42382](https://github.com/leanprover-community/mathlib4/pull/42382)): Erlang's loss formula by its
+  stable recursion, with its bounds and monotonicity.
+- `geometricCensoredMeasure` ([mathlib#42381](https://github.com/leanprover-community/mathlib4/pull/42381)): the geometric
+  distribution censored at a cap, with the head and tail masses of the
+  geometric distribution that it needs ([mathlib#45786](https://github.com/leanprover-community/mathlib4/pull/45786)).
+- `tendsto_count_div_atTop` and two companion lemmas
+  ([mathlib#42384](https://github.com/leanprover-community/mathlib4/pull/42384)): the growth rate of a counting function.
+
+Until a pending pull request merges, `Upstream/` holds a copy of it at its
+mathlib path, trimmed to what this library uses; `Upstream/README.md`
+lists each file and what it cuts. When one merges and the mathlib pin
+reaches it, its file is deleted and the import changes from `Upstream.X`
+to `Mathlib.X`.
 
 ## History
 

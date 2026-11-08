@@ -82,29 +82,55 @@ Parts of this library have been contributed to mathlib. The library uses
 the mathlib versions, and its own older formulations are deleted. Status
 as of 2026-11-07:
 
-Merged, and used from the mathlib pin:
+| Piece | mathlib PR | Status | Copy under `Upstream/` | Used by |
+|---|---|---|---|---|
+| `sum_range_mul_geometric_add`: the summation-by-parts identity behind the mean of a censored geometric distribution | [#42380](https://github.com/leanprover-community/mathlib4/pull/42380) | merged, used from the mathlib pin | none | `Overload/Retry/AttemptDist.lean` |
+| `lfpIcc`, `gfpIcc`: the least and greatest fixed points of a monotone self-map of an interval | [#42225](https://github.com/leanprover-community/mathlib4/pull/42225) | open | `Order/FixedPointsIcc.lean` | `Overload/Loop/Operator.lean` |
+| `Real.erlangB`: Erlang's loss formula by its stable recursion, with its bounds and monotonicity | [#42382](https://github.com/leanprover-community/mathlib4/pull/42382) | open | `Analysis/SpecialFunctions/ErlangB.lean` | `Overload/Queueing/Erlang.lean` |
+| `tendsto_count_div_atTop` and two companions: the growth rate of a counting function | [#42384](https://github.com/leanprover-community/mathlib4/pull/42384) | open | `Analysis/SpecificLimits/Counting.lean` | `Overload/Queueing/Little.lean` |
+| `geometricCensoredMeasure`: the geometric distribution censored at a cap | [#42381](https://github.com/leanprover-community/mathlib4/pull/42381) | open | `Probability/Distributions/GeometricCensored.lean` | `Overload/Retry/AttemptDist.lean` |
+| `geometricMeasure_Iio`, `geometricMeasure_Ici`: the head and tail masses of the geometric distribution | [#45786](https://github.com/leanprover-community/mathlib4/pull/45786) | open | `Probability/Distributions/Geometric.lean` | `GeometricCensored.lean` above |
 
-- `sum_range_mul_geometric_add` ([mathlib#42380](https://github.com/leanprover-community/mathlib4/pull/42380)): the
-  summation-by-parts identity behind the mean of a censored geometric
-  distribution.
+Until a pull request merges, `Upstream/` holds a copy of it, so the
+library can use the mathlib formulation before a mathlib release carries
+it. Each file sits at its mathlib path with `Mathlib/` replaced by
+`Upstream/`, so module `Upstream.X` is the future `Mathlib.X`, and the
+declaration names, namespaces, and signatures are mathlib's.
 
-Pending, as open mathlib pull requests:
+A copy keeps only the declarations the `Overload` library reaches,
+directly or through another kept declaration's proof. The kept
+declarations are verbatim except where noted below, and each module
+docstring drops the lines that name what was cut. The cuts and changes:
 
-- `lfpIcc` and `gfpIcc` ([mathlib#42225](https://github.com/leanprover-community/mathlib4/pull/42225)): the least and
-  greatest fixed points of a monotone self-map of an interval.
-- `Real.erlangB` ([mathlib#42382](https://github.com/leanprover-community/mathlib4/pull/42382)): Erlang's loss formula by its
-  stable recursion, with its bounds and monotonicity.
-- `geometricCensoredMeasure` ([mathlib#42381](https://github.com/leanprover-community/mathlib4/pull/42381)): the geometric
-  distribution censored at a cap, with the head and tail masses of the
-  geometric distribution that it needs ([mathlib#45786](https://github.com/leanprover-community/mathlib4/pull/45786)).
-- `tendsto_count_div_atTop` and two companion lemmas
-  ([mathlib#42384](https://github.com/leanprover-community/mathlib4/pull/42384)): the growth rate of a counting function.
+- `Order/FixedPointsIcc.lean`: `isLeast_lfpIcc` and its generated dual
+  `isGreatest_gfpIcc` are cut.
+- `Analysis/SpecialFunctions/ErlangB.lean`: `Real.erlangB_mul_sum` and
+  `Real.erlangB_eq_div` (the closed form) are cut, with the three imports
+  only they needed. Three proofs also differ: `erlangB_nonneg`,
+  `erlangB_denom_pos`, and `erlangB_le_one` pass to `linarith` the facts
+  #42382 states as `have` lines, because this library's
+  `linter.unusedVariables.analyzeTactics` counts a `have` that only
+  `linarith` consumes as unused. The statements are verbatim.
+- `Probability/Distributions/Geometric.lean`: holds only the two lemmas
+  #45786 adds to mathlib's existing file of that name. The header,
+  imports, and namespace lines around them are new.
+- `Probability/Distributions/GeometricCensored.lean`: nothing is cut, but
+  it imports `Upstream.Probability.Distributions.Geometric` where #42381
+  imports `Mathlib.Probability.Distributions.Geometric`, so that it sees
+  those two lemmas.
 
-Until a pending pull request merges, `Upstream/` holds a copy of it at its
-mathlib path, trimmed to what this library uses; `Upstream/README.md`
-lists each file and what it cuts. When one merges and the mathlib pin
-reaches it, its file is deleted and the import changes from `Upstream.X`
-to `Mathlib.X`.
+When a pull request merges and the mathlib pin reaches it, its file under
+`Upstream/` is deleted and each `import Upstream.X` becomes
+`import Mathlib.X`; nothing else changes. For #45786, `Geometric.lean` is
+deleted and the changed import line in `GeometricCensored.lean` is
+dropped.
+
+The copies build as the `Upstream` library, outside `Overload/` and its
+gates (statement lock, claims ledger, coverage, `lake lint`): they follow
+mathlib's conventions, and mathlib review is their gate. The library's own
+linter options apply to them. The axiom audit reaches every copied
+declaration, because each one is used by an `Overload` declaration that
+depends on it.
 
 ## History
 

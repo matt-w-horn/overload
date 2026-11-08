@@ -35,7 +35,7 @@ rev = "cdb2d388bcdad6fbe925917f79829617a4382dd9"
 name = "Overload"
 
 # Copies of this library's open mathlib PRs, trimmed to what it uses, at
-# mathlib's paths under `Upstream/` (see Upstream/README.md). Outside
+# mathlib's paths under `Upstream/` (see the README's Upstream section). Outside
 # `Overload/` on purpose: mathlib review is their gate, not this library's.
 [[lean_lib]]
 name = "Upstream"

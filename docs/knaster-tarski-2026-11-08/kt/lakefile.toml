@@ -1,0 +1,16 @@
+name = "KT"
+defaultTargets = ["KT"]
+
+[leanOptions]
+autoImplicit = false
+weak.linter.mathlibStandardSet = true
+weak.linter.style.header = false
+weak.linter.style.longFile = 0
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "cdb2d388bcdad6fbe925917f79829617a4382dd9"
+
+[[lean_lib]]
+name = "KT"

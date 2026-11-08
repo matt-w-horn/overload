@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       # Builds with the pinned toolchain and restores the Mathlib cache, as in ci.yml.
       - uses: leanprover/lean-action@f061402b660e0c34644504b324e830f2991d4865 # v1
-      - uses: anthropics/claude-code-action@cab360f6565aa35a51d6ce9e43f1f4287c0a32ea # v1
+      - uses: anthropics/claude-code-action@d70510b174a1244958df0b03166a54912811f3e6 # v1
         with:
           # Workload identity federation: the action trades the job's GitHub OIDC
           # token for a short-lived Claude API token, so no key is stored here.
